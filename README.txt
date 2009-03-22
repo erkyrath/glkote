@@ -1,0 +1,54 @@
+GlkOte -- a Javascript display library for IF interfaces
+
+GlkOte Library: version 1.0.0.
+Designed by Andrew Plotkin <erkyrath@eblong.com>
+<http://eblong.com/zarf/glk/glkote.html>
+
+
+GlkOte is a tool for creating interactive fiction -- and other
+text-based applications -- on a web page. It is a Javascript library
+which handles the mechanics of displaying text, arranging panes of
+text, and accepting text input from the user.
+
+GlkOte has been tested on Safari 3, Firefox 2 and 3, MSIE 6 and 7,
+and Opera 9.5.
+
+* Contents
+
+Documentation:
+
+- README.txt   -- this file
+- docs.html    -- how to use GlkOte in your game (or other application)
+
+What you need:
+
+- glkote.js    -- the GlkOte library
+- prototype.js -- the Prototype library
+- glkote.css   -- the GlkOte default stylesheet
+- waiting.gif  -- an animated "loading" image
+
+Example pages:
+
+- sample-demo.html    -- a "fake game" that demonstrates library features
+- sample-help.html    -- pop-up help page for the fake game
+- sample-minimal.html -- minimal, no-window use of the library
+
+
+* Permissions
+
+The GlkOte Javascript library is copyright 2008 by Andrew Plotkin. You
+may copy and distribute it freely, by any means and under any conditions,
+as long as the code and documentation is not changed. You may also
+incorporate this code into your own program and distribute that, or
+modify this code and use and distribute the modified version, as long
+as you retain a notice in your program or documentation which mentions
+my name and the URL shown above.
+
+The GlkOte documentation is licensed under a Creative Commons
+Attribution-Noncommercial-Share Alike 3.0 Unported License.
+See <http://creativecommons.org/licenses/by-nc-sa/3.0>
+
+This package includes the Prototype JavaScript framework, version 1.6.0.2
+(c) 2005-2008 Sam Stephenson
+Prototype is freely distributable under the terms of an MIT-style license.
+For details, see the Prototype web site: <http://www.prototypejs.org/>
