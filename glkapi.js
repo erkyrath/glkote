@@ -1,3 +1,32 @@
+/* GlkAPI -- a Javascript Glk API for IF interfaces
+ * Designed by Andrew Plotkin <erkyrath@eblong.com>
+ * <http://eblong.com/zarf/glk/glkote.html>
+ * 
+ * This Javascript library is copyright 2010 by Andrew Plotkin. You may
+ * copy and distribute it freely, by any means and under any conditions,
+ * as long as the code and documentation is not changed. You may also
+ * incorporate this code into your own program and distribute that, or
+ * modify this code and use and distribute the modified version, as long
+ * as you retain a notice in your program or documentation which mentions
+ * my name and the URL shown above.
+ *
+ * This file is a Glk API compatibility layer for glkote.js. It offers a 
+ * set of Javascript calls which closely match the original C Glk API;
+ * these work by means of glkote.js operations.
+ *
+ * This API was built for Quixe, which is a pure-Javascript Glulx
+ * interpreter. Therefore, the API is a little strange. Notably, it
+ * accepts string data in the form of an array of integers, not a 
+ * Javascript string. There are a few extra calls (glk_put_jstring,
+ * etc) which work in the more intuitive way.
+ *
+ * If you are writing an application in pure Javascript, you can use
+ * this layer (along with glkote.js). If you are writing a web app which
+ * is the front face of a server-side Glk app, ignore this file -- use
+ * glkote.js directly.
+ */
+
+
 /* Known problems:
 
    Some places in the library get confused about Unicode characters
