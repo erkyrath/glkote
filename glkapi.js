@@ -57,7 +57,11 @@ function temp_glk_line_enter() {
     if (!gli_selectref)
         return;
 
-    var win = gli_windowlist;
+    var win = null;
+    for (win=gli_windowlist; win; win=win.next) {
+        if (win.type == Const.wintype_TextBuffer) 
+            break;
+    }
     if (!win || !win.line_request)
         return;
 
