@@ -45,6 +45,8 @@
 /* The VM interface object. */
 var VM = null;
 
+var event_generation = 0;
+
 /* Initialize the library, initialize the VM, and set it running. (It will 
    run until the first glk_select() or glk_exit() call.)
 
@@ -55,40 +57,49 @@ function init(vm_api) {
     VM = vm_api;
     if (window.GiDispa)
         GiDispa.set_vm(VM);
-    VM.init();
+    GlkOte.init({ accept: accept_ui_event});
 }
 
-function update() {
-    var win, text, el;
+function accept_ui_event(obj) {
+    qlog("### accept_ui_event: " + obj.type + ", gen " + obj.gen);
 
-    //### replace with GlkOte work
-    for (win=gli_windowlist; win; win=win.next) {
-        if (win.type == Const.wintype_TextBuffer) {
-            text = win.accum.join("");
-            if (text.length) {
-                !qlog("### update text: " + text.length + " chars: " + text);
-                win.accum.length = 0;
-                el = document.getElementById('story');
-                el.appendChild(document.createTextNode(text));
-            }
-        }
+    if (obj.gen != event_generation) {
+      GlkOte.log('Input event had wrong generation number: got ' + obj.gen + ', currently at ' + event_generation);
+      return;
+    }
+    event_generation += 1;
+
+    switch (obj.type) {
+    case 'init':
+        content_metrics = obj.metrics;
+        VM.init();
+        break;
+
+    case 'char':
+        //###
+        break;
+
+    case 'line':
+        handle_line_input(obj.window, obj.value);
+        break;
+
+    case 'arrange':
+        content_metrics = obj.metrics;
+        geometry_changed = true; //### handled in layout code?
+        //### re-layout
+        break;
     }
 }
 
-/*###*/
-function temp_glk_line_enter() {
+function handle_line_input(disprock, input) {
     var ix;
-    var el = document.getElementById('input');
-    var input = el.value;
-    el.value = '';
-    qlog("Enter: " + input);
 
     if (!gli_selectref)
         return;
 
     var win = null;
     for (win=gli_windowlist; win; win=win.next) {
-        if (win.type == Const.wintype_TextBuffer) 
+        if (win.disprock == disprock) 
             break;
     }
     if (!win || !win.line_request)
@@ -116,6 +127,88 @@ function temp_glk_line_enter() {
     gli_selectref = null;
     VM.resume();
 }
+
+function update() {
+    var dataobj = { type: 'update', gen: event_generation };
+    var winarray = null;
+    var contentarray = null;
+    var inputarray = null;
+    var win, text, obj, ls, ix, conta;
+
+    if (geometry_changed) {
+        geometry_changed = false;
+        winarray = [];
+        for (win=gli_windowlist; win; win=win.next) {
+            obj = { id: win.disprock, rock: win.rock };
+            winarray.push(obj);
+
+            switch (win.type) {
+            case Const.wintype_TextBuffer:
+                obj.type = 'buffer';
+                break;
+            case Const.wintype_TextGrid:
+                obj.type = 'grid';
+                obj.gridwidth = 80; //###
+                obj.gridheight = 4; //###
+                break;
+            }
+
+            //### cover the full box for now
+            obj.top = content_metrics.outspacingy;
+            obj.left = content_metrics.outspacingx;
+            obj.width = content_metrics.width-(2*content_metrics.outspacingx);
+            obj.height = content_metrics.height-(2*content_metrics.outspacingy);
+        }
+    }
+
+    for (win=gli_windowlist; win; win=win.next) {
+        //### if (!win.contentdirty) continue;
+
+        obj = { id: win.disprock };
+        if (contentarray == null)
+            contentarray = [];
+        contentarray.push(obj);
+
+        switch (win.type) {
+        case Const.wintype_TextBuffer:
+            text = win.accum.join('');
+            win.accum.length = 0;
+            //qlog("### update text: " + text.length + " chars: " + text);
+            ls = text.split('\n');
+            conta = [];
+            for (ix=0; ix<ls.length; ix++) {
+                if (ls[ix])
+                    conta.push({ content: ['normal', ls[ix]] });
+                else
+                    conta.push({ });
+            }
+            obj.text = conta;
+            break;
+        }
+    }
+
+    inputarray = [];
+    //### get generations right
+    for (win=gli_windowlist; win; win=win.next) {
+        if (win.char_request) {
+            obj = { id: win.disprock, type: 'char', gen: event_generation };
+            inputarray.push(obj);
+        }
+        if (win.line_request) {
+            obj = { id: win.disprock, type: 'line', gen: event_generation,
+                    maxlen: win.linebuf.length, initial: ''};
+            //### get initial right
+            inputarray.push(obj);
+        }
+    }
+
+    dataobj.windows = winarray;
+    dataobj.content = contentarray;
+    dataobj.input = inputarray;
+
+    GlkOte.update(dataobj);
+}
+
 
 /* All the numeric constants used by the Glk interface. We push these into
    an object, for tidiness. */
@@ -355,7 +448,11 @@ var strtype_Memory = 3;
 /* Beginning of linked list of windows. */
 var gli_windowlist = null;
 var gli_rootwin = null;
-var content_box = null; //###?
+/* Set when any window is created, destroyed, or resized. */
+var geometry_changed = true; 
+/* Received from GlkOte; describes the window size. */
+var content_metrics = null;
+var content_box = null; //###? probably going away
 
 /* Beginning of linked list of streams. */
 var gli_streamlist = null;
@@ -368,6 +465,10 @@ var gli_currentstr = null;
 /* During a glk_select() block, this is the RefStruct which will contain
    the result. */
 var gli_selectref = null;
+
+/* This is used to assigned disprock values to windows, when there is
+   no GiDispa layer to provide them. */
+var gli_api_display_rocks = 1;
 
 function gli_new_window(type, rock) {
     var win = {};
@@ -399,6 +500,11 @@ function gli_new_window(type, rock) {
 
     if (window.GiDispa)
         GiDispa.class_register('window', win);
+    else
+        win.disprock = gli_api_display_rocks++;
+    /* We need to assign a disprock even if there's no GiDispa layer,
+       because GlkOte differentiates windows by their disprock. */
+    geometry_changed = true;
 
     return win;
 }
@@ -408,6 +514,7 @@ function gli_delete_window(win) {
 
     if (window.GiDispa)
         GiDispa.class_unregister('window', win);
+    geometry_changed = true;
     
     win.echostr = null;
     if (win.str) {
