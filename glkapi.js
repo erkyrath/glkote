@@ -124,7 +124,8 @@ function handle_line_input(disprock, input) {
     if (window.GiDispa)
         GiDispa.unretain_array(win.linebuf);
     win.line_request = false;
-    win.line_request_uni = null;
+    win.line_request_uni = false;
+    win.input_generation = null;
     win.linebuf = null;
 
     if (window.GiDispa)
@@ -138,7 +139,7 @@ function update() {
     var winarray = null;
     var contentarray = null;
     var inputarray = null;
-    var win, text, obj, ls, ix, conta;
+    var win, text, obj, useobj, ls, ix, conta;
 
     if (geometry_changed) {
         geometry_changed = false;
@@ -169,17 +170,17 @@ function update() {
     for (win=gli_windowlist; win; win=win.next) {
         //### if (!win.contentdirty) continue;
 
+        useobj = false;
         obj = { id: win.disprock };
         if (contentarray == null)
             contentarray = [];
-        contentarray.push(obj);
 
         switch (win.type) {
         case Const.wintype_TextBuffer:
             //### does not consider style changes
             text = win.accum.join('');
             win.accum.length = 0;
-            qlog("### update text: " + text.length + " chars: " + text);
+            //qlog("### update text: " + text.length + " chars: " + text);
             ls = text.split('\n');
             conta = [];
             for (ix=0; ix<ls.length; ix++) {
@@ -195,19 +196,22 @@ function update() {
                 }
             }
             obj.text = conta;
+            useobj = conta.length;
             break;
         }
+
+        if (useobj)
+            contentarray.push(obj);
     }
 
     inputarray = [];
-    //### get generations right
     for (win=gli_windowlist; win; win=win.next) {
         if (win.char_request) {
-            obj = { id: win.disprock, type: 'char', gen: event_generation };
+            obj = { id: win.disprock, type: 'char', gen: win.input_generation };
             inputarray.push(obj);
         }
         if (win.line_request) {
-            obj = { id: win.disprock, type: 'line', gen: event_generation,
+            obj = { id: win.disprock, type: 'line', gen: win.input_generation,
                     maxlen: win.linebuf.length, initial: ''};
             //### get initial right
             inputarray.push(obj);
@@ -492,11 +496,12 @@ function gli_new_window(type, rock) {
     win.str = gli_stream_open_window(win);
     win.echostr = null;
 
+    win.input_generation = null;
     win.linebuf = null;
     win.char_request = false;
     win.line_request = false;
-    win.char_request_uni = null;
-    win.line_request_uni = null;
+    win.char_request_uni = false;
+    win.line_request_uni = false;
 
     switch (win.type) {
     case Const.wintype_TextBuffer:
@@ -1051,8 +1056,9 @@ function glk_request_line_event(win, buf, initlen) {
         || win.type == Const.wintype_TextGrid) {
         win.line_request = true;
         win.line_request_uni = false;
+        win.input_generation = event_generation;
         win.linebuf = buf;
-        //### grab initlen chars
+        //### grab initlen chars, stash in input of update object
         if (window.GiDispa)
             GiDispa.retain_array(buf);
     }
