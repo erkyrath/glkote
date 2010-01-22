@@ -87,6 +87,7 @@ function accept_ui_event(obj) {
         content_metrics = obj.metrics;
         geometry_changed = true; //### handled in layout code?
         //### re-layout
+        update();
         break;
     }
 }
@@ -107,6 +108,10 @@ function handle_line_input(disprock, input) {
 
     if (input.length > win.linebuf.length)
         input = input.slice(0, win.linebuf.length);
+
+    gli_window_put_string(win, input+"\n"); 
+    //### wrong for grid window?
+    //### should be Input style
 
     for (ix=0; ix<input.length; ix++)
         win.linebuf[ix] = input.charCodeAt(ix);
@@ -171,16 +176,23 @@ function update() {
 
         switch (win.type) {
         case Const.wintype_TextBuffer:
+            //### does not consider style changes
             text = win.accum.join('');
             win.accum.length = 0;
-            //qlog("### update text: " + text.length + " chars: " + text);
+            qlog("### update text: " + text.length + " chars: " + text);
             ls = text.split('\n');
             conta = [];
             for (ix=0; ix<ls.length; ix++) {
-                if (ls[ix])
-                    conta.push({ content: ['normal', ls[ix]] });
-                else
-                    conta.push({ });
+                if (ix == 0) {
+                    if (ls[ix])
+                        conta.push({ content: ['normal', ls[ix]], append: true });
+                }
+                else {
+                    if (ls[ix])
+                        conta.push({ content: ['normal', ls[ix]] });
+                    else
+                        conta.push({ });
+                }
             }
             obj.text = conta;
             break;
