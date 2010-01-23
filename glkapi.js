@@ -109,9 +109,11 @@ function handle_line_input(disprock, input) {
     if (input.length > win.linebuf.length)
         input = input.slice(0, win.linebuf.length);
 
+    ix = win.style;
+    gli_set_style(win.str, Const.style_Input);
     gli_window_put_string(win, input+"\n"); 
+    gli_set_style(win.str, ix);
     //### wrong for grid window?
-    //### should be Input style
 
     for (ix=0; ix<input.length; ix++)
         win.linebuf[ix] = input.charCodeAt(ix);
@@ -139,7 +141,7 @@ function update() {
     var winarray = null;
     var contentarray = null;
     var inputarray = null;
-    var win, text, obj, useobj, ls, ix, conta;
+    var win, text, obj, useobj, ls, ix;
 
     if (geometry_changed) {
         geometry_changed = false;
@@ -177,26 +179,12 @@ function update() {
 
         switch (win.type) {
         case Const.wintype_TextBuffer:
-            //### does not consider style changes
-            text = win.accum.join('');
-            win.accum.length = 0;
-            //qlog("### update text: " + text.length + " chars: " + text);
-            ls = text.split('\n');
-            conta = [];
-            for (ix=0; ix<ls.length; ix++) {
-                if (ix == 0) {
-                    if (ls[ix])
-                        conta.push({ content: ['normal', ls[ix]], append: true });
-                }
-                else {
-                    if (ls[ix])
-                        conta.push({ content: ['normal', ls[ix]] });
-                    else
-                        conta.push({ });
-                }
+            gli_window_buffer_deaccumulate(win);
+            if (win.content.length) {
+                obj.text = win.content.slice(0);
+                win.content.length = 0;
+                useobj = true;
             }
-            obj.text = conta;
-            useobj = conta.length;
             break;
         }
 
@@ -260,6 +248,19 @@ var Const = {
     evtype_SoundNotify : 7,
     evtype_Hyperlink : 8,
 
+    style_Normal : 0,
+    style_Emphasized : 1,
+    style_Preformatted : 2,
+    style_Header : 3,
+    style_Subheader : 4,
+    style_Alert : 5,
+    style_Note : 6,
+    style_BlockQuote : 7,
+    style_Input : 8,
+    style_User1 : 9,
+    style_User2 : 10,
+    style_NUMSTYLES : 11,
+
     wintype_AllTypes : 0,
     wintype_Pair : 1,
     wintype_Blank : 2,
@@ -311,6 +312,20 @@ var Const = {
       stylehint_just_LeftRight : 1,
       stylehint_just_Centered : 2,
       stylehint_just_RightFlush : 3,
+};
+
+var StyleNameMap = {
+    0 : 'normal',
+    1 : 'emphasized',
+    2 : 'preformatted',
+    3 : 'header',
+    4 : 'subheader',
+    5 : 'alert',
+    6 : 'note',
+    7 : 'blockquote',
+    8 : 'input',
+    9 : 'user1',
+    10 : 'user2',
 };
 
 /* Convert a 32-bit Unicode value to a JS string. */
@@ -401,6 +416,28 @@ function qlog(msg) {
         console.log(msg);
     else if (window.opera && opera.postError)
         opera.postError(msg);
+}
+
+function qobjdump(obj, depth) {
+    var key, proplist;
+
+    if (obj instanceof Array) {
+        if (depth)
+            depth--;
+        var ls = obj.map(function(v) {return qobjdump(v, depth);});
+        return ("[" + ls.join(",") + "]");
+    }
+    if (!(obj instanceof Object))
+        return (""+obj);
+
+    proplist = [ ];
+    for (key in obj) {
+        var val = obj[key];
+        if (depth && val instanceof Object)
+            val = qobjdump(val, depth-1);
+        proplist.push(key + ":" + val);
+    }
+    return "{ " + proplist.join(", ") + " }";
 }
 
 /* RefBox: Simple class used for "call-by-reference" Glk arguments. The object
@@ -495,6 +532,7 @@ function gli_new_window(type, rock) {
     win.parent = null;
     win.str = gli_stream_open_window(win);
     win.echostr = null;
+    win.style = Const.style_Normal;
 
     win.input_generation = null;
     win.linebuf = null;
@@ -506,6 +544,8 @@ function gli_new_window(type, rock) {
     switch (win.type) {
     case Const.wintype_TextBuffer:
         win.accum = [];
+        win.accumstyle = null;
+        win.content = [];
         break;
     }
 
@@ -565,14 +605,66 @@ function gli_windows_unechostream(str) {
 
 /* Add a (Javascript) string to the given window's display. */
 function gli_window_put_string(win, val) {
+    //### might be efficient to split the implementation up into
+    //### gli_window_buffer_put_string(), etc, since many functions
+    //### know the window type when they call this
     switch (win.type) {
     case Const.wintype_TextBuffer:
+        if (win.style != win.accumstyle)
+            gli_window_buffer_deaccumulate(win);
         win.accum.push(val);
         break;
     case Const.wintype_TextGrid:
         //###
         break;
     }
+}
+
+/* Take the accumulation of strings (since the last style change) and
+   assemble them into a buffer window update. This must be called
+   after each style change; it must also be called right before 
+   GlkOte.update(). (Actually we call it right before win.accum.push
+   if the style has changed -- there's no need to call for *every* style
+   change if no text is being pushed out in between.)
+*/
+function gli_window_buffer_deaccumulate(win) {
+    var conta = win.content;
+    var stylename = StyleNameMap[win.accumstyle];
+    var text, ls, ix, obj;
+
+    if (win.accum.length) {
+        text = win.accum.join('');
+        ls = text.split('\n');
+        for (ix=0; ix<ls.length; ix++) {
+            if (ix == 0) {
+                if (ls[ix]) {
+                    if (conta.length == 0) {
+                        conta.push({ content: [stylename, ls[ix]], append: true });
+                    }
+                    else {
+                        obj = conta[conta.length-1];
+                        if (!obj.content) {
+                            obj.content = [stylename, ls[ix]];
+                        }
+                        else {
+                            obj = obj.content;
+                            obj.push(stylename);
+                            obj.push(ls[ix]);
+                        }
+                    }
+                }
+            }
+            else {
+                if (ls[ix])
+                    conta.push({ content: [stylename, ls[ix]] });
+                else
+                    conta.push({ });
+            }
+        }
+    }
+
+    win.accum.length = 0;
+    win.accumstyle = win.style;
 }
 
 function gli_new_stream(type, readable, writable, rock) {
@@ -773,6 +865,20 @@ function glk_put_jstring_stream(str, val) {
         break;
     case strtype_File:
         throw('gli_put_jstring: file streams not supported');
+    }
+}
+
+function gli_set_style(str, val) {
+    if (!str || !str.writable)
+        throw('gli_set_style: invalid stream');
+
+    if (val >= Const.style_NUMSTYLES)
+        val = 0;
+
+    if (str.type == strtype_Window) {
+        str.win.style = val;
+        if (str.win.echostr)
+            gli_set_style(str.win.echostr, val);
     }
 }
 
@@ -1012,8 +1118,14 @@ glk_put_buffer = glk_put_string;
 // function glk_put_buffer_stream(str, arr) { }
 glk_put_buffer_stream = glk_put_string_stream;
 
-function glk_set_style(a1) { /*###*/ }
-function glk_set_style_stream(a1, a2) { /*###*/ }
+function glk_set_style(val) {
+    gli_set_style(gli_currentstr, val);
+}
+
+function glk_set_style_stream(str, val) {
+    gli_set_style(str, val);
+}
+
 function glk_get_char_stream(a1) { /*###*/ }
 function glk_get_line_stream(a1, a2) { /*###*/ }
 function glk_get_buffer_stream(a1, a2) { /*###*/ }
