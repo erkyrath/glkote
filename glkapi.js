@@ -151,7 +151,7 @@ function update() {
     var winarray = null;
     var contentarray = null;
     var inputarray = null;
-    var win, text, obj, useobj, ls, ix;
+    var win, obj, useobj, lineobj, ls, ix, cx, lastpos, laststyle;
 
     if (geometry_changed) {
         geometry_changed = false;
@@ -195,6 +195,31 @@ function update() {
                 win.content.length = 0;
                 useobj = true;
             }
+            break;
+        case Const.wintype_TextGrid:
+            if (win.gridwidth == 0 || win.gridheight == 0)
+                break;
+            obj.lines = [];
+            for (ix=0; ix<win.gridheight; ix++) {
+                lineobj = win.lines[ix];
+                if (!lineobj.dirty)
+                    continue;
+                lineobj.dirty = false;
+                ls = [];
+                lastpos = 0;
+                for (cx=0; cx<win.gridwidth; ) {
+                    laststyle = lineobj.styles[cx];
+                    for (; cx<win.gridwidth && lineobj.styles[cx] == laststyle; cx++) { }
+                    if (lastpos < cx) {
+                        ls.push(StyleNameMap[laststyle]);
+                        ls.push(lineobj.chars.slice(lastpos, cx).join(''));
+                        lastpos = cx;
+                    }
+                }
+                qlog("### grid line " + ix + ": " + qobjdump(ls));
+                obj.lines.push({ line:ix, content:ls });
+            }
+            useobj = obj.lines.length;
             break;
         }
 
@@ -671,8 +696,8 @@ function gli_window_buffer_deaccumulate(win) {
 }
 
 function gli_window_rearrange(win, box) {
-    var width, height;
-    var min, max, diff, splitwid;
+    var width, height, oldwidth, oldheight;
+    var min, max, diff, splitwid, ix, cx, lineobj;
     var box1, box2, ch1, ch2;
 
     qlog("### window_rearrange rock="+win.rock+", box="+qobjdump(box));
@@ -681,11 +706,38 @@ function gli_window_rearrange(win, box) {
     switch (win.type) {
 
     case Const.wintype_TextGrid:
+        /* Compute the new grid size. */
         width = box.right - box.left;
         height = box.bottom - box.top;
+        oldheight = win.gridheight;
         win.gridwidth = Math.max(0, Math.floor((width-content_metrics.gridmarginx) / content_metrics.gridcharwidth));
         win.gridheight = Math.max(0, Math.floor((height-content_metrics.gridmarginy) / content_metrics.gridcharheight));
-        //### adjust arrays
+
+        /* Now we have to resize the win.lines array, in two dimensions. */
+        if (oldheight > win.gridheight) {
+            win.lines.length = win.gridheight;
+        }
+        else if (oldheight < win.gridheight) {
+            for (ix=oldheight; ix<win.gridheight; ix++) {
+                win.lines[ix] = { chars:[], styles:[], dirty:true };
+            }
+        }
+        for (ix=0; ix<win.gridheight; ix++) {
+            lineobj = win.lines[ix];
+            oldwidth = lineobj.chars.length;
+            if (oldwidth > win.gridwidth) {
+                lineobj.dirty = true;
+                lineobj.chars.length = win.gridwidth;
+                lineobj.styles.length = win.gridwidth;
+            }
+            else if (oldwidth < win.gridwidth) {
+                lineobj.dirty = true;
+                for (cx=oldwidth; cx<win.gridwidth; cx++) {
+                    lineobj.chars[cx] = ' ';
+                    lineobj.styles[cx] = Const.style_Normal;
+                }
+            }
+        }
         break;
 
     case Const.wintype_Pair:
@@ -1085,12 +1137,24 @@ function glk_window_open(splitwin, method, size, wintype, rock) {
 
     switch (newwin.type) {
     case Const.wintype_TextBuffer:
+        /* accum is a list of strings of a given style; newly-printed text
+           is pushed onto the list. accumstyle is the style of that text.
+           Anything printed in a different style triggers a call to
+           gli_window_buffer_deaccumulate, which cleans out accum and
+           adds the results to the content array. The content is in
+           GlkOte format.
+        */
         newwin.accum = [];
         newwin.accumstyle = null;
         newwin.content = [];
         break;
     case Const.wintype_TextGrid:
-        //### arrays
+        /* lines is a list of line objects. A line looks like
+           { chars: [...], styles: [...], dirty: bool }.
+        */
+        newwin.gridwidth = 0;
+        newwin.gridheight = 0;
+        newwin.lines = [];
         break;
     case Const.wintype_Blank:
         break;
