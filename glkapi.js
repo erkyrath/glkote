@@ -57,10 +57,13 @@ function init(vm_api) {
     VM = vm_api;
     if (window.GiDispa)
         GiDispa.set_vm(VM);
-    GlkOte.init({ accept: accept_ui_event});
+    //### the 4 spacing here should come from somewhere else
+    GlkOte.init({ accept: accept_ui_event, spacing: 4 });
 }
 
 function accept_ui_event(obj) {
+    var box;
+
     qlog("### accept_ui_event: " + obj.type + ", gen " + obj.gen);
 
     if (obj.gen != event_generation) {
@@ -85,8 +88,15 @@ function accept_ui_event(obj) {
 
     case 'arrange':
         content_metrics = obj.metrics;
-        geometry_changed = true; //### handled in layout code?
-        //### re-layout
+        geometry_changed = true;
+        box = {
+            left: content_metrics.outspacingx,
+            top: content_metrics.outspacingy,
+            right: content_metrics.width-content_metrics.outspacingx,
+            bottom: content_metrics.height-content_metrics.outspacingy,
+        };
+        if (gli_rootwin)
+            gli_window_rearrange(gli_rootwin, box);
         update();
         break;
     }
@@ -147,6 +157,9 @@ function update() {
         geometry_changed = false;
         winarray = [];
         for (win=gli_windowlist; win; win=win.next) {
+            if (win.type == Const.wintype_Pair)
+                continue;
+
             obj = { id: win.disprock, rock: win.rock };
             winarray.push(obj);
 
@@ -156,22 +169,19 @@ function update() {
                 break;
             case Const.wintype_TextGrid:
                 obj.type = 'grid';
-                obj.gridwidth = 80; //###
-                obj.gridheight = 4; //###
+                obj.gridwidth = win.gridwidth;
+                obj.gridheight = win.gridheight;
                 break;
             }
 
-            //### cover the full box for now
-            obj.top = content_metrics.outspacingy;
-            obj.left = content_metrics.outspacingx;
-            obj.width = content_metrics.width-(2*content_metrics.outspacingx);
-            obj.height = content_metrics.height-(2*content_metrics.outspacingy);
+            obj.left = win.bbox.left;
+            obj.top = win.bbox.top;
+            obj.width = win.bbox.right - win.bbox.left;
+            obj.height = win.bbox.bottom - win.bbox.top;
         }
     }
 
     for (win=gli_windowlist; win; win=win.next) {
-        //### if (!win.contentdirty) continue;
-
         useobj = false;
         obj = { id: win.disprock };
         if (contentarray == null)
@@ -505,7 +515,6 @@ var gli_rootwin = null;
 var geometry_changed = true; 
 /* Received from GlkOte; describes the window size. */
 var content_metrics = null;
-var content_box = null; //###? probably going away
 
 /* Beginning of linked list of streams. */
 var gli_streamlist = null;
@@ -541,13 +550,7 @@ function gli_new_window(type, rock) {
     win.char_request_uni = false;
     win.line_request_uni = false;
 
-    switch (win.type) {
-    case Const.wintype_TextBuffer:
-        win.accum = [];
-        win.accumstyle = null;
-        win.content = [];
-        break;
-    }
+    /* window-type-specific info is set up in glk_window_open */
 
     win.prev = null;
     win.next = gli_windowlist;
@@ -665,6 +668,124 @@ function gli_window_buffer_deaccumulate(win) {
 
     win.accum.length = 0;
     win.accumstyle = win.style;
+}
+
+function gli_window_rearrange(win, box) {
+    var width, height;
+    var min, max, diff, splitwid;
+    var box1, box2, ch1, ch2;
+
+    qlog("### window_rearrange rock="+win.rock+", box="+qobjdump(box));
+    win.bbox = box;
+
+    switch (win.type) {
+
+    case Const.wintype_TextGrid:
+        width = box.right - box.left;
+        height = box.bottom - box.top;
+        win.gridwidth = Math.max(0, Math.floor((width-content_metrics.gridmarginx) / content_metrics.gridcharwidth));
+        win.gridheight = Math.max(0, Math.floor((height-content_metrics.gridmarginy) / content_metrics.gridcharheight));
+        //### adjust arrays
+        break;
+
+    case Const.wintype_Pair:
+        if (win.pair_vertical) {
+            min = win.bbox.left;
+            max = win.bbox.right;
+            splitwid = content_metrics.inspacingx;
+        }
+        else {
+            min = win.bbox.top;
+            max = win.bbox.bottom;
+            splitwid = content_metrics.inspacingy;
+        }
+        diff = max - min;
+
+        if (win.pair_division == Const.winmethod_Proportional) {
+            split = Math.floor((diff * win.pair_size) / 100);
+        }
+        else if (win.pair_division == Const.winmethod_Fixed) {
+            split = 0;
+            if (win.pair_key && win.pair_key.type == Const.wintype_TextBuffer) {
+                if (win.pair_vertical) 
+                    split = (win.pair_size * content_metrics.buffercharheight + content_metrics.buffermarginy);
+                else
+                    split = (win.pair_size * content_metrics.buffercharwidth + content_metrics.buffermarginx);
+            }
+            if (win.pair_key && win.pair_key.type == Const.wintype_TextGrid) {
+                if (win.pair_vertical) 
+                    split = (win.pair_size * content_metrics.gridcharheight + content_metrics.gridmarginy);
+                else
+                    split = (win.pair_size * content_metrics.gridcharwidth + content_metrics.gridmarginx);
+            }
+            split = Math.ceil(split);
+        }
+        else {
+            /* default behavior for unknown division method */
+            split = Math.floor(diff / 2);
+        }
+
+        /* Split is now a number between 0 and diff. Convert that to a number
+           between min and max; also apply upside-down-ness. */
+        if (!win.pair_backward) {
+            split = max-split-splitwid;
+        }
+        else {
+            split = min+split;
+        }
+
+        /* Make sure it's really between min and max. */
+        if (min >= max) {
+            split = min;
+        }
+        else {
+            split = Math.min(Math.max(split, min), max-splitwid);
+        }
+
+        win.pair_splitpos = split;
+        win.pair_splitwidth = splitwid;
+        if (win.pair_vertical) {
+            box1 = {
+                left: win.bbox.left,
+                right: win.pair_splitpos,
+                top: win.bbox.top,
+                bottom: win.bbox.bottom,
+            };
+            box2 = {
+                left: box1.right + win.pair_splitwidth,
+                right: win.bbox.right,
+                top: win.bbox.top,
+                bottom: win.bbox.bottom,
+            };
+        }
+        else {
+            box1 = {
+                top: win.bbox.top,
+                bottom: win.pair_splitpos,
+                left: win.bbox.left,
+                right: win.bbox.right,
+            };
+            box2 = {
+                top: box1.bottom + win.pair_splitwidth,
+                bottom: win.bbox.bottom,
+                left: win.bbox.left,
+                right: win.bbox.right,
+            };
+        }
+        if (!win.pair_backward) {
+            ch1 = win.child1;
+            ch2 = win.child2;
+        }
+        else {
+            ch1 = win.child2;
+            ch2 = win.child1;
+        }
+
+        gli_window_rearrange(ch1, box1);
+        gli_window_rearrange(ch2, box2);
+        break;
+
+    }
 }
 
 function gli_new_stream(type, readable, writable, rock) {
@@ -933,7 +1054,12 @@ function glk_window_open(splitwin, method, size, wintype, rock) {
             throw('glk_window_open: splitwin must be null for first window');
 
         oldparent = null;
-        box = content_box;
+        box = {
+            left: content_metrics.outspacingx,
+            top: content_metrics.outspacingy,
+            right: content_metrics.width-content_metrics.outspacingx,
+            bottom: content_metrics.height-content_metrics.outspacingy,
+        };
     }
     else {
         if (!splitwin)
@@ -956,20 +1082,58 @@ function glk_window_open(splitwin, method, size, wintype, rock) {
     }
 
     newwin = gli_new_window(wintype, rock);
-    //#### subtype data
+
+    switch (newwin.type) {
+    case Const.wintype_TextBuffer:
+        newwin.accum = [];
+        newwin.accumstyle = null;
+        newwin.content = [];
+        break;
+    case Const.wintype_TextGrid:
+        //### arrays
+        break;
+    case Const.wintype_Blank:
+        break;
+    case Const.wintype_Pair:
+        throw('glk_window_open: cannot open pair window directly')
+    default:
+        /* Silently return null */
+        gli_delete_window(newwin);
+        return null;
+    }
 
     if (!splitwin) {
         gli_rootwin = newwin;
-        //### gli_window_rearrange(newwin, box);
+        gli_window_rearrange(newwin, box);
     }
     else {
         /* create pairwin, with newwin as the key */
         pairwin = gli_new_window(Const.wintype_Pair, 0);
-        //#### subtype data
+        pairwin.pair_dir = method & Const.winmethod_DirMask;
+        pairwin.pair_division = method & Const.winmethod_DivisionMask;
+        pairwin.pair_key = newwin;
+        pairwin.pair_keydamage = false;
+        pairwin.pair_size = size;
+        pairwin.pair_vertical = (pairwin.pair_dir == Const.winmethod_Left || pairwin.pair_dir == Const.winmethod_Right);
+        pairwin.pair_backward = (pairwin.pair_dir == Const.winmethod_Left || pairwin.pair_dir == Const.winmethod_Above);
 
-        //####
+        pairwin.child1 = splitwin;
+        pairwin.child2 = newwin;
+        splitwin.parent = pairwin;
+        newwin.parent = pairwin;
+        pairwin.parent = oldparent;
 
-        //### gli_window_rearrange(pairwin, box);
+        if (oldparent) {
+            if (oldparent.child1 == splitwin)
+                oldparent.child1 = pairwin;
+            else
+                oldparent.child2 = pairwin;
+        }
+        else {
+            gli_rootwin = pairwin;
+        }
+
+        gli_window_rearrange(pairwin, box);
     }
 
     return newwin;
