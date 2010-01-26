@@ -633,6 +633,8 @@ function gli_windows_unechostream(str) {
 
 /* Add a (Javascript) string to the given window's display. */
 function gli_window_put_string(win, val) {
+    var ix, ch;
+
     //### might be efficient to split the implementation up into
     //### gli_window_buffer_put_string(), etc, since many functions
     //### know the window type when they call this
@@ -643,7 +645,38 @@ function gli_window_put_string(win, val) {
         win.accum.push(val);
         break;
     case Const.wintype_TextGrid:
-        //###
+        for (ix=0; ix<val.length; ix++) {
+            ch = val[ix];
+
+            /* Canonicalize the cursor position. That is, the cursor may have
+               been left outside the window area; wrap it if necessary. */
+            if (win.cursorx < 0)
+                win.cursorx = 0;
+            else if (win.cursorx >= win.gridwidth) {
+                win.cursorx = 0;
+                win.cursory++;
+            }
+            if (win.cursory < 0)
+                win.cursory = 0;
+            else if (win.cursory >= win.gridheight)
+                break; /* outside the window */
+
+            if (ch == "\n") {
+                /* a newline just moves the cursor. */
+                win.cursory++;
+                win.cursorx = 0;
+                continue;
+            }
+
+            lineobj = win.lines[win.cursory];
+            lineobj.dirty = true;
+            lineobj.chars[win.cursorx] = ch;
+            lineobj.styles[win.cursorx] = win.style;
+
+            win.cursorx++;
+            /* We can leave the cursor outside the window, since it will be
+               canonicalized next time a character is printed. */
+        }
         break;
     }
 }
@@ -1155,6 +1188,8 @@ function glk_window_open(splitwin, method, size, wintype, rock) {
         newwin.gridwidth = 0;
         newwin.gridheight = 0;
         newwin.lines = [];
+        newwin.cursorx = 0;
+        newwin.cursory = 0;
         break;
     case Const.wintype_Blank:
         break;
@@ -1221,7 +1256,21 @@ function glk_window_get_parent(win) {
 }
 
 function glk_window_clear(a1) { /*###*/ }
-function glk_window_move_cursor(a1, a2, a3) { /*###*/ }
+
+function glk_window_move_cursor(win, xpos, ypos) {
+    if (!win)
+        throw('glk_window_move_cursor: invalid window');
+    
+    if (win.type == Const.wintype_TextGrid) {
+        /* No bounds-checking; we canonicalize when we print. */
+        win.cursorx = xpos;
+        win.cursory = ypos;
+    }
+    else {
+        throw('glk_window_move_cursor: not a grid window');
+    }
+}
+
 function glk_window_get_stream(a1) { /*###*/ }
 function glk_window_set_echo_stream(a1, a2) { /*###*/ }
 function glk_window_get_echo_stream(a1) { /*###*/ }
