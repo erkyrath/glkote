@@ -79,7 +79,7 @@ function accept_ui_event(obj) {
         break;
 
     case 'char':
-        //###
+        handle_char_input(obj.window, obj.value);
         break;
 
     case 'line':
@@ -100,6 +100,40 @@ function accept_ui_event(obj) {
         update();
         break;
     }
+}
+
+function handle_char_input(disprock, input) {
+    var charval;
+
+    if (!gli_selectref)
+        return;
+
+    var win = null;
+    for (win=gli_windowlist; win; win=win.next) {
+        if (win.disprock == disprock) 
+            break;
+    }
+    if (!win || !win.char_request)
+        return;
+
+    charval = input.charCodeAt(0);
+    if (!win.char_request_uni)
+        charval = charval & 0xFF;
+    //### handle special keys
+
+    gli_selectref.set_field(0, Const.evtype_CharInput);
+    gli_selectref.set_field(1, win);
+    gli_selectref.set_field(2, charval);
+    gli_selectref.set_field(3, 0);
+
+    win.char_request = false;
+    win.char_request_uni = false;
+    win.input_generation = null;
+
+    if (window.GiDispa)
+        GiDispa.prepare_resume(gli_selectref);
+    gli_selectref = null;
+    VM.resume();
 }
 
 function handle_line_input(disprock, input) {
@@ -195,6 +229,14 @@ function update() {
                 win.content.length = 0;
                 useobj = true;
             }
+            if (win.clearcontent) {
+                obj.clear = true;
+                win.clearcontent = false;
+                useobj = true;
+                if (!obj.text) {
+                    obj.text = [];
+                }
+            }
             break;
         case Const.wintype_TextGrid:
             if (win.gridwidth == 0 || win.gridheight == 0)
@@ -231,6 +273,11 @@ function update() {
     for (win=gli_windowlist; win; win=win.next) {
         if (win.char_request) {
             obj = { id: win.disprock, type: 'char', gen: win.input_generation };
+            if (win.type == Const.wintype_TextGrid) {
+                gli_window_grid_canonicalize(win);
+                obj.xpos = win.cursorx;
+                obj.ypos = win.cursory;
+            }
             inputarray.push(obj);
         }
         if (win.line_request) {
@@ -648,8 +695,8 @@ function gli_window_put_string(win, val) {
         for (ix=0; ix<val.length; ix++) {
             ch = val[ix];
 
-            /* Canonicalize the cursor position. That is, the cursor may have
-               been left outside the window area; wrap it if necessary. */
+            /* Canonicalize the cursor position. This is like calling
+               gli_window_grid_canonicalize(), but I've inlined it. */
             if (win.cursorx < 0)
                 win.cursorx = 0;
             else if (win.cursorx >= win.gridwidth) {
@@ -679,6 +726,22 @@ function gli_window_put_string(win, val) {
         }
         break;
     }
+}
+
+/* Canonicalize the cursor position. That is, the cursor may have
+   been left outside the window area; wrap it if necessary.
+*/
+function gli_window_grid_canonicalize(win) {
+    if (win.cursorx < 0)
+        win.cursorx = 0;
+    else if (win.cursorx >= win.gridwidth) {
+        win.cursorx = 0;
+        win.cursory++;
+    }
+    if (win.cursory < 0)
+        win.cursory = 0;
+    else if (win.cursory >= win.gridheight)
+        return; /* outside the window */
 }
 
 /* Take the accumulation of strings (since the last style change) and
@@ -1180,6 +1243,7 @@ function glk_window_open(splitwin, method, size, wintype, rock) {
         newwin.accum = [];
         newwin.accumstyle = null;
         newwin.content = [];
+        newwin.clearcontent = false;
         break;
     case Const.wintype_TextGrid:
         /* lines is a list of line objects. A line looks like
@@ -1239,7 +1303,39 @@ function glk_window_open(splitwin, method, size, wintype, rock) {
 }
 
 function glk_window_close(a1, a2) { /*###*/ }
-function glk_window_get_size(a1, a2, a3) { /*###*/ }
+
+function glk_window_get_size(win, widthref, heightref) {
+    if (!win)
+        throw('glk_window_get_size: invalid window');
+
+    var wid = 0;
+    var hgt = 0;
+    var boxwidth, boxheight;
+
+    switch (win.type) {
+
+    case Const.wintype_TextGrid:
+        boxwidth = win.bbox.right - win.bbox.left;
+        boxheight = win.bbox.bottom - win.bbox.top;
+        wid = Math.max(0, Math.floor((boxwidth-content_metrics.gridmarginx) / content_metrics.gridcharwidth));
+        hgt = Math.max(0, Math.floor((boxheight-content_metrics.gridmarginy) / content_metrics.gridcharheight));        
+        break;
+
+    case Const.wintype_TextBuffer:
+        boxwidth = win.bbox.right - win.bbox.left;
+        boxheight = win.bbox.bottom - win.bbox.top;
+        wid = Math.max(0, Math.floor((boxwidth-content_metrics.buffermarginx) / content_metrics.buffercharwidth));
+        hgt = Math.max(0, Math.floor((boxheight-content_metrics.buffermarginy) / content_metrics.buffercharheight));        
+        break;
+
+    }
+
+    if (widthref)
+        widthref.set_value(wid);
+    if (heightref)
+        heightref.set_value(hgt);
+}
+
 function glk_window_set_arrangement(a1, a2, a3, a4) { /*###*/ }
 function glk_window_get_arrangement(a1, a2, a3, a4) { /*###*/ }
 
@@ -1255,7 +1351,35 @@ function glk_window_get_parent(win) {
     return win.parent;
 }
 
-function glk_window_clear(a1) { /*###*/ }
+function glk_window_clear(win) {
+    var ix, cx, lineobj;
+
+    if (!win)
+        throw('glk_window_clear: invalid window');
+    
+    if (win.line_request) {
+        throw('glk_window_clear: window has pending line request');
+    }
+
+    switch (win.type) {
+    case Const.wintype_TextBuffer:
+        win.accum.length = 0;
+        win.accumstyle = null;
+        win.content.length = 0;
+        win.clearcontent = true;
+        break;
+    case Const.wintype_TextGrid:
+        for (ix=0; ix<win.gridheight; ix++) {
+            lineobj = win.lines[ix];
+            lineobj.dirty = true;
+            for (cx=0; cx<win.gridwidth; cx++) {
+                lineobj.chars[cx] = ' ';
+                lineobj.styles[cx] = Const.style_Normal;
+            }
+        }
+        break;
+    }
+}
 
 function glk_window_move_cursor(win, xpos, ypos) {
     if (!win)
