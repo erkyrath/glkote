@@ -427,8 +427,8 @@ function accept_one_content(arg) {
     return;
   }
 
-  if (win.input) {
-    glkote_error('Got content update for window ' + arg.id + ', which is awaiting input.');
+  if (win.input && win.input.type == 'line') {
+    glkote_error('Got content update for window ' + arg.id + ', which is awaiting line input.');
     return;
   }
 
@@ -471,6 +471,7 @@ function accept_one_content(arg) {
       /* We've already checked for win.input, but check again just to be
          sure. The inputel is inside the cursel, which we're about to
          rip out. */
+      //### but if we're on character input, this is legal! fix this.
       glkote_error('Got content update for buffer window ' + arg.id + ', which has an input field.');
       return;
     }
