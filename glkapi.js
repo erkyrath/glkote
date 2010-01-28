@@ -88,7 +88,6 @@ function accept_ui_event(obj) {
 
     case 'arrange':
         content_metrics = obj.metrics;
-        geometry_changed = true;
         box = {
             left: content_metrics.outspacingx,
             top: content_metrics.outspacingy,
@@ -97,9 +96,24 @@ function accept_ui_event(obj) {
         };
         if (gli_rootwin)
             gli_window_rearrange(gli_rootwin, box);
-        update();
+        handle_arrange_input();
         break;
     }
+}
+
+function handle_arrange_input() {
+    if (!gli_selectref)
+        return;
+
+    gli_selectref.set_field(0, Const.evtype_Arrange);
+    gli_selectref.set_field(1, null);
+    gli_selectref.set_field(2, 0);
+    gli_selectref.set_field(3, 0);
+
+    if (window.GiDispa)
+        GiDispa.prepare_resume(gli_selectref);
+    gli_selectref = null;
+    VM.resume();
 }
 
 function handle_char_input(disprock, input) {
@@ -116,10 +130,16 @@ function handle_char_input(disprock, input) {
     if (!win || !win.char_request)
         return;
 
-    charval = input.charCodeAt(0);
-    if (!win.char_request_uni)
-        charval = charval & 0xFF;
-    //### handle special keys
+    if (input.length == 1) {
+        charval = input.charCodeAt(0);
+        if (!win.char_request_uni)
+            charval = charval & 0xFF;
+    }
+    else {
+        charval = KeystrokeNameMap[input];
+        if (!charval)
+            charval = Const.keycode_Unknown;
+    }
 
     gli_selectref.set_field(0, Const.evtype_CharInput);
     gli_selectref.set_field(1, win);
@@ -258,7 +278,6 @@ function update() {
                         lastpos = cx;
                     }
                 }
-                qlog("### grid line " + ix + ": " + qobjdump(ls));
                 obj.lines.push({ line:ix, content:ls });
             }
             useobj = obj.lines.length;
@@ -319,6 +338,34 @@ var Const = {
     gestalt_SoundMusic : 13,
     gestalt_GraphicsTransparency : 14,
     gestalt_Unicode : 15,
+
+    keycode_Unknown  : 0xffffffff,
+    keycode_Left     : 0xfffffffe,
+    keycode_Right    : 0xfffffffd,
+    keycode_Up       : 0xfffffffc,
+    keycode_Down     : 0xfffffffb,
+    keycode_Return   : 0xfffffffa,
+    keycode_Delete   : 0xfffffff9,
+    keycode_Escape   : 0xfffffff8,
+    keycode_Tab      : 0xfffffff7,
+    keycode_PageUp   : 0xfffffff6,
+    keycode_PageDown : 0xfffffff5,
+    keycode_Home     : 0xfffffff4,
+    keycode_End      : 0xfffffff3,
+    keycode_Func1    : 0xffffffef,
+    keycode_Func2    : 0xffffffee,
+    keycode_Func3    : 0xffffffed,
+    keycode_Func4    : 0xffffffec,
+    keycode_Func5    : 0xffffffeb,
+    keycode_Func6    : 0xffffffea,
+    keycode_Func7    : 0xffffffe9,
+    keycode_Func8    : 0xffffffe8,
+    keycode_Func9    : 0xffffffe7,
+    keycode_Func10   : 0xffffffe6,
+    keycode_Func11   : 0xffffffe5,
+    keycode_Func12   : 0xffffffe4,
+    /* The last keycode is always (0x100000000 - keycode_MAXVAL) */
+    keycode_MAXVAL   : 28,
 
     evtype_None : 0,
     evtype_Timer : 1,
@@ -394,6 +441,24 @@ var Const = {
       stylehint_just_LeftRight : 1,
       stylehint_just_Centered : 2,
       stylehint_just_RightFlush : 3,
+};
+
+var KeystrokeNameMap = {
+    /* The key values are taken from GlkOte's "char" event. A couple of them
+       are Javascript keywords, so they're in quotes, but that doesn't affect
+       the final structure. */
+    left : Const.keycode_Left,
+    right : Const.keycode_Right,
+    up : Const.keycode_Up,
+    down : Const.keycode_Down,
+    'return' : Const.keycode_Return,
+    'delete' : Const.keycode_Delete,
+    escape : Const.keycode_Escape,
+    tab : Const.keycode_Tab,
+    pageup : Const.keycode_PageUp,
+    pagedown : Const.keycode_PageDown,
+    home : Const.keycode_Home,
+    end : Const.keycode_End,
 };
 
 var StyleNameMap = {
@@ -796,7 +861,7 @@ function gli_window_rearrange(win, box) {
     var min, max, diff, splitwid, ix, cx, lineobj;
     var box1, box2, ch1, ch2;
 
-    qlog("### window_rearrange rock="+win.rock+", box="+qobjdump(box));
+    geometry_changed = true;
     win.bbox = box;
 
     switch (win.type) {
@@ -855,13 +920,13 @@ function gli_window_rearrange(win, box) {
         else if (win.pair_division == Const.winmethod_Fixed) {
             split = 0;
             if (win.pair_key && win.pair_key.type == Const.wintype_TextBuffer) {
-                if (win.pair_vertical) 
+                if (!win.pair_vertical) 
                     split = (win.pair_size * content_metrics.buffercharheight + content_metrics.buffermarginy);
                 else
                     split = (win.pair_size * content_metrics.buffercharwidth + content_metrics.buffermarginx);
             }
             if (win.pair_key && win.pair_key.type == Const.wintype_TextGrid) {
-                if (win.pair_vertical) 
+                if (!win.pair_vertical) 
                     split = (win.pair_size * content_metrics.gridcharheight + content_metrics.gridmarginy);
                 else
                     split = (win.pair_size * content_metrics.gridcharwidth + content_metrics.gridmarginx);
@@ -1336,8 +1401,72 @@ function glk_window_get_size(win, widthref, heightref) {
         heightref.set_value(hgt);
 }
 
-function glk_window_set_arrangement(a1, a2, a3, a4) { /*###*/ }
-function glk_window_get_arrangement(a1, a2, a3, a4) { /*###*/ }
+function glk_window_set_arrangement(win, method, size, keywin) {
+    var wx, newdir, newvertical, newbackward;
+
+    if (!win)
+        throw('glk_window_set_arrangement: invalid window');
+    if (win.type != Const.wintype_Pair) 
+        throw('glk_window_set_arrangement: not a pair window');
+
+    if (keywin) {
+        if (keywin.type == Const.wintype_Pair)
+            throw('glk_window_set_arrangement: keywin cannot be a pair window');
+        for (wx=keywin; wx; wx=wx.parent) {
+            if (wx == win)
+                break;
+        }
+        if (!wx)
+            throw('glk_window_set_arrangement: keywin must be a descendant');
+    }
+
+    newdir = method & Const.winmethod_DirMask;
+    newvertical = (newdir == Const.winmethod_Left || newdir == Const.winmethod_Right);
+    newbackward = (newdir == Const.winmethod_Left || newdir == Const.winmethod_Above);
+    if (!keywin)
+        keywin = win.pair_key;
+
+    if (newvertical && !win.pair_vertical)
+        throw('glk_window_set_arrangement: split must stay horizontal');
+    if (!newvertical && win.pair_vertical)
+        throw('glk_window_set_arrangement: split must stay vertical');
+
+    if (keywin && keywin.type == Const.wintype_Blank
+        && (method & Const.winmethod_DivisionMask) == Const.winmethod_Fixed) 
+        throw('glk_window_set_arrangement: a blank window cannot have a fixed size');
+
+    if ((newbackward && !win.pair_backward) || (!newbackward && win.pair_backward)) {
+        /* switch the children */
+        wx = win.child1;
+        win.child1 = win.child2;
+        win.child2 = wx;
+    }
+
+    /* set up everything else */
+    win.pair_dir = newdir;
+    win.pair_division = (method & Const.winmethod_DivisionMask);
+    win.pair_key = keywin;
+    win.pair_size = size;
+
+    win.pair_vertical = (win.pair_dir == Const.winmethod_Left || win.pair_dir == Const.winmethod_Right);
+    win.pair_backward = (win.pair_dir == Const.winmethod_Left || win.pair_dir == Const.winmethod_Above);
+
+    gli_window_rearrange(win, win.bbox);
+}
+
+function glk_window_get_arrangement(win, methodref, sizeref, keywinref) {
+    if (!win)
+        throw('glk_window_get_arrangement: invalid window');
+    if (win.type != Const.wintype_Pair) 
+        throw('glk_window_get_arrangement: not a pair window');
+
+    if (sizeref)
+        sizeref.set_value(win.pair_size);
+    if (keywinref)
+        keywinref.set_value(win.pair_key);
+    if (methodref)
+        methodref.set_value(win.pair_dir | win.pair_division);
+}
 
 function glk_window_get_type(win) {
     if (!win)
@@ -1598,7 +1727,14 @@ function glk_request_char_event(win) {
     }
 }
 
-function glk_cancel_char_event(a1) { /*###*/ }
+function glk_cancel_char_event(win) {
+    if (!win)
+        throw('glk_cancel_char_event: invalid window');
+
+    win.char_request = false;
+    win.char_request_uni = false;
+}
+
 function glk_request_mouse_event(a1) { /*###*/ }
 function glk_cancel_mouse_event(a1) { /*###*/ }
 function glk_request_timer_events(a1) { /*###*/ }
