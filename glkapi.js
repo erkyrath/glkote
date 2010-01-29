@@ -1721,6 +1721,7 @@ function glk_request_char_event(win) {
         || win.type == Const.wintype_TextGrid) {
         win.char_request = true;
         win.char_request_uni = false;
+        win.input_generation = event_generation;
     }
     else {
         throw('glk_request_char_event: window does not support keyboard input');
