@@ -468,12 +468,11 @@ function accept_one_content(arg) {
     var ix, sx;
 
     if (win.inputel) {
-      /* We've already checked for win.input, but check again just to be
-         sure. The inputel is inside the cursel, which we're about to
-         rip out. */
-      //### but if we're on character input, this is legal! fix this.
-      glkote_error('Got content update for buffer window ' + arg.id + ', which has an input field.');
-      return;
+      /* This can happen if we're waiting for char input. (Line input
+         would make this content update illegal -- but we already checked
+         that.) The inputel is inside the cursel, which we're about to
+         rip out. We remove it, so that we can put it back later. */
+        win.inputel.remove();
     }
 
     var cursel = $('win'+win.id+'_cursor');
@@ -571,6 +570,31 @@ function accept_one_content(arg) {
         { id: 'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
       insert_text(cursel, NBSP);
       divel.insert(cursel);
+
+      if (win.inputel) {
+        /* Put back the inputel that we found earlier. */
+        var inputel = win.inputel;
+        var pos = cursel.positionedOffset();
+        /* This calculation is antsy. On Firefox, buffermarginx is too high
+           (or getWidth() is too low) by the width of a scrollbar. On MSIE,
+           buffermarginx is one pixel too low. We fudge for that, giving a
+           result which errs on the low side. */
+        var width = win.frameel.getWidth() - (current_metrics.buffermarginx + pos.left + 2);
+        if (width < 1)
+          width = 1;
+        if (Prototype.Browser.Opera) {
+          /* I swear I don't understand what Opera thinks absolute positioning
+             means. We will avoid it. */
+          inputel.setStyle({ position: 'relative',
+            left: '0px', top: '0px', width: width+'px' });
+          cursel.insert({ top:inputel });
+        }
+        else {
+          inputel.setStyle({ position: 'absolute',
+            left: '0px', top: '0px', width: width+'px' });
+          cursel.insert(inputel);
+        }
+      }
     }
   }
 }
