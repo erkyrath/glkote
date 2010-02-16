@@ -2254,7 +2254,7 @@ function glk_request_hyperlink_event(a1) { /*###*/ }
 function glk_cancel_hyperlink_event(a1) { /*###*/ }
 
 function glk_buffer_to_lower_case_uni(arr, numchars) {
-    var ix, jx, pos, val, origval, el;
+    var ix, jx, pos, val, origval;
     var arrlen = arr.length;
     var src = arr.slice(0, numchars);
 
@@ -2266,30 +2266,29 @@ function glk_buffer_to_lower_case_uni(arr, numchars) {
         origval = src[ix];
         val = unicode_lower_table[origval];
         if (val === undefined) {
-            if (pos < arrlen)
-                arr[pos] = origval;
+            arr[pos] = origval;
             pos++;
         }
         else if (!(val instanceof Array)) {
-            if (pos < arrlen)
-                arr[pos] = val;
+            arr[pos] = val;
             pos++;
         }
         else {
             for (jx=0; jx<val.length; jx++) {
-                el = val[jx];
-                if (pos < arrlen)
-                    arr[pos] = el;
+                arr[pos] = val[jx];
                 pos++;
             }
         }
     }
 
+    /* in case we stretched the array */
+    arr.length = arrlen;
+
     return pos;
 }
 
 function glk_buffer_to_upper_case_uni(arr, numchars) {
-    var ix, jx, pos, val, origval, el;
+    var ix, jx, pos, val, origval;
     var arrlen = arr.length;
     var src = arr.slice(0, numchars);
 
@@ -2301,30 +2300,29 @@ function glk_buffer_to_upper_case_uni(arr, numchars) {
         origval = src[ix];
         val = unicode_upper_table[origval];
         if (val === undefined) {
-            if (pos < arrlen)
-                arr[pos] = origval;
+            arr[pos] = origval;
             pos++;
         }
         else if (!(val instanceof Array)) {
-            if (pos < arrlen)
-                arr[pos] = val;
+            arr[pos] = val;
             pos++;
         }
         else {
             for (jx=0; jx<val.length; jx++) {
-                el = val[jx];
-                if (pos < arrlen)
-                    arr[pos] = el;
+                arr[pos] = val[jx];
                 pos++;
             }
         }
     }
 
+    /* in case we stretched the array */
+    arr.length = arrlen;
+
     return pos;
 }
 
 function glk_buffer_to_title_case_uni(arr, numchars, lowerrest) {
-    var ix, jx, pos, val, origval, el;
+    var ix, jx, pos, val, origval;
     var arrlen = arr.length;
     var src = arr.slice(0, numchars);
 
@@ -2341,20 +2339,16 @@ function glk_buffer_to_title_case_uni(arr, numchars, lowerrest) {
         origval = src[ix];
         val = unicode_title_table[origval];
         if (val === undefined) {
-            if (pos < arrlen)
-                arr[pos] = origval;
+            arr[pos] = origval;
             pos++;
         }
         else if (!(val instanceof Array)) {
-            if (pos < arrlen)
-                arr[pos] = val;
+            arr[pos] = val;
             pos++;
         }
         else {
             for (jx=0; jx<val.length; jx++) {
-                el = val[jx];
-                if (pos < arrlen)
-                    arr[pos] = el;
+                arr[pos] = val[jx];
                 pos++;
             }
         }
@@ -2363,8 +2357,7 @@ function glk_buffer_to_title_case_uni(arr, numchars, lowerrest) {
     if (!lowerrest) {
         for (ix=1; ix<numchars; ix++) {
             origval = src[ix];
-            if (pos < arrlen)
-                arr[pos] = origval;
+            arr[pos] = origval;
             pos++;
         }
     }
@@ -2373,25 +2366,24 @@ function glk_buffer_to_title_case_uni(arr, numchars, lowerrest) {
             origval = src[ix];
             val = unicode_lower_table[origval];
             if (val === undefined) {
-                if (pos < arrlen)
-                    arr[pos] = origval;
+                arr[pos] = origval;
                 pos++;
             }
             else if (!(val instanceof Array)) {
-                if (pos < arrlen)
-                    arr[pos] = val;
+                arr[pos] = val;
                 pos++;
             }
             else {
                 for (jx=0; jx<val.length; jx++) {
-                    el = val[jx];
-                    if (pos < arrlen)
-                        arr[pos] = el;
+                    arr[pos] = val[jx];
                     pos++;
                 }
             }
         }
     }
+
+    /* in case we stretched the array */
+    arr.length = arrlen;
 
     return pos;
 }
