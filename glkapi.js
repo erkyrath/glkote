@@ -1349,6 +1349,42 @@ function gli_window_buffer_deaccumulate(win) {
     win.accumstyle = win.style;
 }
 
+function gli_window_close(win, recurse) {
+    var wx;
+    
+    for (wx=win.parent; wx; wx=wx.parent) {
+        if (wx.type == Const.wintype_Pair) {
+            if (wx.pair_key === win) {
+                wx.pair_key = null;
+                wx.pair_keydamage = true;
+            }
+        }
+    }
+    
+    switch (win.type) {
+        case Const.wintype_Pair: 
+            if (recurse) {
+                if (win.child1)
+                    gli_window_close(win.child1, true);
+                if (win.child2)
+                    gli_window_close(win.child2, true);
+            }
+            win.child1 = null;
+            win.child2 = null;
+            win.pair_key = null;
+            break;
+        case Const.wintype_TextBuffer: 
+            win.accum = null;
+            win.content = null;
+            break;
+        case Const.wintype_TextGrid: 
+            win.lines = null;
+            break;
+    }
+    
+    gli_delete_window(win);
+}
+
 function gli_window_rearrange(win, box) {
     var width, height, oldwidth, oldheight;
     var min, max, diff, splitwid, ix, cx, lineobj;
@@ -1860,7 +1896,86 @@ function glk_window_open(splitwin, method, size, wintype, rock) {
     return newwin;
 }
 
-function glk_window_close(a1, a2) { /*###*/ }
+function glk_window_close(win, statsref) {
+    if (!win)
+        throw('glk_window_close: invalid window');
+
+    if (win === gli_rootwin || !win.parent) {
+        /* close the root window, which means all windows. */
+        
+        gli_rootwin = null;
+        
+        /* begin (simpler) closation */
+        
+        gli_stream_fill_result(win.str, statsref);
+        gli_window_close(win, true); 
+    }
+    else {
+        /* have to jigger parent */
+        var pairwin, grandparwin, sibwin, box, wx, keydamage_flag;
+
+        pairwin = win.parent;
+        if (win === pairwin.child1)
+            sibwin = pairwin.child2;
+        else if (win === pairwin.child2)
+            sibwin = pairwin.child1;
+        else
+            throw('glk_window_close: window tree is corrupted');
+
+        box = pairwin.bbox;
+
+        grandparwin = pairwin.parent;
+        if (!grandparwin) {
+            gli_rootwin = sibwin;
+            sibwin.parent = null;
+        }
+        else {
+            if (grandparwin.child1 === pairwin)
+                grandparwin.child1 = sibwin;
+            else
+                grandparwin.child2 = sibwin;
+            sibwin.parent = grandparwin;
+        }
+        
+        /* Begin closation */
+        
+        gli_stream_fill_result(win.str, statsref);
+
+        /* Close the child window (and descendants), so that key-deletion can
+            crawl up the tree to the root window. */
+        gli_window_close(win, true); 
+
+        /* This probably isn't necessary, but the child *is* gone, so just
+            in case. */
+        if (win === pairwin.child1) {
+            pairwin.child1 = null;
+        }
+        else if (win === pairwin.child2) {
+            pairwin.child2 = null;
+        }
+        
+        /* Now we can delete the parent pair. */
+        gli_window_close(pairwin, false);
+
+        keydamage_flag = false;
+        for (wx=sibwin; wx; wx=wx.parent) {
+            if (wx.type == Const.wintype_Pair) {
+                if (wx.pair_keydamage) {
+                    keydamage_flag = true;
+                    wx.pair_keydamage = false;
+                }
+            }
+        }
+        
+        if (keydamage_flag) {
+            box = content_box;
+            gli_window_rearrange(gli_rootwin, box);
+        }
+        else {
+            gli_window_rearrange(sibwin, box);
+        }
+    }
+}
 
 function glk_window_get_size(win, widthref, heightref) {
     if (!win)
@@ -2028,7 +2143,20 @@ function glk_set_window(win) {
         gli_currentstr = win.str;
 }
 
-function glk_window_get_sibling(a1) { /*###*/ }
+function glk_window_get_sibling(win) {
+    var parent, sib;
+    if (!win)
+        throw('glk_window_get_sibling: invalid window');
+    parent = win.parent;
+    if (!parent)
+        return null;
+    if (win === parent.child1)
+        return parent.child2;
+    else if (win === parent.child2)
+        return parent.child1;
+    else
+        throw('glk_window_get_sibling: window tree is corrupted');
+}
 
 function glk_stream_iterate(str, rockref) {
     if (!str)
