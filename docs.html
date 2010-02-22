@@ -98,6 +98,8 @@ li {
 
 <h1>GlkOte: a Javascript library for IF interfaces</h1>
 
+<em>GlkOte version 1.1.0</em><br>
+
 <em>Designed by Andrew Plotkin (erkyrath@eblong.com)<br>
 <a href="http://eblong.com/zarf/glk/glkote.html">(GlkOte home page</a>
 --
@@ -154,6 +156,7 @@ Commons Attribution-Noncommercial-Share Alike 3.0 Unported License</a>.
   <li><a href="#cssinput">The input field</a>
   <li><a href="#cssspacing">Spacing, borders, and padding</a>
 </ul>
+<li><a href="#version">GlkOte Version History</a>
 </ul>
 
 <hr>
@@ -168,16 +171,21 @@ GlkOte is based on the
 However, GlkOte's API is not identical to Glk, even allowing for the differences between Javascript and C. GlkOte is adapted to the realities of a web application environment -- a thin Javascript layer which communicates with a distant server in intermittent bursts. GlkOte does not handle certain elements of the Glk standard, such as memory streams and file storage, which are better kept within the game server. On the other hand, GlkOte is more flexible than Glk in certain ways; it may be suitable for more applications than Glk per se.
 <p>
 
-GlkOte is intended for use with RemGlk, a Glk library which acts as a web service. <em>(NOT YET WRITTEN.)</em> Any Glk-compliant interpreter (including Glulx interpreters) can be compiled with RemGlk. The resulting program is then run on a web server. A GlkOte web page sends AJAX requests to the server, which relays them (via CGI script) to the RemGlk program; the game responds back up the chain to the user's web browser. Thus, RemGlk and GlkOte together form a complete Glk web application.
+GlkOte can be used from two angles. First, in a purely client-side IF application. The (included, optional) glkapi.js file facilitates this; it wraps around GlkOte and provides an API that <em>is</em> identical to Glk, as closely as Javascript allows. An IF interpreter written in Javascript, running entirely within the user's web browser, can use glkapi.js just as a C interpreter uses a normal Glk library. Or it could bypass glkapi.js and use GlkOte directly.
 <p>
 
-However, GlkOte has uses beyond RemGlk. It could also support a purely client-side IF application. An IF interpreter written in Javascript, running entirely within the user's web browser, could use GlkOte for its display library.
+Alternatively, GlkOte could be used with RemGlk, a Glk library which acts as a web service. <em>(NOT YET WRITTEN.)</em> Any Glk-compliant interpreter (including Glulx interpreters) can be compiled with RemGlk. The resulting program is then run on a web server. A GlkOte web page sends AJAX requests to the server, which relays them (via CGI script) to the RemGlk program; the game responds back up the chain to the user's web browser. Thus, RemGlk and GlkOte together form a complete Glk web application.
 <p>
 
 Here is a 
 <a href="sample-demo.html">demonstration of a
 client-side IF application.</a>
-It is not a full-fledged IF game; it has only a trivial one-word parser. However, it demonstrates all the I/O capabilities of a typical IF game, including a status window, story window, line and character input, window resizing, scrollback, quote boxes, menus, and so on.
+It is not a full-fledged IF game; it has only a trivial one-word parser. However, it demonstrates all the I/O capabilities of a typical IF game, including a status window, story window, line and character input, window resizing, scrollback, quote boxes, menus, and so on. (This demo does not use glkapi.js.)
+<p>
+
+A more complete example:
+<a href="http://eblong.com/zarf/glulx/quixe/">Quixe</a> 
+is an implementation of the Glulx virtual machine, using glkapi.js and GlkOte.
 <p>
 
 <h2><a name="using">Using GlkOte</a></h2>
@@ -542,6 +550,17 @@ Tell the library to update the display. The argument is a complex object which i
 <p>
 
 <pre class="Def">
+GlkOte.extevent(val)
+</pre>
+<p>
+
+Tell the library to cause a special input event, immediately. This is routed through <code>Game.accept</code>, just like all other input events. (See "<a href="#input">Input</a>".) The argument is passed through unchanged into the input event object.
+<p>
+
+This function lets you handle external conditions (such as timers, or events caused by other libraries) in the same framework as GlkOte's events. You should only call <code>GlkOte.extevent</code> while waiting for input -- that is, in the interval after a <code>GlkOte.update</code> call.
+<p>
+
+<pre class="Def">
 GlkOte.error(msg)
 </pre>
 <p>
@@ -612,6 +631,14 @@ Resize event. The <code>gameport</code> has changed size, and so the game window
 <p>
 
 <pre class="Def">
+{ type: 'external', gen: GENERATION, value: VALUE }
+</pre>
+<p>
+
+An external event, which you triggered by calling <code>GlkOte.extevent</code>. The <code>value</code> property will be whatever you passed to <code>GlkOte.extevent</code>.
+<p>
+
+<pre class="Def">
 { type: 'refresh', gen: GENERATION }
 </pre>
 <p>
@@ -655,7 +682,7 @@ The input object will only have a <code>partial</code> property if there is part
 
 <h2><a name="output">Output: Updating the Display</a></h2>
 
-You should call <code>GlkOte.update</code> exactly once in each invocation of your <code>Game.accept</code> function. (Calling <code>GlkOte.update</code> more than once is not illegal, but it is inefficient. It just forces the library to do more DOM work than the ultimate result requires.)
+You should call <code>GlkOte.update</code> exactly once in each invocation of your <code>Game.accept</code> function. (If you don't call <code>GlkOte.update</code>, the game will stop accepting input. Calling <code>GlkOte.update</code> more than once is not illegal, but it is inefficient. It just forces the library to do more DOM work than the ultimate result requires.)
 <p>
 
 <code>GlkOte.update</code> takes one argument, an object. This can take a few different forms:
@@ -1197,8 +1224,20 @@ By the way, in a buffer window, paragraphs of text are separated by blank lines 
 (If you think that's ugly, don't ask what I had to do to prevent runs of spaces from collapsing.)
 <p>
 
+<h2><a name="version">GlkOte Version History</a></h2>
+
+<dl>
+
+<dt>Release 1.1.0 (###)
+<dd>Added glkapi.js (a pure-Javascript Glk API which runs on top of GlkOte).
+
+<dt>Release 1.0.0 (June 27, 2008)
+<dd>Original release.
+
+</dl>
+
 <hr>
-Last updated June 26, 2008.
+Last updated ###June 26, 2008.
 <p>
 
 <em><a href="http://eblong.com/zarf/glk/glkote.html">GlkOte home page</a>

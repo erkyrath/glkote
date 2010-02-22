@@ -1162,6 +1162,11 @@ var gli_selectref = null;
    no GiDispa layer to provide them. */
 var gli_api_display_rocks = 1;
 
+/* A positive number if the timer is set. */
+//### kill timer when library exits?
+var gli_timer_interval = null; 
+var gli_timer_id = null; /* Currently active setTimeout ID */
+
 function gli_new_window(type, rock) {
     var win = {};
     win.type = type;
@@ -1743,6 +1748,10 @@ function gli_set_style(str, val) {
         if (str.win.echostr)
             gli_set_style(str.win.echostr, val);
     }
+}
+
+function gli_timer_callback() {
+    //####
 }
 
 /* The catalog of Glk API functions. */
@@ -2359,7 +2368,22 @@ function glk_cancel_char_event(win) {
 
 function glk_request_mouse_event(a1) { /*###*/ }
 function glk_cancel_mouse_event(a1) { /*###*/ }
-function glk_request_timer_events(a1) { /*###*/ }
+
+function glk_request_timer_events(msec) {
+    if (!(gli_timer_id === null)) {
+        clearTimeout(gli_timer_id);
+        gli_timer_id = null;
+    }
+
+    if (!msec) {
+        gli_timer_interval = null;
+    }
+    else {
+        gli_timer_interval = msec;
+        gli_timer_id = setTimeout(gli_timer_callback, msec);
+    }
+}
+
 function glk_image_get_info(a1, a2, a3) { /*###*/ }
 function glk_image_draw(a1, a2, a3, a4) { /*###*/ }
 function glk_image_draw_scaled(a1, a2, a3, a4, a5, a6) { /*###*/ }

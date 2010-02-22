@@ -754,6 +754,13 @@ function glkote_error(msg) {
   hide_loading();
 }
 
+/* Cause an immediate input event, of type "external". This invokes
+   Game.accept(), just like any other event.
+*/
+function glkote_extevent(val) {
+  send_response('external', null, val);
+}
+
 /* If we got a 'retry' result from the game, we wait a bit and then call
    this function to try it again.
 */
@@ -906,6 +913,9 @@ function send_response(type, win, val) {
   }
   else if (type == 'char') {
     res.window = win.id;
+    res.value = val;
+  }
+  else if (type == 'external') {
     res.value = val;
   }
   else if (type == 'init' || type == 'arrange') {
@@ -1262,11 +1272,12 @@ function evhan_input_blur(winid) {
 /* End of GlkOte namespace function. Return the object which will
    become the GlkOte global. */
 return {
-  version: '1.0.0',
-  init:    glkote_init, 
-  update:  glkote_update,
-  log:     glkote_log,
-  error:   glkote_error
+  version:  '1.1.0',
+  init:     glkote_init, 
+  update:   glkote_update,
+  extevent: glkote_extevent,
+  log:      glkote_log,
+  error:    glkote_error
 };
 
 }();
