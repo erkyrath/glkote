@@ -78,6 +78,12 @@ function accept_ui_event(obj) {
         VM.init();
         break;
 
+    case 'external':
+        if (obj.value == 'timer') {
+            handle_timer_input();
+        }
+        break;
+
     case 'char':
         handle_char_input(obj.window, obj.value);
         break;
@@ -106,6 +112,21 @@ function handle_arrange_input() {
         return;
 
     gli_selectref.set_field(0, Const.evtype_Arrange);
+    gli_selectref.set_field(1, null);
+    gli_selectref.set_field(2, 0);
+    gli_selectref.set_field(3, 0);
+
+    if (window.GiDispa)
+        GiDispa.prepare_resume(gli_selectref);
+    gli_selectref = null;
+    VM.resume();
+}
+
+function handle_timer_input() {
+    if (!gli_selectref)
+        return;
+
+    gli_selectref.set_field(0, Const.evtype_Timer);
     gli_selectref.set_field(1, null);
     gli_selectref.set_field(2, 0);
     gli_selectref.set_field(3, 0);
@@ -1058,6 +1079,7 @@ function qlog(msg) {
         opera.postError(msg);
 }
 
+//### debugging
 function qobjdump(obj, depth) {
     var key, proplist;
 
@@ -1078,6 +1100,18 @@ function qobjdump(obj, depth) {
         proplist.push(key + ":" + val);
     }
     return "{ " + proplist.join(", ") + " }";
+}
+
+//### debugging
+function qbusyspin(msec) {
+    var start = Date.now();
+    qlog("### busyspin begin: " + msec + " msec");
+    while (true) {
+        var now = Date.now();
+        if (now - start > msec)
+            break;
+    }
+    qlog("### busyspin end");
 }
 
 /* RefBox: Simple class used for "call-by-reference" Glk arguments. The object
@@ -1162,10 +1196,11 @@ var gli_selectref = null;
    no GiDispa layer to provide them. */
 var gli_api_display_rocks = 1;
 
-/* A positive number if the timer is set. */
 //### kill timer when library exits?
+/* A positive number if the timer is set. */
 var gli_timer_interval = null; 
 var gli_timer_id = null; /* Currently active setTimeout ID */
+var gli_timer_started = null; /* When the setTimeout began */
 
 function gli_new_window(type, rock) {
     var win = {};
@@ -1751,7 +1786,9 @@ function gli_set_style(str, val) {
 }
 
 function gli_timer_callback() {
-    //####
+    gli_timer_id = setTimeout(gli_timer_callback, gli_timer_interval);
+    gli_timer_started = Date.now();
+    GlkOte.extevent('timer');
 }
 
 /* The catalog of Glk API functions. */
@@ -2115,6 +2152,8 @@ function glk_window_clear(win) {
         win.clearcontent = true;
         break;
     case Const.wintype_TextGrid:
+        win.cursorx = 0;
+        win.cursory = 0;
         for (ix=0; ix<win.gridheight; ix++) {
             lineobj = win.lines[ix];
             lineobj.dirty = true;
@@ -2311,12 +2350,35 @@ function glk_stylehint_clear(a1, a2, a3) { /*###*/ }
 function glk_style_distinguish(a1, a2, a3) { /*###*/ }
 function glk_style_measure(a1, a2, a3, a4) { /*###*/ }
 
-function glk_select(ref) {
-    gli_selectref = ref;
+function glk_select(eventref) {
+    gli_selectref = eventref;
     return DidNotReturn;
 }
 
-function glk_select_poll(a1) { /*###*/ }
+function glk_select_poll(eventref) {
+    /* Because the Javascript interpreter is single-threaded, the
+       gli_timer_callback function cannot have run since the last
+       glk_select call. */
+
+    eventref.set_field(0, Const.evtype_None);
+    eventref.set_field(1, null);
+    eventref.set_field(2, 0);
+    eventref.set_field(3, 0);
+
+    if (gli_timer_interval && !(gli_timer_id === null)) {
+        var now = Date.now();
+        if (now - gli_timer_started > gli_timer_interval) {
+            /* We're past the timer interval, even though the callback
+               hasn't run. Let's pretend it has, reset it, and return
+               a timer event. */
+            clearTimeout(gli_timer_id);
+            gli_timer_id = setTimeout(gli_timer_callback, gli_timer_interval);
+            gli_timer_started = Date.now();
+
+            eventref.set_field(0, Const.evtype_Timer);
+        }
+    }
+}
 
 function glk_request_line_event(win, buf, initlen) {
     if (!win)
@@ -2339,7 +2401,21 @@ function glk_request_line_event(win, buf, initlen) {
     }
 }
 
-function glk_cancel_line_event(a1, a2) { /*###*/ }
+function glk_cancel_line_event(win, eventref) {
+    if (!win)
+        throw('glk_cancel_line_event: invalid window');
+
+    var input = "";
+
+    if (eventref) {
+        //### stash eventref? how do we get this data out?
+    }
+
+    win.line_request = false;
+    win.line_request_uni = false;
+
+    gli_window_put_string(win, input+"\n");
+}
 
 function glk_request_char_event(win) {
     if (!win)
@@ -2373,6 +2449,7 @@ function glk_request_timer_events(msec) {
     if (!(gli_timer_id === null)) {
         clearTimeout(gli_timer_id);
         gli_timer_id = null;
+        gli_timer_started = null;
     }
 
     if (!msec) {
@@ -2380,7 +2457,8 @@ function glk_request_timer_events(msec) {
     }
     else {
         gli_timer_interval = msec;
-        gli_timer_id = setTimeout(gli_timer_callback, msec);
+        gli_timer_id = setTimeout(gli_timer_callback, gli_timer_interval);
+        gli_timer_started = Date.now();
     }
 }
 
