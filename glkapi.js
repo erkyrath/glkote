@@ -46,6 +46,8 @@
 var VM = null;
 
 var event_generation = 0;
+var current_partial_inputs = null;
+var current_partial_outputs = null;
 
 /* Initialize the library, initialize the VM, and set it running. (It will 
    run until the first glk_select() or glk_exit() call.)
@@ -71,6 +73,10 @@ function accept_ui_event(obj) {
       return;
     }
     event_generation += 1;
+
+    /* Note any partial inputs; we'll need them if the game cancels a line
+       input. This may be undef. */
+    current_partial_inputs = obj.partial;
 
     switch (obj.type) {
     case 'init':
@@ -226,7 +232,8 @@ function update() {
     var winarray = null;
     var contentarray = null;
     var inputarray = null;
-    var win, obj, useobj, lineobj, ls, ix, cx, lastpos, laststyle;
+    var win, obj, useobj, lineobj, ls, val, ix, cx;
+    var initial, lastpos, laststyle;
 
     if (geometry_changed) {
         geometry_changed = false;
@@ -321,9 +328,14 @@ function update() {
             inputarray.push(obj);
         }
         if (win.line_request) {
+            initial = '';
+            if (current_partial_outputs) {
+                val = current_partial_outputs[win.disprock];
+                if (val)
+                    initial = val;
+            }
             obj = { id: win.disprock, type: 'line', gen: win.input_generation,
-                    maxlen: win.linebuf.length, initial: ''};
-            //### get initial right
+                    maxlen: win.linebuf.length, initial: initial };
             inputarray.push(obj);
         }
     }
@@ -331,6 +343,9 @@ function update() {
     dataobj.windows = winarray;
     dataobj.content = contentarray;
     dataobj.input = inputarray;
+
+    /* Clean this up; it's only meaningful within one run/update cycle. */
+    current_partial_outputs = null;
 
     GlkOte.update(dataobj);
 }
@@ -2388,11 +2403,17 @@ function glk_request_line_event(win, buf, initlen) {
 
     if (win.type == Const.wintype_TextBuffer 
         || win.type == Const.wintype_TextGrid) {
+        if (initlen) {
+            /* This will be copied into the next update. */
+            var ls = buf.slice(0, initlen);
+            if (!current_partial_outputs)
+                current_partial_outputs = {};
+            current_partial_outputs[win.disprock] = ByteArrayToString(ls);
+        }
         win.line_request = true;
         win.line_request_uni = false;
         win.input_generation = event_generation;
         win.linebuf = buf;
-        //### grab initlen chars, stash in input of update object
         if (window.GiDispa)
             GiDispa.retain_array(buf);
     }
@@ -2405,16 +2426,51 @@ function glk_cancel_line_event(win, eventref) {
     if (!win)
         throw('glk_cancel_line_event: invalid window');
 
-    var input = "";
-
-    if (eventref) {
-        //### stash eventref? how do we get this data out?
+    if (!win.line_request) {
+        if (eventref) {
+            eventref.set_field(0, Const.evtype_None);
+            eventref.set_field(1, null);
+            eventref.set_field(2, 0);
+            eventref.set_field(3, 0);
+        }
+        return;
     }
 
+    var input = "";
+    var ix, val;
+
+    if (current_partial_inputs) {
+        val = current_partial_inputs[win.disprock];
+        if (val) 
+            input = val;
+    }
+
+    if (input.length > win.linebuf.length)
+        input = input.slice(0, win.linebuf.length);
+
+    //### echo stream?
+    ix = win.style;
+    gli_set_style(win.str, Const.style_Input);
+    gli_window_put_string(win, input+"\n");
+    gli_set_style(win.str, ix);
+    //### wrong for grid window?
+
+    for (ix=0; ix<input.length; ix++)
+        win.linebuf[ix] = input.charCodeAt(ix);
+
+    if (eventref) {
+        eventref.set_field(0, Const.evtype_LineInput);
+        eventref.set_field(1, win);
+        eventref.set_field(2, input.length);
+        eventref.set_field(3, 0);
+    }
+
+    if (window.GiDispa)
+        GiDispa.unretain_array(win.linebuf);
     win.line_request = false;
     win.line_request_uni = false;
-
-    gli_window_put_string(win, input+"\n");
+    win.input_generation = null;
+    win.linebuf = null;
 }
 
 function glk_request_char_event(win) {
@@ -2701,10 +2757,17 @@ function glk_request_line_event_uni(win, buf, initlen) {
 
     if (win.type == Const.wintype_TextBuffer 
         || win.type == Const.wintype_TextGrid) {
+        if (initlen) {
+            /* This will be copied into the next update. */
+            var ls = buf.slice(0, initlen);
+            if (!current_partial_outputs)
+                current_partial_outputs = {};
+            current_partial_outputs[win.disprock] = UniArrayToString(ls);
+        }
         win.line_request = true;
         win.line_request_uni = true;
+        win.input_generation = event_generation;
         win.linebuf = buf;
-        //### grab initlen chars
         if (window.GiDispa)
             GiDispa.retain_array(buf);
     }
