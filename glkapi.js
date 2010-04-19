@@ -2305,8 +2305,30 @@ function glk_fileref_create_temp(a1, a2) { /*###*/ }
 function glk_fileref_create_by_name(a1, a2, a3) { /*###*/ }
 function glk_fileref_create_by_prompt(a1, a2, a3) { /*###*/ }
 function glk_fileref_destroy(a1) { /*###*/ }
-function glk_fileref_iterate(a1, a2) { /*###*/ }
-function glk_fileref_get_rock(a1) { /*###*/ }
+
+function glk_fileref_iterate(fref, rockref) {
+    if (!fref)
+        fref = gli_filereflist;
+    else
+        fref = fref.next;
+
+    if (fref) {
+        if (rockref)
+            rockref.set_value(fref.rock);
+        return fref;
+    }
+
+    if (rockref)
+        rockref.set_value(0);
+    return null;
+}
+
+function glk_fileref_get_rock(fref) {
+    if (!fref)
+        throw('glk_fileref_get_rock: invalid fileref');
+    return fref.rock;
+}
+
 function glk_fileref_delete_file(a1) { /*###*/ }
 function glk_fileref_does_file_exist(a1) { /*###*/ }
 function glk_fileref_create_from_fileref(a1, a2, a3) { /*###*/ }
