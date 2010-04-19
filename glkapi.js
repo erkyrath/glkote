@@ -1199,6 +1199,8 @@ var content_metrics = null;
 var gli_streamlist = null;
 /* Beginning of linked list of filerefs. */
 var gli_filereflist = null;
+/* Beginning of linked list of schannels. */
+var gli_schannellist = null;
 
 /* The current output stream. */
 var gli_currentstr = null;
@@ -2525,15 +2527,57 @@ function glk_window_flow_break(a1) { /*###*/ }
 function glk_window_erase_rect(a1, a2, a3, a4, a5) { /*###*/ }
 function glk_window_fill_rect(a1, a2, a3, a4, a5, a6) { /*###*/ }
 function glk_window_set_background_color(a1, a2) { /*###*/ }
-function glk_schannel_iterate(a1, a2) { /*###*/ }
-function glk_schannel_get_rock(a1) { /*###*/ }
-function glk_schannel_create(a1) { /*###*/ }
-function glk_schannel_destroy(a1) { /*###*/ }
-function glk_schannel_play(a1, a2) { /*###*/ }
-function glk_schannel_play_ext(a1, a2, a3, a4) { /*###*/ }
-function glk_schannel_stop(a1) { /*###*/ }
-function glk_schannel_set_volume(a1, a2) { /*###*/ }
-function glk_sound_load_hint(a1, a2) { /*###*/ }
+
+function glk_schannel_iterate(schan, rockref) {
+    if (!schan)
+        schan = gli_schannellist;
+    else
+        schan = schan.next;
+
+    if (schan) {
+        if (rockref)
+            rockref.set_value(schan.rock);
+        return schan;
+    }
+
+    if (rockref)
+        rockref.set_value(0);
+    return null;
+}
+
+function glk_schannel_get_rock(schan) {
+    if (!schan)
+        throw('glk_schannel_get_rock: invalid schannel');
+    return schan.rock;
+}
+
+function glk_schannel_create(rock) {
+    return null;
+}
+
+function glk_schannel_destroy(schan) {
+    throw('glk_schannel_destroy: invalid schannel');
+}
+
+function glk_schannel_play(schan, sndid) {
+    throw('glk_schannel_play: invalid schannel');
+}
+
+function glk_schannel_play_ext(schan, sndid, repeats, notify) {
+    throw('glk_schannel_play_ext: invalid schannel');
+}
+
+function glk_schannel_stop(schan) {
+    throw('glk_schannel_stop: invalid schannel');
+}
+
+function glk_schannel_set_volume(schan, vol) {
+    throw('glk_schannel_set_volume: invalid schannel');
+}
+
+function glk_sound_load_hint(sndid, flag) {
+}
+
 function glk_set_hyperlink(a1) { /*###*/ }
 function glk_set_hyperlink_stream(a1, a2) { /*###*/ }
 function glk_request_hyperlink_event(a1) { /*###*/ }
