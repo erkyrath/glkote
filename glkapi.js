@@ -2384,10 +2384,17 @@ function glk_char_to_upper(val) {
     return val;
 }
 
-function glk_stylehint_set(a1, a2, a3, a4) { /*###*/ }
-function glk_stylehint_clear(a1, a2, a3) { /*###*/ }
-function glk_style_distinguish(a1, a2, a3) { /*###*/ }
-function glk_style_measure(a1, a2, a3, a4) { /*###*/ }
+/* Style hints are not supported. We will use the new style system. */
+function glk_stylehint_set(wintype, styl, hint, value) { }
+function glk_stylehint_clear(wintype, styl, hint) { }
+function glk_style_distinguish(win, styl1, styl2) {
+    return 0;
+}
+function glk_style_measure(win, styl, hint, resultref) {
+    if (resultref)
+        resultref.set_value(0);
+    return 0;
+}
 
 function glk_select(eventref) {
     gli_selectref = eventref;
