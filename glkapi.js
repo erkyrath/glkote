@@ -1829,6 +1829,7 @@ function gli_timer_callback() {
 /* The catalog of Glk API functions. */
 
 function glk_exit() {
+    /* For safety, this is fast and idempotent. */
     has_exited = true;
     gli_selectref = null;
     return DidNotReturn;
