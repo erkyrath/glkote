@@ -42,6 +42,8 @@
    and will also double the write-count in a stream.
 */
 
+Glk = function() {
+
 /* The VM interface object. */
 var VM = null;
 
@@ -2849,8 +2851,7 @@ function glk_request_line_event_uni(win, buf, initlen) {
     }
 }
 
-/* ### change to a namespace */
-Glk = {
+return {
     init : init,
     update : update,
     Const : Const,
@@ -2965,3 +2966,4 @@ Glk = {
     glk_request_line_event_uni : glk_request_line_event_uni,
 };
 
+}();
