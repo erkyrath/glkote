@@ -47,6 +47,7 @@ Glk = function() {
 /* The VM interface object. */
 var VM = null;
 
+var has_exited = false;
 var event_generation = 0;
 var current_partial_inputs = null;
 var current_partial_outputs = null;
@@ -69,6 +70,10 @@ function accept_ui_event(obj) {
     var box;
 
     qlog("### accept_ui_event: " + obj.type + ", gen " + obj.gen);
+    if (has_exited) {
+        /* We've hit glk_exit() or a VM fatal error. */
+        return;
+    }
 
     if (obj.gen != event_generation) {
       GlkOte.log('Input event had wrong generation number: got ' + obj.gen + ', currently at ' + event_generation);
@@ -352,6 +357,17 @@ function update() {
     GlkOte.update(dataobj);
 }
 
+/* This is the handler for a VM fatal error. (Not for an error in our own
+   library!) We display the error message, and then push a final display
+   update, which kills all input fields in all windows.
+*/
+function fatal_error(msg) {
+    has_exited = true;
+    GlkOte.error(msg);
+    var dataobj = { type: 'update', gen: event_generation };
+    dataobj.input = [];
+    GlkOte.update(dataobj);
+}
 
 /* All the numeric constants used by the Glk interface. We push these into
    an object, for tidiness. */
@@ -1813,7 +1829,7 @@ function gli_timer_callback() {
 /* The catalog of Glk API functions. */
 
 function glk_exit() {
-    //### set a library-exited flag?
+    has_exited = true;
     gli_selectref = null;
     return DidNotReturn;
 }
@@ -2854,6 +2870,7 @@ function glk_request_line_event_uni(win, buf, initlen) {
 return {
     init : init,
     update : update,
+    fatal_error : fatal_error,
     Const : Const,
     RefBox : RefBox,
     RefStruct : RefStruct,
