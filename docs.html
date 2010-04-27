@@ -822,18 +822,31 @@ Each element in the <code>content</code> array describes all the changes in one 
 Each element in the <code>lines</code> array represents one line of the grid to update. (It is, of course, best to update only the lines which have changed.) The entire line is cleared and replaced with the <code>content</code> of this element.
 <p>
 
-The LINE_DATA_ARRAY describes the line in terms of runs of characters which have the same style. It simply has the form
+(To clear a line completely, you may use an empty <code>content</code> array, or omit the <code>content</code> field entirely.)
+<p>
+
+The LINE_DATA_ARRAY describes the line in terms of runs of characters which have the same style. Each run in the array has the form
 <p>
 
 <pre class="Sample">
-[ style1, string1, style2, string2, ... ]
+{ style: STYLE, hyperlink: INT, text: STRING }
 </pre>
 <p>
 
-Each even-numbered element is the name of a style; the following element is a string of characters in that style. All these runs are concatenated to make the line. If this is short of the grid width, it is padded (on the right) with whitespace in the "normal" style.
+This gives the name of a style, and a string of characters in that style. If the (optional) <code>hyperlink</code> property is nonzero, the run is a hyperlink with that target value.
 <p>
 
-(To clear a line completely, you may use an empty <code>content</code> array, or omit the <code>content</code> field entirely.)
+All these runs are concatenated to make the line. If this is short of the grid width, it is padded (on the right) with whitespace in the "normal" style.
+<p>
+
+You can also describe a run in the LINE_DATA_ARRAY by giving two separate strings (the style and text values). This is a simpler format for a run; note that it cannot specify a hyperlink. You can even mix the two run formats:
+<p>
+
+<pre class="Sample">
+[ STYLE1, STRING1, 
+  { style: STYLE2, text: STRING2 }, 
+  STYLE3, STRING3, ... ]
+</pre>
 <p>
 
 <h4><a name="bufferupdate">Buffer Window Updates</a></h4>

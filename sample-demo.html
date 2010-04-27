@@ -86,6 +86,7 @@ game_streamclear_right = false;
 game_generation = 1;
 game_moves = 1;
 game_quotemove = 0;
+game_quotehaslink = false;
 game_splitwin = false;
 game_statusmenu = false;
 game_statusmenu_from_left = true;
@@ -147,12 +148,15 @@ function game_print(val) {
   var style = val.style;
   if (!style)
     style = 'normal';
+  var el = { style: style, text: val.text };
+  if (val.hyperlink)
+    el.hyperlink = val.hyperlink;
   var newline = (val.newline == undefined || val.newline);
 
   if (newline)
-    stream.push({ content: [style, val.text] });
+    stream.push({ content: [ el ] });
   else
-    stream.push({ append: 'true', content: [style, val.text] });
+    stream.push({ append: 'true', content: [ el ] });
 }
 
 function game_select() {
@@ -304,12 +308,26 @@ function game_select() {
   if (have_quotewin) {
     var indent = Math.floor((gridchars - '  Pay no attention to the  '.length) / 2);
     indent = ' '.times(indent);
-    argc.push({ id: 3, lines: [
-        { line: 0, content: ['normal', indent,
-            'blockquote', '  Pay no attention to the  '] },
-        { line: 1, content: ['normal', indent,
-            'blockquote', '  man behind the curtain!  '] }
-      ] });
+    if (!game_quotehaslink) {
+      argc.push({ id: 3, lines: [
+          { line: 0, content: ['normal', indent,
+              'blockquote', '  Pay no attention to the  '] },
+          { line: 1, content: ['normal', indent,
+              'blockquote', '  man behind the curtain!  '] }
+        ] });
+    }
+    else {
+      argc.push({ id: 3, lines: [
+          { line: 0, content: ['normal', indent,
+              'blockquote', "    'Twas ",
+              { style:'blockquote', hyperlink:3, text:'brillig' },
+              'blockquote', ", and     "] },
+          { line: 1, content: ['normal', indent,
+              'blockquote', '     the slithy ',
+              { style:'blockquote', hyperlink:4, text:'toves' },
+              'blockquote', '...   '] }
+        ] });
+    }
   }
 
   var argi = [ ];
@@ -501,6 +519,7 @@ function game_parse(val) {
     helpopt('char',    'get one keystroke of input');
     helpopt('menu',    'pause the game for menu input');
     helpopt('quote',   'display a header pane with a centered box quote');
+    helpopt('link',    'hyperlinks in the story window and quote box');
     helpopt('split',   'open a second story window');
     helpopt('unsplit', 'close the second story window');
     helpopt('both',    'print output in both story windows');
@@ -527,6 +546,19 @@ function game_parse(val) {
     game_print({ style:'preformatted', text:'  |   |   |' });
     game_print({ style:'preformatted', text:'  |  / \\  |' });
     game_print({ style:'preformatted', text:'  +-------+' });
+    return;
+  }
+
+  if (val == 'link') {
+    game_print('You could ');
+    game_print({ newline:false, hyperlink:1, style:'normal', text: 'click here'});
+    game_print({ newline:false, text:' for a borogove. '});
+    game_print({ newline:false, style:'emphasized', text: 'Or you could '});
+    game_print({ newline:false, hyperlink:2, style:'emphasized', text: 'click'});
+    game_print({ newline:false, hyperlink:2, style:'normal', text: ' here'});
+    game_print({ newline:false, text:' for a mome rath. (Note that the italics end in the middle of the second link.)\n'});
+    game_quotemove = game_moves+1;
+    game_quotehaslink = true;
     return;
   }
 
@@ -662,6 +694,7 @@ function game_parse(val) {
 
   if (val == 'quote') {
     game_quotemove = game_moves+1;
+    game_quotehaslink = false;
     game_print('Here\'s a quotation box. It will last until your next command.');
     return;
   }

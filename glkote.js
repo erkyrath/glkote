@@ -452,10 +452,32 @@ function accept_one_content(arg) {
       }
       else {
         lineel.update();
-        for (sx=0; sx<content.length; sx=sx+2) {
+        for (sx=0; sx<content.length; sx++) {
+          var rdesc = content[sx];
+          var rstyle, rtext, rlink;
+          if (rdesc.length === undefined) {
+            rstyle = rdesc.style;
+            rtext = rdesc.text;
+            rlink = rdesc.hyperlink;
+          }
+          else {
+            rstyle = rdesc;
+            sx++;
+            rtext = content[sx];
+            rlink = undefined;
+          }
           var el = new Element('span',
-            { 'class': 'Style_' + content[sx] } );
-          insert_text(el, content[sx+1]);
+            { 'class': 'Style_' + rstyle } );
+          if (!rlink) {
+            insert_text(el, rtext);
+          }
+          else {
+            var ael = new Element('a',
+              { 'href': '#' } );
+            insert_text(ael, rtext);
+            ael.onclick = build_evhan_hyperlink(win.id, rlink);
+            el.insert(ael);
+          }
           lineel.insert(el);
         }
       }
@@ -531,17 +553,38 @@ function accept_one_content(arg) {
          into NBSP. Also, if a div's last span ends with a space (or the
          div has no spans), and a new span begins with a space, turn that
          into a NBSP. */
-      for (sx=0; sx<content.length; sx=sx+2) {
-        var el = new Element('span',
-          { 'class': 'Style_' + content[sx] } );
-        var val = content[sx+1];
-        val = val.replace(regex_long_whitespace, func_long_whitespace);
-        if (divel.endswhite) {
-          val = val.replace(regex_initial_whitespace, NBSP);
+      for (sx=0; sx<content.length; sx++) {
+        var rdesc = content[sx];
+        var rstyle, rtext, rlink;
+        if (rdesc.length === undefined) {
+          rstyle = rdesc.style;
+          rtext = rdesc.text;
+          rlink = rdesc.hyperlink;
         }
-        insert_text(el, val);
+        else {
+          rstyle = rdesc;
+          sx++;
+          rtext = content[sx];
+          rlink = undefined;
+        }
+        var el = new Element('span',
+          { 'class': 'Style_' + rstyle } );
+        rtext = rtext.replace(regex_long_whitespace, func_long_whitespace);
+        if (divel.endswhite) {
+          rtext = rtext.replace(regex_initial_whitespace, NBSP);
+        }
+        if (!rlink) {
+          insert_text(el, rtext);
+        }
+        else {
+          var ael = new Element('a',
+            { 'href': '#' } );
+          insert_text(ael, rtext);
+          ael.onclick = build_evhan_hyperlink(win.id, rlink);
+          el.insert(ael);
+        }
         divel.insert(el);
-        divel.endswhite = regex_final_whitespace.test(val);
+        divel.endswhite = regex_final_whitespace.test(rtext);
       }
     }
 
@@ -1265,6 +1308,23 @@ function evhan_input_blur(winid) {
     return;
 
   currently_focussed = false;
+}
+
+/* Event handler constructor: report a click on a hyperlink
+   (This is a factory that returns an appropriate handler function, for
+   stupid Javascript closure reasons.)
+
+   Generate the appropriate event for a hyperlink click. Return false,
+   to suppress the default HTML action of hyperlinks.
+*/
+function build_evhan_hyperlink(winid, linkval) {
+  return function() {
+    var win = windowdic.get(winid);
+    if (!win)
+      return false;
+    glkote_log('### hyperlink ' + linkval + ' in window ' + winid);
+    return false;
+  };
 }
 
 /* ---------------------------------------------- */
