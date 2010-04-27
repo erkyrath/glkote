@@ -710,6 +710,9 @@ function accept_inputset(arg) {
         inputel.onkeypress = evhan_input_char_keypress;
         inputel.onkeydown = evhan_input_char_keydown;
       }
+      /* Subtle point: the winid variable here is never reused, because we're
+         inside a function being map()ed. Therefore, winid is safe to use in
+         a closure. */
       var winid = win.id;
       inputel.onfocus = function() { evhan_input_focus(winid); };
       inputel.onblur = function() { evhan_input_blur(winid); };
