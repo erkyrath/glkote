@@ -623,6 +623,14 @@ left, right, up, down, return, delete, escape, tab,
 <p>
 
 <pre class="Def">
+{ type: 'hyperlink', gen: GENERATION, window: WINDOW_ID, value: LINK_NUM }
+</pre>
+<p>
+
+Hyperlink click in the named window. The <code>value</code> property will be the target value for the link (a nonzero number).
+<p>
+
+<pre class="Def">
 { type: 'arrange', gen: GENERATION, metrics: METRICS_OBJECT }
 </pre>
 <p>
@@ -829,7 +837,7 @@ The LINE_DATA_ARRAY describes the line in terms of runs of characters which have
 <p>
 
 <pre class="Sample">
-{ style: STYLE, hyperlink: INT, text: STRING }
+{ style: STYLE, hyperlink: LINK_NUM, text: STRING }
 </pre>
 <p>
 
