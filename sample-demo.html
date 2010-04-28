@@ -98,6 +98,7 @@ game_inputline_left = true;
 game_inputline_right = true;
 game_inputinitial_left = null;
 game_inputinitial_right = null;
+game_timed_timer = null;
 game_simulate_crash = false;
 game_simulate_timeout = false;
 
@@ -421,6 +422,10 @@ function game_accept(res) {
   else if (res.type == 'hyperlink') {
     game_submit_hyperlink_input(res.window, res.value);
   }
+  else if (res.type == 'external') {
+    if (res.value == 'timer')
+      game_submit_timer_input();
+  }
   else if (res.type == 'arrange') {
     game_metrics = res.metrics;
     game_inputgen_top = 0;
@@ -537,6 +542,13 @@ function game_submit_hyperlink_input(winid, val) {
   game_print('You clicked on ' + msg + '.');
 }
 
+function game_submit_timer_input() {
+  game_inputgen_left = 0;
+  game_inputline_left = true;
+  game_print_left = true;
+  game_print('The timer has gone off. Ding!');
+}
+
 function game_parse(val) {
   if (val == 'help' || val == '?') {
     game_print('This is an interface demo of the RemGlk Javascript front end. There is no IF interpreter behind the display library -- just a few lines of Javascript. It accepts some commands which demonstrate the capabilities of the display system.\n');
@@ -560,6 +572,7 @@ function game_parse(val) {
     helpopt('split',   'open a second story window');
     helpopt('unsplit', 'close the second story window');
     helpopt('both',    'print output in both story windows');
+    helpopt('timer',   'set a timed event to fire in two seconds');
     helpopt('crash',   'react as if the game had crashed');
     helpopt('slow',    'react as if the game were taking a long time to compute its output');
     helpopt('todo',    'what do I still need to fix in this interface?');
@@ -742,6 +755,20 @@ function game_parse(val) {
     game_print('Hebrew: \u05D0\u05D1\u05D2\u05D3\u05DE (abgdm... the aleph should be on the right)');
     game_print('Hiragana: \u304A\u3059\u3082 (O SU MO)    Katakana: \u30AA\u30B9\u30E2 (O SU MO)');
     game_print('Punctuation: \u2018single curly quotes\u2019 \u201Cdouble curly quotes\u201D');
+    return;
+  }
+
+  if (val == 'timer') {
+    if (game_timed_timer) {
+      game_print('One at a time, please.');
+      return;
+    }
+    game_print('Waiting two seconds...');
+    var delayfunc = function() {
+      game_timed_timer = null;
+      GlkOte.extevent('timer');
+    };
+    game_timed_timer = delayfunc.delay(2);
     return;
   }
 
