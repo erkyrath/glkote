@@ -961,6 +961,10 @@ function send_response(type, win, val) {
     res.window = win.id;
     res.value = val;
   }
+  else if (type == 'hyperlink') {
+    res.window = win.id;
+    res.value = val;
+  }
   else if (type == 'external') {
     res.value = val;
   }
@@ -970,7 +974,9 @@ function send_response(type, win, val) {
 
   if (!(type == 'init' || type == 'refresh')) {
     windowdic.values().each(function(win) {
-      if (win.id != winid && win.input && win.input.type == 'line'
+      var savepartial = (type != 'line' && type != 'char') 
+                        || (win.id != winid);
+      if (savepartial && win.input && win.input.type == 'line'
         && win.inputel && win.inputel.value) {
         var partial = res.partial;
         if (!partial) {
@@ -1325,7 +1331,7 @@ function build_evhan_hyperlink(winid, linkval) {
     var win = windowdic.get(winid);
     if (!win)
       return false;
-    glkote_log('### hyperlink ' + linkval + ' in window ' + winid);
+    send_response('hyperlink', win, linkval);
     return false;
   };
 }

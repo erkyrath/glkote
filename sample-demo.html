@@ -418,6 +418,9 @@ function game_accept(res) {
   else if (res.type == 'char') {
     game_submit_char_input(res.window, res.value);
   }
+  else if (res.type == 'hyperlink') {
+    game_submit_hyperlink_input(res.window, res.value);
+  }
   else if (res.type == 'arrange') {
     game_metrics = res.metrics;
     game_inputgen_top = 0;
@@ -498,6 +501,40 @@ function game_submit_char_input(winid, val) {
   else if (val.charCodeAt(0) < 32)
     val = '<ctrl-' + String.fromCharCode(val.charCodeAt(0) + 64) + '>';
   game_print('\nYou hit: ' + val);
+}
+
+function game_submit_hyperlink_input(winid, val) {
+  var toright = false;
+  var msg;
+  
+  if (val == 1)
+    msg = 'a borogove';
+  else if (val == 2)
+    msg = 'a rath';
+  else if (val == 3)
+    msg = 'brillig';
+  else if (val == 4)
+    msg = 'a tove';
+  else
+    msg = 'BUG';
+
+  if (winid == 4)
+    toright = true;
+  if (winid == 3)
+    msg = msg + ' (in the quote window)';
+
+  if (!toright) {
+    game_inputgen_left = 0;
+    game_inputline_left = true;
+    game_print_left = true;
+  }
+  else {
+    game_inputgen_right = 0;
+    game_inputline_right = true;
+    game_print_left = false;
+  }
+
+  game_print('You clicked on ' + msg + '.');
 }
 
 function game_parse(val) {
