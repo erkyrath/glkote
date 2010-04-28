@@ -324,6 +324,7 @@ function accept_one_window(arg) {
     win.gridwidth = 0;
     win.input = null;
     win.inputel = null;
+    win.reqhyperlink = false;
     win.needscroll = false;
     win.history = new Array();
     win.historypos = 0;
@@ -650,7 +651,10 @@ function accept_one_content(arg) {
 */
 function accept_inputcancel(arg) {
   var hasinput = new Hash();
-  arg.map(function(argi) { hasinput.set(argi.id, argi); });
+  arg.map(function(argi) { 
+    if (argi.type)
+      hasinput.set(argi.id, argi); 
+  });
 
   windowdic.values().each(function(win) {
     if (win.input) {
@@ -672,9 +676,17 @@ function accept_inputcancel(arg) {
 */
 function accept_inputset(arg) {
   var hasinput = new Hash();
-  arg.map(function(argi) { hasinput.set(argi.id, argi); });
+  var hashyperlink = new Hash();
+  arg.map(function(argi) {
+    if (argi.type)
+      hasinput.set(argi.id, argi); 
+    if (argi.hyperlink)
+      hashyperlink.set(argi.id, true);
+  });
 
   windowdic.values().each(function(win) {
+    win.reqhyperlink = hashyperlink.get(win.id);
+
     var argi = hasinput.get(win.id);
     if (argi == null)
       return;
@@ -1330,6 +1342,8 @@ function build_evhan_hyperlink(winid, linkval) {
   return function() {
     var win = windowdic.get(winid);
     if (!win)
+      return false;
+    if (!win.reqhyperlink)
       return false;
     send_response('hyperlink', win, linkval);
     return false;

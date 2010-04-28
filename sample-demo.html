@@ -334,21 +334,35 @@ function game_select() {
   var argi = [ ];
   if (!game_statusmenu) {
     var obj =  { id: 2, gen: game_inputgen_left,
-      type: (game_inputline_left ? 'line' : 'char'), maxlen: 200 };
+      type: (game_inputline_left ? 'line' : 'char'), maxlen: 200,
+      hyperlink: true };
     if (game_inputinitial_left)
       obj.initial = game_inputinitial_left;
     argi.push(obj);
   }
+  else {
+    var obj = { id: 2, hyperlink: true };
+    argi.push(obj);
+  }
   if (!game_statusmenu && game_splitwin) {
     var obj = { id: 4, gen: game_inputgen_right,
-      type: (game_inputline_right ? 'line' : 'char'), maxlen: 200 };
+      type: (game_inputline_right ? 'line' : 'char'), maxlen: 200,
+      hyperlink: true };
     if (game_inputinitial_right)
       obj.initial = game_inputinitial_right;
+    argi.push(obj);
+  }
+  else {
+    var obj = { id: 4, hyperlink: true };
     argi.push(obj);
   }
   if (game_statusmenu) {
     var obj = { id: 1, gen: game_inputgen_top,
       type: 'char', xpos:15, ypos:3+game_mood };
+    argi.push(obj);
+  }
+  if (true) {
+    var obj = { id: 3, hyperlink: true };
     argi.push(obj);
   }
 

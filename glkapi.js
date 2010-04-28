@@ -325,6 +325,7 @@ function update() {
 
     inputarray = [];
     for (win=gli_windowlist; win; win=win.next) {
+        obj = null;
         if (win.char_request) {
             obj = { id: win.disprock, type: 'char', gen: win.input_generation };
             if (win.type == Const.wintype_TextGrid) {
@@ -332,7 +333,6 @@ function update() {
                 obj.xpos = win.cursorx;
                 obj.ypos = win.cursory;
             }
-            inputarray.push(obj);
         }
         if (win.line_request) {
             initial = '';
@@ -343,8 +343,14 @@ function update() {
             }
             obj = { id: win.disprock, type: 'line', gen: win.input_generation,
                     maxlen: win.linebuf.length, initial: initial };
-            inputarray.push(obj);
         }
+        if (win.hyperlink_request) {
+            if (!obj)
+                obj = { id: win.disprock };
+            obj.hyperlink = true;
+        }
+        if (obj)
+            inputarray.push(obj);
     }
 
     dataobj.windows = winarray;
@@ -1254,6 +1260,7 @@ function gli_new_window(type, rock) {
     win.line_request = false;
     win.char_request_uni = false;
     win.line_request_uni = false;
+    win.hyperlink_request = false;
 
     /* window-type-specific info is set up in glk_window_open */
 
@@ -2628,8 +2635,24 @@ function glk_sound_load_hint(sndid, flag) {
 
 function glk_set_hyperlink(a1) { /*###*/ }
 function glk_set_hyperlink_stream(a1, a2) { /*###*/ }
-function glk_request_hyperlink_event(a1) { /*###*/ }
-function glk_cancel_hyperlink_event(a1) { /*###*/ }
+
+function glk_request_hyperlink_event(win) {
+    if (!win)
+        throw('glk_request_hyperlink_event: invalid window');
+    if (win.type == Const.wintype_TextBuffer 
+        || win.type == Const.wintype_TextGrid) {
+        win.hyperlink_request = true;
+    }
+}
+
+function glk_cancel_hyperlink_event(win) {
+    if (!win)
+        throw('glk_cancel_hyperlink_event: invalid window');
+    if (win.type == Const.wintype_TextBuffer 
+        || win.type == Const.wintype_TextGrid) {
+        win.hyperlink_request = true;
+    }
+}
 
 function glk_buffer_to_lower_case_uni(arr, numchars) {
     var ix, jx, pos, val, origval;

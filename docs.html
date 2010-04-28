@@ -775,18 +775,34 @@ A grid window must have <code>gridwidth</code> and <code>gridheight</code> value
 The <code>input</code> property is an array listing all the windows which should be awaiting input. If no input fields have been cancelled or posted since the last update, you should omit the <code>input</code> field. (Omitting it is different from including an <em>empty</em> <code>input</code> array; that would cancel all input fields.)
 <p>
 
-Each element in the <code>input</code> array has one of the forms:
+Each element in the <code>input</code> array has one of the following forms:
 <p>
 
 <pre class="Sample">
-{ id: WINDOW_ID, gen: GENERATION_NUMBER, type: 'char' }
-
-{ id: WINDOW_ID, gen: GENERATION_NUMBER, type: 'line',
-  maxlen: MAX_INPUT_LENGTH, initial: STRING }
+{ id: WINDOW_ID, hyperlink: BOOLEAN }
 </pre>
 <p>
 
-The window ID indicates the window that this input will occur in. If this is a grid window, you must also include <code>xpos</code> and <code>ypos</code> properties, indicating where the input field will begin. (An input field in a buffer window always appears at the end of the buffer's text.)
+This indicates that there will be no line or character input in the given window. The (optional) <code>hyperlink</code> property indicates whether there will be hyperlink input.
+<p>
+
+If <code>hyperlink</code> is false or missing, the window will accept no input at all. This is equivalent to leaving the window out of the <code>input</code> array entirely.
+<p>
+
+<pre class="Sample">
+{ id: WINDOW_ID, gen: GENERATION_NUMBER, type: 'char',
+  hyperlink: BOOLEAN }
+
+{ id: WINDOW_ID, gen: GENERATION_NUMBER, type: 'line',
+  maxlen: MAX_INPUT_LENGTH, initial: STRING,
+  hyperlink: BOOLEAN }
+</pre>
+<p>
+
+These forms indicate that there will be character or line input in the given window. The (optional) <code>hyperlink</code> property indicates whether there will be hyperlink input.
+<p>
+
+If this is a grid window, you must also include <code>xpos</code> and <code>ypos</code> properties, indicating where the input field will begin. (An input field in a buffer window always appears at the end of the buffer's text.)
 <p>
 
 For line input, you must include the <code>maxlen</code> property, indicating the maximum number of characters the player may enter. You may include an <code>initial</code> property, giving a string to preload the input field with. (The <code>initial</code> field is optional, defaulting to the empty string.)
