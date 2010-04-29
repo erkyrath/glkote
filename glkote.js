@@ -469,7 +469,7 @@ function accept_one_content(arg) {
           }
           var el = new Element('span',
             { 'class': 'Style_' + rstyle } );
-          if (!rlink) {
+          if (rlink == undefined) {
             insert_text(el, rtext);
           }
           else {
@@ -574,7 +574,7 @@ function accept_one_content(arg) {
         if (divel.endswhite) {
           rtext = rtext.replace(regex_initial_whitespace, NBSP);
         }
-        if (!rlink) {
+        if (rlink == undefined) {
           insert_text(el, rtext);
         }
         else {

@@ -623,11 +623,11 @@ left, right, up, down, return, delete, escape, tab,
 <p>
 
 <pre class="Def">
-{ type: 'hyperlink', gen: GENERATION, window: WINDOW_ID, value: LINK_NUM }
+{ type: 'hyperlink', gen: GENERATION, window: WINDOW_ID, value: VALUE }
 </pre>
 <p>
 
-Hyperlink click in the named window. The <code>value</code> property will be the target value for the link (a nonzero number).
+Hyperlink click in the named window. The <code>value</code> property will be the target value for the link (passed in when the link was created).
 <p>
 
 <pre class="Def">
@@ -853,11 +853,11 @@ The LINE_DATA_ARRAY describes the line in terms of runs of characters which have
 <p>
 
 <pre class="Sample">
-{ style: STYLE, hyperlink: LINK_NUM, text: STRING }
+{ style: STYLE, hyperlink: VALUE, text: STRING }
 </pre>
 <p>
 
-This gives the name of a style, and a string of characters in that style. If the (optional) <code>hyperlink</code> property is nonzero, the run is a hyperlink with that target value.
+This gives the name of a style, and a string of characters in that style. If the (optional) <code>hyperlink</code> property is defined, the run is a hyperlink with that target value.
 <p>
 
 All these runs are concatenated to make the line. If this is short of the grid width, it is padded (on the right) with whitespace in the "normal" style.
