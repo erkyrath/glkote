@@ -97,6 +97,10 @@ function accept_ui_event(obj) {
         }
         break;
 
+    case 'hyperlink':
+        handle_hyperlink_input(obj.window, obj.value);
+        break;
+
     case 'char':
         handle_char_input(obj.window, obj.value);
         break;
@@ -143,6 +147,31 @@ function handle_timer_input() {
     gli_selectref.set_field(1, null);
     gli_selectref.set_field(2, 0);
     gli_selectref.set_field(3, 0);
+
+    if (window.GiDispa)
+        GiDispa.prepare_resume(gli_selectref);
+    gli_selectref = null;
+    VM.resume();
+}
+
+function handle_hyperlink_input(disprock, val) {
+    if (!gli_selectref)
+        return;
+
+    var win = null;
+    for (win=gli_windowlist; win; win=win.next) {
+        if (win.disprock == disprock) 
+            break;
+    }
+    if (!win || !win.hyperlink_request)
+        return;
+
+    gli_selectref.set_field(0, Const.evtype_Hyperlink);
+    gli_selectref.set_field(1, win);
+    gli_selectref.set_field(2, val);
+    gli_selectref.set_field(3, 0);
+
+    win.hyperlink_request = false;
 
     if (window.GiDispa)
         GiDispa.prepare_resume(gli_selectref);
@@ -305,6 +334,7 @@ function update() {
                 ls = [];
                 lastpos = 0;
                 for (cx=0; cx<win.gridwidth; ) {
+                    //#### lineobj.hyperlinks
                     laststyle = lineobj.styles[cx];
                     for (; cx<win.gridwidth && lineobj.styles[cx] == laststyle; cx++) { }
                     if (lastpos < cx) {
@@ -1253,6 +1283,7 @@ function gli_new_window(type, rock) {
     win.str = gli_stream_open_window(win);
     win.echostr = null;
     win.style = Const.style_Normal;
+    win.hyperlink = 0;
 
     win.input_generation = null;
     win.linebuf = null;
@@ -1327,7 +1358,8 @@ function gli_window_put_string(win, val) {
     //### know the window type when they call this
     switch (win.type) {
     case Const.wintype_TextBuffer:
-        if (win.style != win.accumstyle)
+        if (win.style != win.accumstyle
+            || win.hyperlink != win.accumhyperlink)
             gli_window_buffer_deaccumulate(win);
         win.accum.push(val);
         break;
@@ -1394,41 +1426,55 @@ function gli_window_grid_canonicalize(win) {
 function gli_window_buffer_deaccumulate(win) {
     var conta = win.content;
     var stylename = StyleNameMap[win.accumstyle];
-    var text, ls, ix, obj;
+    var text, ls, ix, obj, arr;
 
     if (win.accum.length) {
         text = win.accum.join('');
         ls = text.split('\n');
         for (ix=0; ix<ls.length; ix++) {
+            arr = undefined;
             if (ix == 0) {
                 if (ls[ix]) {
                     if (conta.length == 0) {
-                        conta.push({ content: [stylename, ls[ix]], append: true });
+                        arr = [];
+                        conta.push({ content: arr, append: true });
                     }
                     else {
                         obj = conta[conta.length-1];
                         if (!obj.content) {
-                            obj.content = [stylename, ls[ix]];
+                            arr = [];
+                            obj.content = arr;
                         }
                         else {
-                            obj = obj.content;
-                            obj.push(stylename);
-                            obj.push(ls[ix]);
+                            arr = obj.content;
                         }
                     }
                 }
             }
             else {
-                if (ls[ix])
-                    conta.push({ content: [stylename, ls[ix]] });
-                else
+                if (ls[ix]) {
+                    arr = [];
+                    conta.push({ content: arr });
+                }
+                else {
                     conta.push({ });
+                }
+            }
+            if (arr !== undefined) {
+                if (!win.accumhyperlink) {
+                    arr.push(stylename);
+                    arr.push(ls[ix]);
+                }
+                else {
+                    arr.push({ style:stylename, text:ls[ix], hyperlink:win.accumhyperlink });
+                }
             }
         }
     }
 
     win.accum.length = 0;
     win.accumstyle = win.style;
+    win.accumhyperlink = win.hyperlink;
 }
 
 function gli_window_close(win, recurse) {
@@ -1827,6 +1873,17 @@ function gli_set_style(str, val) {
     }
 }
 
+function gli_set_hyperlink(str, val) {
+    if (!str || !str.writable)
+        throw('gli_set_hyperlink: invalid stream');
+
+    if (str.type == strtype_Window) {
+        str.win.hyperlink = val;
+        if (str.win.echostr)
+            gli_set_hyperlink(str.win.echostr, val);
+    }
+}
+
 function gli_timer_callback() {
     gli_timer_id = setTimeout(gli_timer_callback, gli_timer_interval);
     gli_timer_started = Date.now();
@@ -1846,7 +1903,23 @@ function glk_tick() {
     /* Do nothing. */
 }
 
-function glk_gestalt(a1, a2) { /*###*/ }
+function glk_gestalt(sel, val) {
+    //### more selectors
+    switch (sel) {
+    case 5: // gestalt_Timer
+        return 1;
+    case 11: // gestalt_Hyperlinks
+        return 1;
+    case 12: // gestalt_HyperlinkInput
+        if (val == 3 || val == 4) // TextBuffer or TextGrid
+            return 1;
+        else
+            return 0;
+    }
+
+    return 0;
+}
+
 function glk_gestalt_ext(a1, a2, a3) { /*###*/ }
 
 function glk_window_iterate(win, rockref) {
@@ -1918,13 +1991,14 @@ function glk_window_open(splitwin, method, size, wintype, rock) {
     case Const.wintype_TextBuffer:
         /* accum is a list of strings of a given style; newly-printed text
            is pushed onto the list. accumstyle is the style of that text.
-           Anything printed in a different style triggers a call to
-           gli_window_buffer_deaccumulate, which cleans out accum and
-           adds the results to the content array. The content is in
-           GlkOte format.
+           Anything printed in a different style (or hyperlink value)
+           triggers a call to gli_window_buffer_deaccumulate, which cleans
+           out accum and adds the results to the content array. The content
+           is in GlkOte format.
         */
         newwin.accum = [];
         newwin.accumstyle = null;
+        newwin.accumhyperlink = 0;
         newwin.content = [];
         newwin.clearcontent = false;
         break;
@@ -2191,6 +2265,7 @@ function glk_window_clear(win) {
     case Const.wintype_TextBuffer:
         win.accum.length = 0;
         win.accumstyle = null;
+        win.accumhyperlink = 0;
         win.content.length = 0;
         win.clearcontent = true;
         break;
@@ -2633,8 +2708,13 @@ function glk_schannel_set_volume(schan, vol) {
 function glk_sound_load_hint(sndid, flag) {
 }
 
-function glk_set_hyperlink(a1) { /*###*/ }
-function glk_set_hyperlink_stream(a1, a2) { /*###*/ }
+function glk_set_hyperlink(val) {
+    gli_set_hyperlink(gli_currentstr, val);
+}
+
+function glk_set_hyperlink_stream(str, val) {
+    gli_set_hyperlink(str, val);
+}
 
 function glk_request_hyperlink_event(win) {
     if (!win)
