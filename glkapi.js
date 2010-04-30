@@ -268,8 +268,8 @@ function update() {
     var winarray = null;
     var contentarray = null;
     var inputarray = null;
-    var win, obj, useobj, lineobj, ls, val, ix, cx;
-    var initial, lastpos, laststyle;
+    var win, obj, robj, useobj, lineobj, ls, val, ix, cx;
+    var initial, lastpos, laststyle, lasthyperlink;
 
     if (geometry_changed) {
         geometry_changed = false;
@@ -334,12 +334,21 @@ function update() {
                 ls = [];
                 lastpos = 0;
                 for (cx=0; cx<win.gridwidth; ) {
-                    //#### lineobj.hyperlinks
                     laststyle = lineobj.styles[cx];
-                    for (; cx<win.gridwidth && lineobj.styles[cx] == laststyle; cx++) { }
+                    lasthyperlink = lineobj.hyperlinks[cx];
+                    for (; cx<win.gridwidth 
+                             && lineobj.styles[cx] == laststyle
+                             && lineobj.hyperlinks[cx] == lasthyperlink; 
+                         cx++) { }
                     if (lastpos < cx) {
-                        ls.push(StyleNameMap[laststyle]);
-                        ls.push(lineobj.chars.slice(lastpos, cx).join(''));
+                        if (!lasthyperlink) {
+                            ls.push(StyleNameMap[laststyle]);
+                            ls.push(lineobj.chars.slice(lastpos, cx).join(''));
+                        }
+                        else {
+                            robj = { style:StyleNameMap[laststyle], text:lineobj.chars.slice(lastpos, cx).join(''), hyperlink:lasthyperlink };
+                            ls.push(robj);
+                        }
                         lastpos = cx;
                     }
                 }
@@ -1391,6 +1400,7 @@ function gli_window_put_string(win, val) {
             lineobj.dirty = true;
             lineobj.chars[win.cursorx] = ch;
             lineobj.styles[win.cursorx] = win.style;
+            lineobj.hyperlinks[win.cursorx] = win.hyperlink;
 
             win.cursorx++;
             /* We can leave the cursor outside the window, since it will be
@@ -1537,7 +1547,8 @@ function gli_window_rearrange(win, box) {
         }
         else if (oldheight < win.gridheight) {
             for (ix=oldheight; ix<win.gridheight; ix++) {
-                win.lines[ix] = { chars:[], styles:[], dirty:true };
+                win.lines[ix] = { chars:[], styles:[], hyperlinks:[], 
+                                  dirty:true };
             }
         }
         for (ix=0; ix<win.gridheight; ix++) {
@@ -1547,12 +1558,14 @@ function gli_window_rearrange(win, box) {
                 lineobj.dirty = true;
                 lineobj.chars.length = win.gridwidth;
                 lineobj.styles.length = win.gridwidth;
+                lineobj.hyperlinks.length = win.gridwidth;
             }
             else if (oldwidth < win.gridwidth) {
                 lineobj.dirty = true;
                 for (cx=oldwidth; cx<win.gridwidth; cx++) {
                     lineobj.chars[cx] = ' ';
                     lineobj.styles[cx] = Const.style_Normal;
+                    lineobj.hyperlinks[cx] = 0;
                 }
             }
         }
@@ -2004,7 +2017,7 @@ function glk_window_open(splitwin, method, size, wintype, rock) {
         break;
     case Const.wintype_TextGrid:
         /* lines is a list of line objects. A line looks like
-           { chars: [...], styles: [...], dirty: bool }.
+           { chars: [...], styles: [...], hyperlinks: [...], dirty: bool }.
         */
         newwin.gridwidth = 0;
         newwin.gridheight = 0;
@@ -2278,6 +2291,7 @@ function glk_window_clear(win) {
             for (cx=0; cx<win.gridwidth; cx++) {
                 lineobj.chars[cx] = ' ';
                 lineobj.styles[cx] = Const.style_Normal;
+                lineobj.hyperlinks[cx] = 0;
             }
         }
         break;
