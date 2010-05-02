@@ -238,7 +238,9 @@ function handle_line_input(disprock, input) {
 
     ix = win.style;
     gli_set_style(win.str, Const.style_Input);
-    gli_window_put_string(win, input+"\n"); 
+    gli_window_put_string(win, input+"\n");
+    if (win.echostr)
+        glk_put_jstring_stream(win.echostr, input+"\n");
     gli_set_style(win.str, ix);
     //### wrong for grid window?
 
@@ -2608,10 +2610,11 @@ function glk_cancel_line_event(win, eventref) {
     if (input.length > win.linebuf.length)
         input = input.slice(0, win.linebuf.length);
 
-    //### echo stream?
     ix = win.style;
     gli_set_style(win.str, Const.style_Input);
     gli_window_put_string(win, input+"\n");
+    if (win.echostr)
+        glk_put_jstring_stream(win.echostr, input+"\n");
     gli_set_style(win.str, ix);
     //### wrong for grid window?
 
