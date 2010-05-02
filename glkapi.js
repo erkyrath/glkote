@@ -2661,8 +2661,17 @@ function glk_cancel_char_event(win) {
     win.char_request_uni = false;
 }
 
-function glk_request_mouse_event(a1) { /*###*/ }
-function glk_cancel_mouse_event(a1) { /*###*/ }
+function glk_request_mouse_event(win) {
+   if (!win)
+        throw('glk_request_mouse_event: invalid window');
+   /* Not supported. */
+}
+
+function glk_cancel_mouse_event(win) {
+   if (!win)
+        throw('glk_cancel_mouse_event: invalid window');
+   /* Not supported. */
+}
 
 function glk_request_timer_events(msec) {
     if (!(gli_timer_id === null)) {
@@ -2681,13 +2690,48 @@ function glk_request_timer_events(msec) {
     }
 }
 
-function glk_image_get_info(a1, a2, a3) { /*###*/ }
-function glk_image_draw(a1, a2, a3, a4) { /*###*/ }
-function glk_image_draw_scaled(a1, a2, a3, a4, a5, a6) { /*###*/ }
-function glk_window_flow_break(a1) { /*###*/ }
-function glk_window_erase_rect(a1, a2, a3, a4, a5) { /*###*/ }
-function glk_window_fill_rect(a1, a2, a3, a4, a5, a6) { /*###*/ }
-function glk_window_set_background_color(a1, a2) { /*###*/ }
+/* Graphics functions are not currently supported. */
+
+function glk_image_get_info(imgid, widthref, heightref) {
+    if (widthref)
+        widthref.set_value(0);
+    if (heightref)
+        heightref.set_value(0);
+    return 0;
+}
+
+function glk_image_draw(win, imgid, val1, val2) {
+    if (!win)
+        throw('glk_image_draw: invalid window');
+    return 0;
+}
+
+function glk_image_draw_scaled(win, imgid, val1, val2, width, height) {
+    if (!win)
+        throw('glk_image_draw_scaled: invalid window');
+    return 0;
+}
+
+function glk_window_flow_break(win) {
+    if (!win)
+        throw('glk_window_flow_break: invalid window');
+}
+
+function glk_window_erase_rect(win, left, top, width, height) {
+    if (!win)
+        throw('glk_window_erase_rect: invalid window');
+}
+
+function glk_window_fill_rect(win, color, left, top, width, height) {
+    if (!win)
+        throw('glk_window_fill_rect: invalid window');
+}
+
+function glk_window_set_background_color(win, color) {
+    if (!win)
+        throw('glk_window_set_background_color: invalid window');
+}
+
 
 function glk_schannel_iterate(schan, rockref) {
     if (!schan)
