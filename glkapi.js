@@ -2421,8 +2421,40 @@ function glk_stream_close(str, result) {
     gli_delete_stream(str);
 }
 
-function glk_stream_set_position(a1, a2, a3) { /*###*/ }
-function glk_stream_get_position(a1) { /*###*/ }
+function glk_stream_set_position(str, pos, seekmode) {
+    if (!str)
+        throw('glk_stream_set_position: invalid stream');
+
+    switch (str.type) {
+    case strtype_Memory:
+        if (seekmode == Const.seekmode_Current) {
+            pos = str.bufpos + pos;
+        }
+        else if (seekmode == Const.seekmode_End) {
+            pos = str.bufeof + pos;
+        }
+        else {
+            /* pos = pos */
+        }
+        if (pos < 0)
+            pos = 0;
+        if (pos > str.bufeof)
+            pos = str.bufeof;
+        str.bufpos = pos;
+    }
+}
+
+function glk_stream_get_position(str) {
+    if (!str)
+        throw('glk_stream_get_position: invalid stream');
+
+    switch (str.type) {
+    case strtype_Memory:
+        return str.bufpos;
+    default:
+        return 0;
+    }
+}
 
 function glk_stream_set_current(str) {
     gli_currentstr = str;
