@@ -2312,9 +2312,23 @@ function glk_window_move_cursor(win, xpos, ypos) {
     }
 }
 
-function glk_window_get_stream(a1) { /*###*/ }
-function glk_window_set_echo_stream(a1, a2) { /*###*/ }
-function glk_window_get_echo_stream(a1) { /*###*/ }
+function glk_window_get_stream(win) {
+    if (!win)
+        throw('glk_window_get_stream: invalid window');
+    return win.str;
+}
+
+function glk_window_set_echo_stream(win, str) {
+    if (!win)
+        throw('glk_window_set_echo_stream: invalid window');
+    win.echostr = str;
+}
+
+function glk_window_get_echo_stream(win) {
+    if (!win)
+        throw('glk_window_get_echo_stream: invalid window');
+    return win.echostr;
+}
 
 function glk_set_window(win) {
     if (!win)
