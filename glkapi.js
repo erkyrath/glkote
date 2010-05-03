@@ -1826,6 +1826,111 @@ function gli_put_array(str, arr, allbytes) {
     }
 }
 
+function gli_get_char(str, want_unicode) {
+    var ch;
+
+    if (!str || !str.readable)
+        return -1;
+    
+    switch (str.type) {
+    case strtype_Memory:
+        if (str.bufpos < str.bufeof) {
+            ch = str.buf[str.bufpos];
+            str.bufpos++;
+            str.readcount++;
+            if (!want_unicode && ch >= 0x100)
+                return 63; // return '?'
+            return ch;
+        }
+        else {
+            return -1; // end of stream 
+        }
+    default:
+        return -1;
+    }
+}
+
+function gli_get_line(str, buf, want_unicode) {
+    if (!str || !str.readable)
+        return 0;
+
+    var len = buf.length;
+    var gotnewline;
+
+    switch (str.type) {
+    case strtype_Memory:
+        if (len == 0)
+            return 0;
+        len -= 1; /* for the terminal null */
+        if (str.bufpos >= str.bufeof) {
+            len = 0;
+        }
+        else {
+            if (str.bufpos + len > str.bufeof) {
+                len = str.bufeof - str.bufpos;
+            }
+        }
+        gotnewline = false;
+        if (!want_unicode) {
+            for (lx=0; lx<len && !gotnewline; lx++) {
+                ch = str.buf[str.bufpos++];
+                if (!want_unicode && ch >= 0x100)
+                    ch = 63; // ch = '?'
+                buf[lx] = ch;
+                gotnewline = (ch == 10);
+            }
+        }
+        else {
+            for (lx=0; lx<len && !gotnewline; lx++) {
+                ch = str.buf[str.bufpos++];
+                buf[lx] = ch;
+                gotnewline = (ch == 10);
+            }
+        }
+        str.readcount += lx;
+        return lx;
+    default:
+        return 0;
+    }
+}
+
+function gli_get_buffer(str, buf, want_unicode) {
+    if (!str || !str.readable)
+        return 0;
+
+    var len = buf.length;
+    var lx, ch;
+    
+    switch (str.type) {
+    case strtype_Memory:
+        if (str.bufpos >= str.bufeof) {
+            len = 0;
+        }
+        else {
+            if (str.bufpos + len > str.bufeof) {
+                len = str.bufeof - str.bufpos;
+            }
+        }
+        if (!want_unicode) {
+            for (lx=0; lx<len; lx++) {
+                ch = str.buf[str.bufpos++];
+                if (!want_unicode && ch >= 0x100)
+                    ch = 63; // ch = '?'
+                buf[lx] = ch;
+            }
+        }
+        else {
+            for (lx=0; lx<len; lx++) {
+                buf[lx] = str.buf[str.bufpos++];
+            }
+        }
+        str.readcount += len;
+        return len;
+    default:
+        return 0;
+    }
+}
+
 function gli_stream_fill_result(str, result) {
     if (!result)
         return;
@@ -2527,9 +2632,23 @@ function glk_set_style_stream(str, val) {
     gli_set_style(str, val);
 }
 
-function glk_get_char_stream(a1) { /*###*/ }
-function glk_get_line_stream(a1, a2) { /*###*/ }
-function glk_get_buffer_stream(a1, a2) { /*###*/ }
+function glk_get_char_stream(str) {
+    if (!str)
+        throw('glk_get_char_stream: invalid stream');
+    return gli_get_char(str, false);
+}
+
+function glk_get_line_stream(str, buf) {
+    if (!str)
+        throw('glk_get_line_stream: invalid stream');
+    return gli_get_line(str, buf, false);
+}
+
+function glk_get_buffer_stream(str, buf) {
+    if (!str)
+        throw('glk_get_buffer_stream: invalid stream');
+    return gli_get_buffer(str, buf, false);
+}
 
 function glk_char_to_lower(val) {
     if (val >= 0x41 && val <= 0x5A)
@@ -2998,9 +3117,23 @@ function glk_put_string_stream_uni(str, arr) {
 // function glk_put_buffer_stream_uni(str, arr) { }
 glk_put_buffer_stream_uni = glk_put_string_stream_uni;
 
-function glk_get_char_stream_uni(a1) { /*###*/ }
-function glk_get_buffer_stream_uni(a1, a2) { /*###*/ }
-function glk_get_line_stream_uni(a1, a2) { /*###*/ }
+function glk_get_char_stream_uni(str) {
+    if (!str)
+        throw('glk_get_char_stream_uni: invalid stream');
+    return gli_get_char(str, true);
+}
+
+function glk_get_buffer_stream_uni(str, buf) {
+    if (!str)
+        throw('glk_get_buffer_stream_uni: invalid stream');
+    return gli_get_buffer(str, buf, true);
+}
+
+function glk_get_line_stream_uni(str, buf) {
+    if (!str)
+        throw('glk_get_line_stream_uni: invalid stream');
+    return gli_get_line(str, buf, true);
+}
 
 function glk_stream_open_file_uni(fref, fmode, rock) {
     throw('glk_stream_open_file_uni: file streams not supported');
