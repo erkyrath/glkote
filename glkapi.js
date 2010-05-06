@@ -2024,6 +2024,10 @@ function glk_tick() {
 }
 
 function glk_gestalt(sel, val) {
+    return glk_gestalt_ext(sel, val, null);
+}
+
+function glk_gestalt_ext(sel, val, arr) {
     //### more selectors
     switch (sel) {
     case 5: // gestalt_Timer
@@ -2039,8 +2043,6 @@ function glk_gestalt(sel, val) {
 
     return 0;
 }
-
-function glk_gestalt_ext(a1, a2, a3) { /*###*/ }
 
 function glk_window_iterate(win, rockref) {
     if (!win)
