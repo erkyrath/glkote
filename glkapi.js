@@ -2614,7 +2614,8 @@ function glk_stream_get_current() {
 }
 
 function glk_fileref_create_temp(usage, rock) {
-    var filename = "####temporary";
+    var timestamp = new Date().getTime();
+    var filename = "_temp_" + timestamp + "_" + Math.random();
     fref = gli_new_fileref(filename, usage, rock);
     return fref;
 }
