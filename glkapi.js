@@ -1748,6 +1748,48 @@ function gli_stream_open_window(win) {
     return str;
 }
 
+function gli_new_fileref(filename, usage, rock) {
+    var fref = {};
+    fref.filename = filename;
+    fref.rock = rock;
+    fref.disprock = undefined;
+
+    fref.textmode = ((usage & Const.fileusage_TextMode) != 0);
+    fref.filetype = (usage & Const.fileusage_TypeMask);
+
+    fref.prev = null;
+    fref.next = gli_filereflist;
+    gli_filereflist = fref;
+    if (fref.next)
+        fref.next.prev = fref;
+
+    if (window.GiDispa)
+        GiDispa.class_register('fileref', fref);
+
+    return fref;
+}
+
+function gli_delete_fileref(fref) {
+    var prev, next;
+    
+    if (window.GiDispa)
+        GiDispa.class_unregister('fileref', fref);
+
+    prev = fref.prev;
+    next = fref.next;
+    fref.prev = null;
+    fref.next = null;
+
+    if (prev)
+        prev.next = next;
+    else
+        gli_filereflist = next;
+    if (next)
+        next.prev = prev;
+
+    fref.filename = null;
+}
+
 /* Write one character (given as a Unicode value) to a stream.
    This is called by both the one-byte and four-byte character APIs.
 */
@@ -2571,10 +2613,33 @@ function glk_stream_get_current() {
     return gli_currentstr;
 }
 
-function glk_fileref_create_temp(a1, a2) { /*###*/ }
-function glk_fileref_create_by_name(a1, a2, a3) { /*###*/ }
-function glk_fileref_create_by_prompt(a1, a2, a3) { /*###*/ }
-function glk_fileref_destroy(a1) { /*###*/ }
+function glk_fileref_create_temp(usage, rock) {
+    var filename = "####temporary";
+    fref = gli_new_fileref(filename, usage, rock);
+    return fref;
+}
+
+function glk_fileref_create_by_name(usage, arr, rock) {
+    /* The filename is provided as an array of character codes. This will only
+       be used as a Storage key, so the caller can't do much to mess with the
+       user. But let's limit the filename to a sane length limit anyhow. */
+    if (arr.length > 256)
+        arr.length = 256;
+    arr = TrimArrayToBytes(arr);
+    var filename = String.fromCharCode.apply(this, arr);
+    fref = gli_new_fileref(filename, usage, rock);
+    return fref;
+}
+
+function glk_fileref_create_by_prompt(usage, fmode, rock) {
+    /* #### prompt */
+}
+
+function glk_fileref_destroy(fref) {
+    if (!fref)
+        throw('glk_fileref_destroy: invalid fileref');
+    gli_delete_fileref(fref);
+}
 
 function glk_fileref_iterate(fref, rockref) {
     if (!fref)
