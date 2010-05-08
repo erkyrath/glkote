@@ -1984,6 +1984,7 @@ function glk_put_jstring(val) {
     glk_put_jstring_stream(gli_currentstr, val);
 }
 
+//### optional guaranteed-8-bit flag?
 function glk_put_jstring_stream(str, val) {
     var ix, len;
 
