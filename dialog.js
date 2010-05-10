@@ -7,6 +7,7 @@ var is_open = false;
 var will_save; /* is this a save dialog? */
 var cur_usage; /* a string representing the file's category */
 var cur_gameid; /* a string representing the game */
+var cur_filelist; /* the files currently on display */
 
 function dialog_open(tosave, usage, gameid) {
     if (is_open)
@@ -103,6 +104,17 @@ function remove_children(parent) {
 
 function evhan_accept_button() {
     GlkOte.log('### accept');
+    var selel = $(dialog_el_id+'_select');
+    if (!selel)
+        return false;
+    var pos = selel.selectedIndex;
+    if (!cur_filelist || pos < 0 || pos >= cur_filelist.length)
+        return false;
+    var file = cur_filelist[pos];
+    file = file_decode_stat(file.key);
+    if (!file)
+        return false;
+    GlkOte.log('### selected ' + file.key);
     return false;
 }
 
@@ -129,6 +141,8 @@ function evhan_storage_changed(ev) {
         return false;
 
     ls = files_list(cur_usage, cur_gameid);
+    //### sort ls by date
+    cur_filelist = ls;
     
     if (ls.length == 0) {
         remove_children(bodyel);
@@ -137,25 +151,40 @@ function evhan_storage_changed(ev) {
         el.disabled = true;
     }
     else {
-        //### sort ls by date
-
         remove_children(bodyel);
         set_caption('Select a saved game to load.', true);
         el = $(dialog_el_id+'_accept');
         el.disabled = false;
         
-        var selel = new Element('select', { name:'files', size:'5' });
-        var ix, file;
+        var selel = new Element('select', { id: dialog_el_id+'_select', name:'files', size:'5' });
+        var ix, file, datestr;
         for (ix=0; ix<ls.length; ix++) {
             file = ls[ix];
             el = new Element('option', { name:'f'+ix } );
             if (ix == 0)
                 el.selected = true;
-            insert_text(el, file.filename);
+            datestr = format_date(file.modified);
+            insert_text(el, file.filename + ' -- ' + datestr);
             selel.insert(el);
         }
         bodyel.insert(selel);
     }
+}
+
+function file_encode(filename, usage, gameid) {
+    if (!usage)
+        useage = '';
+    if (!gameid)
+        gameid = '';
+    var key = 'key:' + usage + ':' + gameid + ':' + filename;
+    var file = { key:key, filename:filename, usage:usage, gameid:gameid };
+
+    if (localStorage.getItem(key)) 
+        return file_decode_stat(file);
+
+    file.contentid = generate_guid();
+    file.created = new Date();
+    return file;
 }
 
 function file_decode_key(key) {
@@ -186,45 +215,72 @@ function file_decode_stat(file) {
             return null;
     }
 
-    var val = localStorage.getItem(file.key);
-    if (!val)
+    var statstring = localStorage.getItem(file.key);
+    if (!statstring)
         return null;
 
-    //### date, binary
+    var ix, pos, key, val;
+
+    var ls = statstring.split(',');
+    for (ix=0; ix<ls.length; ix++) {
+        val = ls[ix];
+        pos = val.indexOf(':');
+        if (pos < 0)
+            continue;
+        key = val.slice(0, pos);
+        val = val.slice(pos+1);
+
+        switch (key) {
+        case 'created':
+            file.created = new Date(Number(val));
+            break;
+        case 'modified':
+            file.modified = new Date(Number(val));
+            break;
+        case 'contentid':
+            file.contentid = val;
+            break;
+        }
+    }
+
+    //### binary
     //### game name?
 
     return file;
 }
 
-function file_encode(filename, usage, gameid) {
-    var key = 'key:' + usage + ':' + gameid + ':' + filename;
-    return { key:key, filename:filename, usage:usage, gameid:gameid };
-}
-
 function file_store(file) {
-    var val = '';
+    var val, ls;
 
-    //### date, binary
+    if (!file.contentid)
+        return false;
+    file.modified = new Date();
+
+    ls = [];
+
+    if (file.created)
+        ls.push('created:' + file.created.getTime());
+    if (file.modified)
+        ls.push('modified:' + file.modified.getTime());
+    if (file.contentid)
+        ls.push('contentid:' + file.contentid);
+
+    //### binary
     //### game name?
 
+    val = ls.join(',');
     localStorage.setItem(file.key, val);
+
+    return true;
 }
 
 function file_matches(file, usage, gameid) {
-    if (!usage) {
-        if (file.usage)
-            return false;
-    }
-    else {
+    if (usage != null) {
         if (file.usage != usage)
             return false;
     }
 
-    if (!gameid) {
-        if (file.gameid)
-            return false;
-    }
-    else {
+    if (gameid != null) {
         if (file.gameid != gameid)
             return false;
     }
@@ -252,6 +308,23 @@ function files_list(usage, gameid) {
     GlkOte.log('### files_list found ' + ls.length + ' files.');
     return ls;
 }
+
+var guid_counter = 1;
+
+function generate_guid() {
+    var timestamp = new Date().getTime();
+    var guid = timestamp + '_' + Math.random() + '_' + guid_counter;
+    guid_counter++;
+    guid = guid.replace('.', '');
+    return guid;
+}
+
+function format_date(date) {
+    var day =  (date.getMonth()+1) + '/' + date.getDate();
+    var time = date.getHours() + ':' + (date.getMinutes() < 10 ? '0' : '') + date.getMinutes();
+    return day + ' ' + time;
+}
+
 
 /* Set up storage event handler at load time, but after all the handlers
    are defined. 
