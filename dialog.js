@@ -171,19 +171,13 @@ function evhan_storage_changed(ev) {
     }
 }
 
-function file_encode(filename, usage, gameid) {
+function file_create_ref(filename, usage, gameid) {
     if (!usage)
         useage = '';
     if (!gameid)
         gameid = '';
     var key = 'key:' + usage + ':' + gameid + ':' + filename;
     var file = { key:key, filename:filename, usage:usage, gameid:gameid };
-
-    if (localStorage.getItem(key)) 
-        return file_decode_stat(file);
-
-    file.contentid = generate_guid();
-    file.created = new Date();
     return file;
 }
 
@@ -249,11 +243,30 @@ function file_decode_stat(file) {
     return file;
 }
 
+function file_ref_exists(file) {
+    var statstring = localStorage.getItem(file.key);
+    if (!statstring)
+        return false;
+    else
+        return true;
+}
+
+function file_remove(file) {
+    localStorage.removeItem(file.key);
+}
+
 function file_store(file) {
     var val, ls;
 
-    if (!file.contentid)
-        return false;
+    if (!file.contentid) {
+        if (!file_decode_stat(file)) {
+            file.contentid = generate_guid();
+            file.created = new Date();
+        }
+    }
+    /* ### If there is a stored key, update this file? Or leave that until
+       write time? */
+
     file.modified = new Date();
 
     ls = [];
@@ -335,4 +348,8 @@ window.addEventListener('storage', evhan_storage_changed, false);
 //### namespace
 Dialog = {
     open: dialog_open,
+
+    file_create_ref: file_create_ref,
+    file_ref_exists: file_ref_exists,
+    file_remove: file_remove,
 };
