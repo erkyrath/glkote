@@ -2656,7 +2656,7 @@ function glk_fileref_create_by_name(usage, arr, rock) {
 }
 
 function glk_fileref_create_by_prompt(usage, fmode, rock) {
-    /* #### prompt */
+    /* #### prompt... block UI? */
 }
 
 function glk_fileref_destroy(fref) {
@@ -2703,7 +2703,13 @@ function glk_fileref_does_file_exist(fref) {
         return 0;
 }
 
-function glk_fileref_create_from_fileref(a1, a2, a3) { /*###*/ }
+function glk_fileref_create_from_fileref(usage, oldfref, rock) {
+    if (!oldfref)
+        throw('glk_fileref_create_from_fileref: invalid fileref');
+    
+    var fref = gli_new_fileref(oldfref.filename, usage, rock);
+    return fref;
+}
 
 function glk_put_char(ch) {
     gli_put_char(gli_currentstr, ch & 0xFF);
