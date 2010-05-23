@@ -1773,7 +1773,7 @@ function gli_new_fileref(filename, usage, rock) {
     }
 
     //### gameid: grab for "save", use blank for other
-    fref.stat = Dialog.file_create_ref(fref.filename, fref.filetypename, '');
+    fref.ref = Dialog.file_construct_ref(fref.filename, fref.filetypename, '');
 
     fref.prev = null;
     fref.next = gli_filereflist;
@@ -1806,7 +1806,7 @@ function gli_delete_fileref(fref) {
         next.prev = prev;
 
     fref.filename = null;
-    fref.stat = null;
+    fref.ref = null;
     fref.rock = null;
     fref.disprock = null;
 }
@@ -2691,13 +2691,13 @@ function glk_fileref_get_rock(fref) {
 function glk_fileref_delete_file(fref) {
     if (!fref)
         throw('glk_fileref_delete_file: invalid fileref');
-    Dialog.file_remove(fref.stat);
+    Dialog.file_remove_ref(fref.ref);
 }
 
 function glk_fileref_does_file_exist(fref) {
     if (!fref)
         throw('glk_fileref_does_file_exist: invalid fileref');
-    if (Dialog.file_ref_exists(fref.stat))
+    if (Dialog.file_ref_exists(fref.ref))
         return 1;
     else
         return 0;

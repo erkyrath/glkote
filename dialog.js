@@ -111,10 +111,10 @@ function evhan_accept_button() {
     if (!cur_filelist || pos < 0 || pos >= cur_filelist.length)
         return false;
     var file = cur_filelist[pos];
-    file = file_decode_stat(file.key);
-    if (!file)
+    if (!file_ref_exists(file.dirent))
         return false;
-    GlkOte.log('### selected ' + file.key);
+    GlkOte.log('### selected ' + file.dirent.dirent);
+    //### callback
     return false;
 }
 
@@ -164,54 +164,61 @@ function evhan_storage_changed(ev) {
             if (ix == 0)
                 el.selected = true;
             datestr = format_date(file.modified);
-            insert_text(el, file.filename + ' -- ' + datestr);
+            insert_text(el, file.dirent.filename + ' -- ' + datestr);
             selel.insert(el);
         }
         bodyel.insert(selel);
     }
 }
 
-function file_create_ref(filename, usage, gameid) {
+function file_construct_ref(filename, usage, gameid) {
     if (!usage)
         useage = '';
     if (!gameid)
         gameid = '';
-    var key = 'key:' + usage + ':' + gameid + ':' + filename;
-    var file = { key:key, filename:filename, usage:usage, gameid:gameid };
-    return file;
+    var key = usage + ':' + gameid + ':' + filename;
+    var ref = { dirent: 'dirent:'+key, content: 'content:'+key,
+                filename: filename, usage: usage, gameid: gameid };
+    return ref;
 }
 
-function file_decode_key(key) {
-    if (!key.startsWith('key:'))
+function file_decode_ref(dirkey) {
+    if (!dirkey.startsWith('dirent:'))
         return null;
 
-    var oldpos = 4;
-    var pos = key.indexOf(':', oldpos);
+    var oldpos = 7;
+    var pos = dirkey.indexOf(':', oldpos);
     if (pos < 0)
         return null;
-    var usage = key.slice(oldpos, pos);
+    var usage = dirkey.slice(oldpos, pos);
     oldpos = pos+1;
     
-    pos = key.indexOf(':', oldpos);
+    pos = dirkey.indexOf(':', oldpos);
     if (pos < 0)
         return null;
-    var gameid = key.slice(oldpos, pos);
+    var gameid = dirkey.slice(oldpos, pos);
     oldpos = pos+1;
-    
-    var filename = key.slice(oldpos);
-    return { key:key, filename:filename, usage:usage, gameid:gameid };
+
+    var filename = dirkey.slice(oldpos);
+    var conkey = 'cont'+dirkey.slice(3);
+
+    var ref = { dirent: dirkey, content: conkey, 
+                filename: filename, usage: usage, gameid: gameid };
+    return ref;
 }
 
-function file_decode_stat(file) {
-    if (typeof(file) != 'object') {
-        file = file_decode_key(file);
-        if (!file)
+function file_load_dirent(dirent) {
+    if (typeof(dirent) != 'object') {
+        dirent = file_decode_ref(dirent);
+        if (!dirent)
             return null;
     }
 
-    var statstring = localStorage.getItem(file.key);
+    var statstring = localStorage.getItem(dirent.dirent);
     if (!statstring)
         return null;
+
+    var file = { dirent: dirent };
 
     var ix, pos, key, val;
 
@@ -231,9 +238,6 @@ function file_decode_stat(file) {
         case 'modified':
             file.modified = new Date(Number(val));
             break;
-        case 'contentid':
-            file.contentid = val;
-            break;
         }
     }
 
@@ -243,31 +247,31 @@ function file_decode_stat(file) {
     return file;
 }
 
-function file_ref_exists(file) {
-    var statstring = localStorage.getItem(file.key);
+function file_ref_exists(ref) {
+    var statstring = localStorage.getItem(ref.dirent);
     if (!statstring)
         return false;
     else
         return true;
 }
 
-function file_remove(file) {
-    localStorage.removeItem(file.key);
+function file_remove_ref(ref) {
+    localStorage.removeItem(ref.dirent);
+    localStorage.removeItem(ref.content);
 }
 
-function file_store(file) {
+function file_write(dirent, content, israw) {
     var val, ls;
 
-    if (!file.contentid) {
-        if (!file_decode_stat(file)) {
-            file.contentid = generate_guid();
-            file.created = new Date();
-        }
+    var file = file_load_dirent(dirent);
+    if (!file) {
+        file = { dirent: dirent, created: new Date() };
     }
-    /* ### If there is a stored key, update this file? Or leave that until
-       write time? */
 
     file.modified = new Date();
+
+    if (!israw)
+        content = btoa(content);
 
     ls = [];
 
@@ -275,26 +279,25 @@ function file_store(file) {
         ls.push('created:' + file.created.getTime());
     if (file.modified)
         ls.push('modified:' + file.modified.getTime());
-    if (file.contentid)
-        ls.push('contentid:' + file.contentid);
 
     //### binary
     //### game name?
 
     val = ls.join(',');
-    localStorage.setItem(file.key, val);
+    localStorage.setItem(file.dirent.dirent, val);
+    localStorage.setItem(file.dirent.content, content);
 
     return true;
 }
 
-function file_matches(file, usage, gameid) {
+function file_dirent_matches(dirent, usage, gameid) {
     if (usage != null) {
-        if (file.usage != usage)
+        if (dirent.usage != usage)
             return false;
     }
 
     if (gameid != null) {
-        if (file.gameid != gameid)
+        if (dirent.gameid != gameid)
             return false;
     }
 
@@ -309,12 +312,12 @@ function files_list(usage, gameid) {
         return ls;
 
     for (key in localStorage) {
-        file = file_decode_key(key);
-        if (!file)
+        var dirent = file_decode_ref(key);
+        if (!dirent)
             continue;
-        if (!file_matches(file, usage, gameid))
+        if (!file_dirent_matches(dirent, usage, gameid))
             continue;
-        file_decode_stat(file);
+        var file = file_load_dirent(dirent);
         ls.push(file);
     }
 
@@ -323,7 +326,7 @@ function files_list(usage, gameid) {
 }
 
 var guid_counter = 1;
-
+/*### delete this? */
 function generate_guid() {
     var timestamp = new Date().getTime();
     var guid = timestamp + '_' + Math.random() + '_' + guid_counter;
@@ -333,7 +336,10 @@ function generate_guid() {
 }
 
 function format_date(date) {
-    var day =  (date.getMonth()+1) + '/' + date.getDate();
+    if (!date)
+        return '???';
+    //### display relative dates?
+    var day = (date.getMonth()+1) + '/' + date.getDate();
     var time = date.getHours() + ':' + (date.getMinutes() < 10 ? '0' : '') + date.getMinutes();
     return day + ' ' + time;
 }
@@ -349,7 +355,7 @@ window.addEventListener('storage', evhan_storage_changed, false);
 Dialog = {
     open: dialog_open,
 
-    file_create_ref: file_create_ref,
+    file_construct_ref: file_construct_ref,
     file_ref_exists: file_ref_exists,
-    file_remove: file_remove,
+    file_remove_ref: file_remove_ref,
 };
