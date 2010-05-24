@@ -36,7 +36,8 @@ function dialog_open(tosave, usage, gameid) {
         dia.remove();
 
     dia = new Element('div', { id: dialog_el_id });
-    var styledic = { left: 200+'px', top: 200+'px' };
+    //### center better?
+    var styledic = { left: 150+'px', top: 150+'px' };
     dia.setStyle(styledic);
 
     var form, el, row;
@@ -290,6 +291,13 @@ function file_write(dirent, content, israw) {
     return true;
 }
 
+function file_read(dirent, israw) {
+    //###
+    //### return null if no such file
+    //### make sure '' maps to either '' or []
+    return [];
+}
+
 function file_dirent_matches(dirent, usage, gameid) {
     if (usage != null) {
         if (dirent.usage != usage)
@@ -358,4 +366,6 @@ Dialog = {
     file_construct_ref: file_construct_ref,
     file_ref_exists: file_ref_exists,
     file_remove_ref: file_remove_ref,
+    file_write: file_write,
+    file_read: file_read,
 };

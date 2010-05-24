@@ -1759,6 +1759,10 @@ function gli_stream_open_window(win) {
     return str;
 }
 
+function gli_stream_dirty_file(str) {
+    //### set timer if none
+}
+
 function gli_new_fileref(filename, usage, rock) {
     var fref = {};
     fref.filename = filename;
@@ -1824,6 +1828,9 @@ function gli_put_char(str, ch) {
     str.writecount += 1;
     
     switch (str.type) {
+    case strtype_File:
+        gli_stream_dirty_file(str);
+        /* fall through to memory... */
     case strtype_Memory:
         if (str.bufpos < str.buflen) {
             str.buf[str.bufpos] = ch;
@@ -1839,8 +1846,6 @@ function gli_put_char(str, ch) {
         if (str.win.echostr)
             gli_put_char(str.win.echostr, ch);
         break;
-    case strtype_File:
-        throw('gli_put_char: file streams not supported');
     }
 }
 
@@ -1863,6 +1868,9 @@ function gli_put_array(str, arr, allbytes) {
     str.writecount += arr.length;
     
     switch (str.type) {
+    case strtype_File:
+        gli_stream_dirty_file(str);
+        /* fall through to memory... */
     case strtype_Memory:
         len = arr.length;
         if (len > str.buflen-str.bufpos)
@@ -1884,8 +1892,6 @@ function gli_put_array(str, arr, allbytes) {
         if (str.win.echostr)
             gli_put_array(str.win.echostr, arr, allbytes);
         break;
-    case strtype_File:
-        throw('gli_put_array: file streams not supported');
     }
 }
 
@@ -1896,6 +1902,8 @@ function gli_get_char(str, want_unicode) {
         return -1;
     
     switch (str.type) {
+    case strtype_File:
+        /* fall through to memory... */
     case strtype_Memory:
         if (str.bufpos < str.bufeof) {
             ch = str.buf[str.bufpos];
@@ -1921,6 +1929,8 @@ function gli_get_line(str, buf, want_unicode) {
     var gotnewline;
 
     switch (str.type) {
+    case strtype_File:
+        /* fall through to memory... */
     case strtype_Memory:
         if (len == 0)
             return 0;
@@ -1965,6 +1975,8 @@ function gli_get_buffer(str, buf, want_unicode) {
     var lx, ch;
     
     switch (str.type) {
+    case strtype_File:
+        /* fall through to memory... */
     case strtype_Memory:
         if (str.bufpos >= str.bufeof) {
             len = 0;
@@ -2015,6 +2027,9 @@ function glk_put_jstring_stream(str, val) {
     str.writecount += val.length;
     
     switch (str.type) {
+    case strtype_File:
+        gli_stream_dirty_file(str);
+        /* fall through to memory... */
     case strtype_Memory:
         len = val.length;
         if (len > str.buflen-str.bufpos)
@@ -2038,8 +2053,6 @@ function glk_put_jstring_stream(str, val) {
         if (str.win.echostr)
             glk_put_jstring_stream(str.win.echostr, val);
         break;
-    case strtype_File:
-        throw('gli_put_jstring: file streams not supported');
     }
 }
 
@@ -2549,7 +2562,49 @@ function glk_stream_get_rock(str) {
 }
 
 function glk_stream_open_file(fref, fmode, rock) {
-    throw('glk_stream_open_file: file streams not supported');
+    if (!fref)
+        throw('glk_stream_open_file: invalid fileref');
+
+    var str;
+
+    if (fmode != Const.filemode_Read 
+        && fmode != Const.filemode_Write 
+        && fmode != Const.filemode_ReadWrite 
+        && fmode != Const.filemode_WriteAppend) 
+        throw('glk_stream_open_file: illegal filemode');
+
+    if (fmode == Const.filemode_Read && !Dialog.file_ref_exists(fref.ref))
+        throw('glk_stream_open_file: file not found for reading: ' + fref.ref.filename);
+
+    var content = null;
+    if (fmode != Const.filemode_Write) {
+        content = Dialog.file_read(fref.ref);
+    }
+    if (content == null) {
+        content = [];
+        if (fmode != Const.filemode_Read) {
+            /* We just created this file. (Or perhaps we're in Write mode and
+               we're truncating.) Write immediately, to create it and get the
+               creation date right. */
+            Dialog.file_write(fref.ref, '', true);
+        }
+    }
+
+    str = gli_new_stream(strtype_File, 
+        (fmode != Const.filemode_Write), 
+        (fmode != Const.filemode_Read), 
+        rock);
+    str.unicode = false;
+
+    str.buf = content;
+    str.buflen = 0xFFFFFFFF; /* enormous */
+    str.bufpos = 0;
+    if (fmode == Const.filemode_Write)
+        str.bufeof = 0;
+    else
+        str.bufeof = content.length;
+
+    return str;
 }
 
 function glk_stream_open_memory(buf, fmode, rock) {
@@ -2597,6 +2652,9 @@ function glk_stream_set_position(str, pos, seekmode) {
         throw('glk_stream_set_position: invalid stream');
 
     switch (str.type) {
+    case strtype_File:
+        //### check if file has been modified? This is a half-decent time.
+        /* fall through to memory... */
     case strtype_Memory:
         if (seekmode == Const.seekmode_Current) {
             pos = str.bufpos + pos;
@@ -2620,6 +2678,8 @@ function glk_stream_get_position(str) {
         throw('glk_stream_get_position: invalid stream');
 
     switch (str.type) {
+    case strtype_File:
+        /* fall through to memory... */
     case strtype_Memory:
         return str.bufpos;
     default:
@@ -3246,6 +3306,7 @@ function glk_get_line_stream_uni(str, buf) {
 }
 
 function glk_stream_open_file_uni(fref, fmode, rock) {
+    //### copy glk_stream_open_file
     throw('glk_stream_open_file_uni: file streams not supported');
 }
 
