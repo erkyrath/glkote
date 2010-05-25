@@ -16,9 +16,9 @@
  *
  * This API was built for Quixe, which is a pure-Javascript Glulx
  * interpreter. Therefore, the API is a little strange. Notably, it
- * accepts string data in the form of an array of integers, not a 
- * Javascript string. There are a few extra calls (glk_put_jstring,
- * etc) which work in the more intuitive way.
+ * accepts text buffers in the form of arrays of integers, not
+ * Javascript strings. Only the Glk calls that explicitly use strings
+ * (glk_put_string, etc) accept Javascript native strings.
  *
  * If you are writing an application in pure Javascript, you can use
  * this layer (along with glkote.js). If you are writing a web app which
@@ -2013,16 +2013,15 @@ function gli_stream_fill_result(str, result) {
     result.set_field(1, str.writecount);
 }
 
-function glk_put_jstring(val) {
-    glk_put_jstring_stream(gli_currentstr, val);
+function glk_put_jstring(val, allbytes) {
+    glk_put_jstring_stream(gli_currentstr, val, allbytes);
 }
 
-//### optional guaranteed-8-bit flag?
-function glk_put_jstring_stream(str, val) {
+function glk_put_jstring_stream(str, val, allbytes) {
     var ix, len;
 
     if (!str || !str.writable)
-        throw('gli_put_jstring: invalid stream');
+        throw('glk_put_jstring: invalid stream');
 
     str.writecount += val.length;
     
@@ -2034,7 +2033,7 @@ function glk_put_jstring_stream(str, val) {
         len = val.length;
         if (len > str.buflen-str.bufpos)
             len = str.buflen-str.bufpos;
-        if (str.unicode) {
+        if (str.unicode || allbytes) {
             for (ix=0; ix<len; ix++)
                 str.buf[str.bufpos+ix] = val.charCodeAt(ix);
         }
@@ -2048,10 +2047,10 @@ function glk_put_jstring_stream(str, val) {
         break;
     case strtype_Window:
         if (str.win.line_request)
-            throw('gli_put_jstring: window has pending line request');
+            throw('glk_put_jstring: window has pending line request');
         gli_window_put_string(str.win, val);
         if (str.win.echostr)
-            glk_put_jstring_stream(str.win.echostr, val);
+            glk_put_jstring_stream(str.win.echostr, val, allbytes);
         break;
     }
 }
@@ -2703,14 +2702,7 @@ function glk_fileref_create_temp(usage, rock) {
     return fref;
 }
 
-function glk_fileref_create_by_name(usage, arr, rock) {
-    /* The filename is provided as an array of character codes. This will only
-       be used as a Storage key, so the caller can't do much to mess with the
-       user. But let's limit the filename to a sane length limit anyhow. */
-    if (arr.length > 256)
-        arr.length = 256;
-    arr = TrimArrayToBytes(arr);
-    var filename = String.fromCharCode.apply(this, arr);
+function glk_fileref_create_by_name(usage, filename, rock) {
     fref = gli_new_fileref(filename, usage, rock);
     return fref;
 }
@@ -2779,20 +2771,23 @@ function glk_put_char_stream(str, ch) {
     gli_put_char(str, ch & 0xFF);
 }
 
-function glk_put_string(arr) {
+function glk_put_string(val) {
+    glk_put_jstring_stream(gli_currentstr, val, true);
+}
+
+function glk_put_string_stream(str, val) {
+    glk_put_jstring_stream(str, val, true);
+}
+
+function glk_put_buffer(arr) {
     arr = TrimArrayToBytes(arr);
     gli_put_array(gli_currentstr, arr, true);
 }
 
-function glk_put_string_stream(str, arr) {
+function glk_put_buffer_stream(str, arr) {
     arr = TrimArrayToBytes(arr);
     gli_put_array(str, arr, true);
 }
-
-// function glk_put_buffer(arr) { }
-glk_put_buffer = glk_put_string;
-// function glk_put_buffer_stream(str, arr) { }
-glk_put_buffer_stream = glk_put_string_stream;
 
 function glk_set_style(val) {
     gli_set_style(gli_currentstr, val);
@@ -3269,23 +3264,25 @@ function glk_put_char_uni(ch) {
     gli_put_char(gli_currentstr, ch);
 }
 
-function glk_put_string_uni(arr) {
-    gli_put_array(gli_currentstr, arr, false);
+function glk_put_string_uni(val) {
+    glk_put_jstring_stream(gli_currentstr, val, false);
 }
 
-// function glk_put_buffer_uni(a1) { }
-glk_put_buffer_uni = glk_put_string_uni;
+function glk_put_buffer_uni(arr) {
+    gli_put_array(gli_currentstr, arr, false);
+}
 
 function glk_put_char_stream_uni(str, ch) {
     gli_put_char(str, ch);
 }
 
-function glk_put_string_stream_uni(str, arr) {
-    gli_put_array(str, arr, false);
+function glk_put_string_stream_uni(str, val) {
+    glk_put_jstring_stream(str, val, false);
 }
 
-// function glk_put_buffer_stream_uni(str, arr) { }
-glk_put_buffer_stream_uni = glk_put_string_stream_uni;
+function glk_put_buffer_stream_uni(str, arr) {
+    gli_put_array(str, arr, false);
+}
 
 function glk_get_char_stream_uni(str) {
     if (!str)
@@ -3386,6 +3383,8 @@ return {
     init : init,
     update : update,
     fatal_error : fatal_error,
+    byte_array_to_string : ByteArrayToString,
+    uni_array_to_string : UniArrayToString,
     Const : Const,
     RefBox : RefBox,
     RefStruct : RefStruct,

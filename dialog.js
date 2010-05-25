@@ -147,12 +147,14 @@ function evhan_storage_changed(ev) {
     
     if (ls.length == 0) {
         remove_children(bodyel);
+        //### not "save files"
         set_caption('You have no save files for this game.', true);
         el = $(dialog_el_id+'_accept');
         el.disabled = true;
     }
     else {
         remove_children(bodyel);
+        //### not "save files"
         set_caption('Select a saved game to load.', true);
         el = $(dialog_el_id+'_accept');
         el.disabled = false;
