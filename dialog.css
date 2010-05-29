@@ -27,6 +27,14 @@
   margin: 16px;
 }
 
+#dialog .DiaInput {
+  margin: 16px;
+}
+
+#dialog input {
+  width: 100%;
+}
+
 #dialog .DiaBody {
   margin: 16px;
 }

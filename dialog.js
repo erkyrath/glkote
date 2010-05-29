@@ -43,12 +43,22 @@ function dialog_open(tosave, usage, gameid) {
     var form, el, row;
 
     form = new Element('form');
-    form.onsubmit = evhan_accept_button;
+    if (will_save)
+        form.onsubmit = evhan_accept_save_button;
+    else
+        form.onsubmit = evhan_accept_load_button;
     dia.insert(form);
 
     row = new Element('div', { id: dialog_el_id+'_cap', 'class': 'DiaCaption' });
     insert_text(row, 'XXX');
     form.insert(row);
+
+    if (will_save) {
+        row = new Element('div', { id: dialog_el_id+'_input', 'class': 'DiaInput' });
+        form.insert(row);
+        el = new Element('input', { id: dialog_el_id+'_infield', type: 'text', name: 'filename' });
+        row.insert(el);
+    }
 
     row = new Element('div', { id: dialog_el_id+'_body', 'class': 'DiaBody' });
     form.insert(row);
@@ -63,7 +73,7 @@ function dialog_open(tosave, usage, gameid) {
     el.onclick = evhan_cancel_button;
     row.insert(el);
     el = new Element('button', { id: dialog_el_id+'_accept', type: 'submit' });
-    insert_text(el, 'Load');
+    insert_text(el, (will_save ? 'Save' : 'Load'));
     row.insert(el);
     form.insert(row);
 
@@ -103,8 +113,25 @@ function remove_children(parent) {
     }
 }
 
-function evhan_accept_button() {
-    GlkOte.log('### accept');
+function evhan_select_change() {
+    GlkOte.log('### select changed');
+    var selel = $(dialog_el_id+'_select');
+    if (!selel)
+        return false;
+    var pos = selel.selectedIndex;
+    if (!cur_filelist || pos < 0 || pos >= cur_filelist.length)
+        return false;
+    var file = cur_filelist[pos];
+    var fel = $(dialog_el_id+'_infield');
+    if (!fel)
+        return false;
+    fel.value = file.dirent.filename;
+    GlkOte.log('### selected ' + file.dirent.dirent);
+    return false;
+}
+
+function evhan_accept_load_button() {
+    GlkOte.log('### accept load');
     var selel = $(dialog_el_id+'_select');
     if (!selel)
         return false;
@@ -115,6 +142,20 @@ function evhan_accept_button() {
     if (!file_ref_exists(file.dirent))
         return false;
     GlkOte.log('### selected ' + file.dirent.dirent);
+    //### callback
+    return false;
+}
+
+function evhan_accept_save_button() {
+    GlkOte.log('### accept save');
+    var fel = $(dialog_el_id+'_infield');
+    if (!fel)
+        return false;
+    var filename = fel.value;
+    filename = filename.strip(); // prototype-ism
+    if (!filename)
+        return false;
+    GlkOte.log('### selected ' + filename);
     //### callback
     return false;
 }
@@ -147,17 +188,9 @@ function evhan_storage_changed(ev) {
     
     if (ls.length == 0) {
         remove_children(bodyel);
-        //### not "save files"
-        set_caption('You have no save files for this game.', true);
-        el = $(dialog_el_id+'_accept');
-        el.disabled = true;
     }
     else {
         remove_children(bodyel);
-        //### not "save files"
-        set_caption('Select a saved game to load.', true);
-        el = $(dialog_el_id+'_accept');
-        el.disabled = false;
         
         var selel = new Element('select', { id: dialog_el_id+'_select', name:'files', size:'5' });
         var ix, file, datestr;
@@ -171,6 +204,28 @@ function evhan_storage_changed(ev) {
             selel.insert(el);
         }
         bodyel.insert(selel);
+
+        if (will_save)
+            selel.onchange = evhan_select_change;
+    }
+
+    //### not "save files"
+    if (will_save) {
+        set_caption('Name this save file.', true);
+        el = $(dialog_el_id+'_accept');
+        el.disabled = false;
+    }
+    else {
+        if (ls.length == 0) {
+            set_caption('You have no save files for this game.', true);
+            el = $(dialog_el_id+'_accept');
+            el.disabled = true;
+        }
+        else {
+            set_caption('Select a saved game to load.', true);
+            el = $(dialog_el_id+'_accept');
+            el.disabled = false;
+        }
     }
 }
 
