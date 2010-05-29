@@ -5,6 +5,7 @@ var dialog_el_id = 'dialog';
 
 var is_open = false;
 var will_save; /* is this a save dialog? */
+var confirming; /* are we in a "confirm" sub-dialog? */
 var cur_usage; /* a string representing the file's category */
 var cur_gameid; /* a string representing the game */
 var cur_filelist; /* the files currently on display */
@@ -17,6 +18,7 @@ function dialog_open(tosave, usage, gameid) {
         throw 'Dialog: your browser does not support local storage.';
 
     will_save = tosave;
+    confirming = false;
     cur_usage = usage;
     cur_gameid = gameid;
 
@@ -83,6 +85,18 @@ function dialog_open(tosave, usage, gameid) {
     evhan_storage_changed();
 }
 
+function dialog_close() {
+    var dia = $(dialog_el_id);
+    if (dia)
+        dia.remove();
+    var screen = $(dialog_el_id+'_screen');
+    if (screen)
+        screen.remove();
+
+    is_open = false;
+    cur_filelist = null;
+}
+
 function set_caption(msg, isupper) {
     var elid = (isupper ? dialog_el_id+'_cap' : dialog_el_id+'_cap2');
     var el = $(elid);
@@ -113,7 +127,17 @@ function remove_children(parent) {
     }
 }
 
+function replace_text(el, val) {
+    remove_children(el);
+    insert_text(el, val);
+}
+
 function evhan_select_change() {
+    if (!is_open)
+        return false;
+    if (confirming)
+        return false;
+
     GlkOte.log('### select changed');
     var selel = $(dialog_el_id+'_select');
     if (!selel)
@@ -126,11 +150,13 @@ function evhan_select_change() {
     if (!fel)
         return false;
     fel.value = file.dirent.filename;
-    GlkOte.log('### selected ' + file.dirent.dirent);
     return false;
 }
 
 function evhan_accept_load_button() {
+    if (!is_open)
+        return false;
+
     GlkOte.log('### accept load');
     var selel = $(dialog_el_id+'_select');
     if (!selel)
@@ -147,6 +173,9 @@ function evhan_accept_load_button() {
 }
 
 function evhan_accept_save_button() {
+    if (!is_open)
+        return false;
+
     GlkOte.log('### accept save');
     var fel = $(dialog_el_id+'_infield');
     if (!fel)
@@ -155,21 +184,44 @@ function evhan_accept_save_button() {
     filename = filename.strip(); // prototype-ism
     if (!filename)
         return false;
-    GlkOte.log('### selected ' + filename);
+    var dirent = file_construct_ref(filename, cur_usage, cur_gameid);
+    if (file_ref_exists(dirent) && !confirming) {
+        confirming = true;
+        set_caption('You already have a save file "' + dirent.filename 
+            + '". Do you want to replace it?', false);
+        fel.disabled = true;
+        var butel = $(dialog_el_id+'_accept');
+        replace_text(butel, 'Replace');
+        return false;
+    }
+    GlkOte.log('### selected ' + dirent.dirent);
     //### callback
     return false;
 }
 
 function evhan_cancel_button() {
+    if (!is_open)
+        return false;
+
+    if (confirming) {
+        confirming = false;
+        set_caption(null, false);
+        var fel = $(dialog_el_id+'_infield');
+        fel.disabled = false;
+        var butel = $(dialog_el_id+'_accept');
+        butel.disabled = false;
+        replace_text(butel, 'Save');
+        return false;
+    }
     GlkOte.log('### cancel');
     return false;
 }
 
 function evhan_storage_changed(ev) {
-    var el, bodyel, ls;
-
     if (!is_open)
         return false;
+
+    var el, bodyel, ls;
 
     var changedkey = null;
     if (ev)
