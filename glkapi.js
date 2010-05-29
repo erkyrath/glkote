@@ -1689,6 +1689,7 @@ function gli_new_stream(type, readable, writable, rock) {
     str.disprock = undefined;
 
     str.unicode = false;
+    str.ref = null;
     str.win = null;
     str.file = null;
     str.buf = null;
@@ -1745,6 +1746,7 @@ function gli_delete_stream(str) {
     str.buf = null;
     str.readable = false;
     str.writable = false;
+    str.ref = null;
     str.win = null;
     str.file = null;
     str.rock = null;
@@ -2594,14 +2596,18 @@ function glk_stream_open_file(fref, fmode, rock) {
         (fmode != Const.filemode_Read), 
         rock);
     str.unicode = false;
+    str.ref = fref.ref;
 
     str.buf = content;
     str.buflen = 0xFFFFFFFF; /* enormous */
-    str.bufpos = 0;
     if (fmode == Const.filemode_Write)
         str.bufeof = 0;
     else
         str.bufeof = content.length;
+    if (fmode == Const.filemode_WriteAppend)
+        str.bufpos = str.bufeof;
+    else
+        str.bufpos = 0;
 
     return str;
 }
@@ -2641,6 +2647,11 @@ function glk_stream_close(str, result) {
 
     if (str.type == strtype_Window)
         throw('glk_stream_close: cannot close window stream');
+
+    if (str.type == strtype_File && str.writable) {
+        //### kill timer if set
+        Dialog.file_write(str.ref, str.buf);
+    }
 
     gli_stream_fill_result(str, result);
     gli_delete_stream(str);

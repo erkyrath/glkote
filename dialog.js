@@ -274,7 +274,7 @@ function file_write(dirent, content, israw) {
     file.modified = new Date();
 
     if (!israw)
-        content = btoa(content);
+        content = encode_array(content);
 
     ls = [];
 
@@ -294,10 +294,25 @@ function file_write(dirent, content, israw) {
 }
 
 function file_read(dirent, israw) {
-    //###
-    //### return null if no such file
-    //### make sure '' maps to either '' or []
-    return [];
+    var file = file_load_dirent(dirent);
+    if (!file)
+        return null;
+
+    var content = localStorage.getItem(dirent.content);
+    if (content == null)
+        return null;
+
+    if (!content) {
+        if (israw)
+            return '';
+        else
+            return [];
+    }
+
+    if (israw)
+        return content;
+    else
+        return decode_array(content);
 }
 
 function file_dirent_matches(dirent, usage, gameid) {
@@ -354,6 +369,23 @@ function format_date(date) {
     return day + ' ' + time;
 }
 
+if (window.JSON) {
+    function encode_array(arr) {
+        var res = JSON.stringify(arr);
+        var len = res.length;
+        /* Safari's JSON quotes arrays for some reason; we need to strip
+           the quotes off. */
+        if (res[0] == '"' && res[len-1] == '"')
+            res = res.slice(1, len-1);
+        return res;
+    }
+    function decode_array(val) { return JSON.parse(val); }
+}
+else {
+    /* Not-very-safe substitutes for JSON in old browsers. */
+    function encode_array(arr) { return '[' + arr + ']'; }
+    function decode_array(val) { return eval(val); }
+}
 
 /* Set up storage event handler at load time, but after all the handlers
    are defined. 
