@@ -1246,10 +1246,11 @@ function RefStruct(numels) {
 var DidNotReturn = { dummy: 'Glk call has not yet returned' };
 
 /* This returns a hint for whether the Glk call (by selector number)
-   might block or never return. True for glk_exit() and glk_select().
+   might block or never return. True for glk_exit(), glk_select(),
+   and glk_fileref_create_by_prompt().
 */
 function call_may_not_return(id) {
-    if (id == 1 || id == 192)
+    if (id == 0x001 || id == 0x0C0 || id == 0x062)
         return true;
     else
         return false;
@@ -1523,10 +1524,12 @@ function gli_window_close(win, recurse) {
             win.pair_key = null;
             break;
         case Const.wintype_TextBuffer: 
+            //### unretain line-input buffer, if active?
             win.accum = null;
             win.content = null;
             break;
         case Const.wintype_TextGrid: 
+            //### unretain line-input buffer, if active?
             win.lines = null;
             break;
     }
@@ -1765,7 +1768,7 @@ function gli_stream_dirty_file(str) {
     //### set timer if none
 }
 
-function gli_new_fileref(filename, usage, rock) {
+function gli_new_fileref(filename, usage, rock, ref) {
     var fref = {};
     fref.filename = filename;
     fref.rock = rock;
@@ -1778,8 +1781,11 @@ function gli_new_fileref(filename, usage, rock) {
         fref.filetypename = 'xxx';
     }
 
-    //### gameid: grab for "save", use blank for other
-    fref.ref = Dialog.file_construct_ref(fref.filename, fref.filetypename, '');
+    if (!ref) {
+        //### gameid: grab for "save", use blank for other
+        ref = Dialog.file_construct_ref(fref.filename, fref.filetypename, '');
+    }
+    fref.ref = ref;
 
     fref.prev = null;
     fref.next = gli_filereflist;
@@ -2709,17 +2715,34 @@ function glk_fileref_create_temp(usage, rock) {
     var timestamp = new Date().getTime();
     var filename = "_temp_" + timestamp + "_" + Math.random();
     filename = filename.replace('.', '');
-    fref = gli_new_fileref(filename, usage, rock);
+    fref = gli_new_fileref(filename, usage, rock, null);
     return fref;
 }
 
 function glk_fileref_create_by_name(usage, filename, rock) {
-    fref = gli_new_fileref(filename, usage, rock);
+    fref = gli_new_fileref(filename, usage, rock, null);
     return fref;
 }
 
 function glk_fileref_create_by_prompt(usage, fmode, rock) {
-    /* #### prompt... block UI? */
+    var writable = (fmode != Const.filemode_Read);
+    var filetype = (usage & Const.fileusage_TypeMask);
+    var filetypename = FileTypeMap[filetype];
+    if (!filetypename) {
+        filetypename = 'xxx';
+    }
+
+    //### gameid: grab for "save", use blank for other
+    try {
+        //###Dialog.open(writable, filetypename, '');
+    }
+    catch (ex) {
+        GlkOte.log('Unable to select file: ' + ex);
+        return null;
+    }
+
+    gli_selectref = null;
+    return DidNotReturn;
 }
 
 function glk_fileref_destroy(fref) {
@@ -2770,7 +2793,7 @@ function glk_fileref_create_from_fileref(usage, oldfref, rock) {
     if (!oldfref)
         throw('glk_fileref_create_from_fileref: invalid fileref');
     
-    var fref = gli_new_fileref(oldfref.filename, usage, rock);
+    var fref = gli_new_fileref(oldfref.filename, usage, rock, null);
     return fref;
 }
 
