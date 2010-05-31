@@ -4,19 +4,21 @@ var root_el_id = 'windowport';
 var dialog_el_id = 'dialog';
 
 var is_open = false;
+var dialog_callback = null;
 var will_save; /* is this a save dialog? */
 var confirming; /* are we in a "confirm" sub-dialog? */
 var cur_usage; /* a string representing the file's category */
 var cur_gameid; /* a string representing the game */
 var cur_filelist; /* the files currently on display */
 
-function dialog_open(tosave, usage, gameid) {
+function dialog_open(tosave, usage, gameid, callback) {
     if (is_open)
         throw 'Dialog: dialog box is already open.';
 
     if (!window.localStorage)
         throw 'Dialog: your browser does not support local storage.';
 
+    dialog_callback = callback;
     will_save = tosave;
     confirming = false;
     cur_usage = usage;
@@ -94,6 +96,7 @@ function dialog_close() {
         screen.remove();
 
     is_open = false;
+    dialog_callback = null;
     cur_filelist = null;
 }
 
@@ -167,8 +170,13 @@ function evhan_accept_load_button() {
     var file = cur_filelist[pos];
     if (!file_ref_exists(file.dirent))
         return false;
+
+    var callback = dialog_callback;
     GlkOte.log('### selected ' + file.dirent.dirent);
-    //### callback
+    dialog_close();
+    if (callback)
+        callback(file.dirent);
+
     return false;
 }
 
@@ -185,6 +193,7 @@ function evhan_accept_save_button() {
     if (!filename)
         return false;
     var dirent = file_construct_ref(filename, cur_usage, cur_gameid);
+
     if (file_ref_exists(dirent) && !confirming) {
         confirming = true;
         set_caption('You already have a save file "' + dirent.filename 
@@ -194,8 +203,13 @@ function evhan_accept_save_button() {
         replace_text(butel, 'Replace');
         return false;
     }
+
+    var callback = dialog_callback;
     GlkOte.log('### selected ' + dirent.dirent);
-    //### callback
+    dialog_close();
+    if (callback)
+        callback(dirent);
+
     return false;
 }
 
@@ -213,7 +227,13 @@ function evhan_cancel_button() {
         replace_text(butel, 'Save');
         return false;
     }
+
+    var callback = dialog_callback;
     GlkOte.log('### cancel');
+    dialog_close();
+    if (callback)
+        callback(null);
+
     return false;
 }
 
@@ -455,16 +475,6 @@ function files_list(usage, gameid) {
 
     GlkOte.log('### files_list found ' + ls.length + ' files.');
     return ls;
-}
-
-var guid_counter = 1;
-/*### delete this? */
-function generate_guid() {
-    var timestamp = new Date().getTime();
-    var guid = timestamp + '_' + Math.random() + '_' + guid_counter;
-    guid_counter++;
-    guid = guid.replace('.', '');
-    return guid;
 }
 
 function format_date(date) {

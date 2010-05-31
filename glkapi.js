@@ -48,6 +48,7 @@ Glk = function() {
 var VM = null;
 
 var has_exited = false;
+var ui_disabled = false;
 var event_generation = 0;
 var current_partial_inputs = null;
 var current_partial_outputs = null;
@@ -70,8 +71,10 @@ function accept_ui_event(obj) {
     var box;
 
     qlog("### accept_ui_event: " + obj.type + ", gen " + obj.gen);
-    if (has_exited) {
-        /* We've hit glk_exit() or a VM fatal error. */
+    if (ui_disabled) {
+        /* We've hit glk_exit() or a VM fatal error, or just blocked the UI for
+           some modal dialog. */
+        qlog("### ui is disabled, ignoring event");
         return;
     }
 
@@ -398,6 +401,11 @@ function update() {
     dataobj.content = contentarray;
     dataobj.input = inputarray;
 
+    if (ui_disabled) {
+        qlog("### disabling ui");
+        dataobj.disable = true;
+    }
+
     /* Clean this up; it's only meaningful within one run/update cycle. */
     current_partial_outputs = null;
 
@@ -410,8 +418,9 @@ function update() {
 */
 function fatal_error(msg) {
     has_exited = true;
+    ui_disabled = true;
     GlkOte.error(msg);
-    var dataobj = { type: 'update', gen: event_generation };
+    var dataobj = { type: 'update', gen: event_generation, disable: true };
     dataobj.input = [];
     GlkOte.update(dataobj);
 }
@@ -1286,7 +1295,7 @@ var gli_selectref = null;
    no GiDispa layer to provide them. */
 var gli_api_display_rocks = 1;
 
-//### kill timer when library exits?
+//### kill timer when library exits, or on fatal error
 /* A positive number if the timer is set. */
 var gli_timer_interval = null; 
 var gli_timer_id = null; /* Currently active setTimeout ID */
@@ -2089,6 +2098,12 @@ function gli_set_hyperlink(str, val) {
 }
 
 function gli_timer_callback() {
+    if (ui_disabled) {
+        /* Put off dealing with this for a half-second. */
+        GlkOte.log("### procrastinating timer event...");
+        gli_timer_id = setTimeout(gli_timer_callback, 500);
+        return;
+    }
     gli_timer_id = setTimeout(gli_timer_callback, gli_timer_interval);
     gli_timer_started = Date.now();
     GlkOte.extevent('timer');
@@ -2099,6 +2114,7 @@ function gli_timer_callback() {
 function glk_exit() {
     /* For safety, this is fast and idempotent. */
     has_exited = true;
+    ui_disabled = true;
     gli_selectref = null;
     return DidNotReturn;
 }
@@ -2732,15 +2748,34 @@ function glk_fileref_create_by_prompt(usage, fmode, rock) {
         filetypename = 'xxx';
     }
 
+    /* Set up a callback closure, which hangs on to the usage and rock
+       values from this context. This will be called when the Dialog
+       operation is completed. */
+    var callback = function(ref) {
+        if (gli_selectref)
+            return;
+        ui_disabled = false;
+        GlkOte.reenable();
+        event_generation += 1;
+        var fref = null;
+        if (ref) {
+            fref = gli_new_fileref(ref.filename, usage, rock, ref);
+        }
+        if (window.GiDispa)
+            GiDispa.prepare_resume(fref);
+        VM.resume();
+    }
+
     //### gameid: grab for "save", use blank for other
     try {
-        //###Dialog.open(writable, filetypename, '');
+        Dialog.open(writable, filetypename, '', callback);
     }
     catch (ex) {
         GlkOte.log('Unable to select file: ' + ex);
         return null;
     }
 
+    ui_disabled = true;
     gli_selectref = null;
     return DidNotReturn;
 }

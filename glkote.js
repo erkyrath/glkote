@@ -18,6 +18,7 @@ GlkOte = function() {
 /* Module global variables */
 var game_interface = null;
 var generation = 0;
+var disabled = false;
 var loading_visible = null;
 var windowdic = null;
 var current_metrics = null;
@@ -217,11 +218,16 @@ function glkote_update(arg) {
 
   if (arg.gen == generation) {
     /* Nothing has changed. */
+    glkote_log('Ignoring repeated generation number: ' + generation);
     return;
   }
   if (arg.gen < generation) {
     /* This update belongs in the past. */
     glkote_log('Ignoring out-of-order generation number: got ' + arg.gen + ', currently at ' + generation);
+    return;
+  }
+  if (disabled && !arg.disable) {
+    glkote_log('UI was disabled last generation, but it was never re-enabled.');
     return;
   }
   generation = arg.gen;
@@ -248,15 +254,27 @@ function glkote_update(arg) {
     }
   });
 
+  /* Disable everything, if that was requested. */
+  if (arg.disable) {
+    disabled = true;
+    windowdic.values().each(function(win) {
+      if (win.inputel) {
+        win.inputel.disabled = true;
+      }
+    });
+  }
+
   /* Figure out which window to set the focus to. */
 
   var newinputwin = 0;
-  windowdic.values().each(function(win) {
-    if (win.input) {
-      if (!newinputwin || win.id == last_known_focus)
-        newinputwin = win.id;
-    }
-  });
+  if (!disabled) {
+    windowdic.values().each(function(win) {
+      if (win.input) {
+        if (!newinputwin || win.id == last_known_focus)
+          newinputwin = win.id;
+      }
+    });
+  }
 
   if (newinputwin) {
     /* MSIE is weird about when you can call focus(). The input element
@@ -785,6 +803,21 @@ function accept_inputset(arg) {
   });
 }
 
+function glkote_reenable() {
+  if (!disabled) {
+    glkote_log("Attempt to re-enable UI when it is not disabled.");
+    return;
+  }
+
+  windowdic.values().each(function(win) {
+    if (win.inputel) {
+      win.inputel.disabled = false;
+    }
+  });
+
+  disabled = false;
+}
+
 /* Log the message in the browser's error log, if it has one. (This shows
    up in Safari, in Opera, and in Firefox if you have Firebug installed.)
 */
@@ -960,6 +993,9 @@ function submit_line_input(win, inputel) {
    event.
 */
 function send_response(type, win, val) {
+  if (disabled)
+    return;
+
   var winid = 0;
   if (win)
     winid = win.id;
@@ -1025,9 +1061,17 @@ function evhan_doc_resize(ev) {
 }
 
 /* This executes when no new resize events have come along in the past
-   0.5 seconds. */
+   0.5 seconds. (But if the UI is disabled, we delay again, because
+   the game can't deal with events yet.) */
 function doc_resize_real() {
   resize_timer = null;
+
+  if (disabled) {
+    glkote_log("### procrastinating resize event...");
+    resize_timer = doc_resize_real.delay(0.5);
+    return;
+  }
+
   current_metrics = measure_window();
   send_response('arrange', null, current_metrics);
 }
@@ -1358,6 +1402,7 @@ return {
   version:  '1.1.0',
   init:     glkote_init, 
   update:   glkote_update,
+  reenable: glkote_reenable,
   extevent: glkote_extevent,
   log:      glkote_log,
   error:    glkote_error
