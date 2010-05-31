@@ -2134,6 +2134,8 @@ function glk_gestalt(sel, val) {
 function glk_gestalt_ext(sel, val, arr) {
     //#### more selectors
     switch (sel) {
+    case 0: // gestalt_Version:
+        return 0x00000700;
     case 5: // gestalt_Timer
         return 1;
     case 11: // gestalt_Hyperlinks
