@@ -18,21 +18,9 @@
  * This library also contains utility routines to manage "files", which are
  * actually entries in the browser's localStorage object.
  *
+ * The primary function to call:
  *
  * Dialog.open(tosave, usage, gameid, callback) -- open a file-choosing dialog
- *
- * The "tosave" flag should be true for a save dialog, false for a load
- * dialog.
- *
- * The "usage" and "gameid" arguments are arbitrary strings which describe the
- * file. These filter the list of files displayed; the dialog will only list
- * files that match the arguments. Pass null to either argument (or both) to
- * skip filtering.
- *
- * The "callback" should be a function. This will be called with a fileref
- * argument (see below) when the user selects a file. If the user cancels the
- * selection, the callback will be called with a null argument.
- *
  *
  * The rest of the API concerns file reference objects. A fileref encodes a
  * usage and gameid (as above), along with a filename (which can be any string
@@ -43,29 +31,9 @@
  * A Glk fileref contains one of these filerefs, however.)
  *
  * Dialog.file_construct_ref(filename, usage, gameid) -- create a fileref
- *
- * Create a fileref. This does not create a file; it's just a thing you can use
- * to read an existing file or create a new one. Any unspecified arguments are
- * assumed to be the empty string.
- *
  * Dialog.file_write(ref, content, israw) -- write data to the file
- *
- * The "content" argument is stored to the file. If "israw" is true, the
- * content must be a string. Otherwise, the content is converted to JSON (using
- * JSON.stringify) before being stored.
- *
- * HTML's localStorage mechanism has no incremental storage API; you have to
- * store the entire chunk of data at once. Therefore, the given content
- * replaces the existing contents of the file (if any).
- *
  * Dialog.file_read(ref, israw) -- read data from the file
- *
- * Read the (entire) content of the file. If "israw" is true, this returns the
- * string that was stored. Otherwise, the content is converted from JSON (using
- * JSON.parse) before being returned.
- *
  * Dialog.file_ref_exists(ref) -- returns whether the file exists
- *
  * Dialog.file_remove_ref(ref) -- delete the file, if it exists
  */
 
@@ -82,6 +50,20 @@ var cur_usage; /* a string representing the file's category */
 var cur_gameid; /* a string representing the game */
 var cur_filelist; /* the files currently on display */
 
+/* Dialog.open(tosave, usage, gameid, callback) -- open a file-choosing dialog
+ *
+ * The "tosave" flag should be true for a save dialog, false for a load
+ * dialog.
+ *
+ * The "usage" and "gameid" arguments are arbitrary strings which describe the
+ * file. These filter the list of files displayed; the dialog will only list
+ * files that match the arguments. Pass null to either argument (or both) to
+ * skip filtering.
+ *
+ * The "callback" should be a function. This will be called with a fileref
+ * argument (see below) when the user selects a file. If the user cancels the
+ * selection, the callback will be called with a null argument.
+*/
 function dialog_open(tosave, usage, gameid, callback) {
     if (is_open)
         throw 'Dialog: dialog box is already open.';
@@ -158,6 +140,8 @@ function dialog_open(tosave, usage, gameid, callback) {
     evhan_storage_changed();
 }
 
+/* Close the dialog and remove the grey-out screen.
+*/
 function dialog_close() {
     var dia = $(dialog_el_id);
     if (dia)
@@ -171,6 +155,9 @@ function dialog_close() {
     cur_filelist = null;
 }
 
+/* Set the text caption in the dialog. (There are two, actually, above
+   and below the selection box.)
+*/
 function set_caption(msg, isupper) {
     var elid = (isupper ? dialog_el_id+'_cap' : dialog_el_id+'_cap2');
     var el = $(elid);
@@ -187,11 +174,15 @@ function set_caption(msg, isupper) {
     }
 }
 
+/* Add text to a DOM element.
+*/
 function insert_text(el, val) {
     var nod = document.createTextNode(val);
     el.appendChild(nod);
 }
 
+/* Remove all children of a DOM element.
+*/
 function remove_children(parent) {
     var obj, ls;
     ls = parent.childNodes;
@@ -201,11 +192,17 @@ function remove_children(parent) {
     }
 }
 
+/* Replace the text in a DOM element.
+*/
 function replace_text(el, val) {
     remove_children(el);
     insert_text(el, val);
 }
 
+/* Event handler: The user has changed which entry in the selection box is
+   highlighted. This is used only in save dialogs; the highlighted filename is
+   copied to the input field.
+*/
 function evhan_select_change() {
     if (!is_open)
         return false;
@@ -227,6 +224,8 @@ function evhan_select_change() {
     return false;
 }
 
+/* Event handler: The "Load" button.
+*/
 function evhan_accept_load_button() {
     if (!is_open)
         return false;
@@ -251,6 +250,8 @@ function evhan_accept_load_button() {
     return false;
 }
 
+/* Event handler: The "Save" or "Confirm" button.
+*/
 function evhan_accept_save_button() {
     if (!is_open)
         return false;
@@ -284,6 +285,8 @@ function evhan_accept_save_button() {
     return false;
 }
 
+/* Event handler: The "Cancel" button.
+*/
 function evhan_cancel_button() {
     if (!is_open)
         return false;
@@ -308,6 +311,13 @@ function evhan_cancel_button() {
     return false;
 }
 
+/* Event handler: Browser local storage has been updated. When this happens, we
+   re-check the list of files, because a new one might have been added from
+   another browser window.
+
+   This function is also called manually when the dialog box is created,
+   to set up the list of files in the first place.
+*/
 function evhan_storage_changed(ev) {
     if (!is_open)
         return false;
@@ -372,6 +382,12 @@ function evhan_storage_changed(ev) {
     }
 }
 
+/* Dialog.file_construct_ref(filename, usage, gameid) -- create a fileref
+ *
+ * Create a fileref. This does not create a file; it's just a thing you can use
+ * to read an existing file or create a new one. Any unspecified arguments are
+ * assumed to be the empty string.
+ */
 function file_construct_ref(filename, usage, gameid) {
     if (!filename)
         filename = '';
@@ -385,6 +401,9 @@ function file_construct_ref(filename, usage, gameid) {
     return ref;
 }
 
+/* Create a fileref from a browser storage key. If the key does not begin
+   with "dirent:" (ie, this key does not represent a file), this returns null.
+*/
 function file_decode_ref(dirkey) {
     if (!dirkey.startsWith('dirent:'))
         return null;
@@ -410,6 +429,11 @@ function file_decode_ref(dirkey) {
     return ref;
 }
 
+/* Load directory entry information for a fileref (or key denoting a fileref).
+
+   The dirent information includes when the file was created, and when it was
+   last modified. It does not include the file content.
+*/
 function file_load_dirent(dirent) {
     if (typeof(dirent) != 'object') {
         dirent = file_decode_ref(dirent);
@@ -450,6 +474,8 @@ function file_load_dirent(dirent) {
     return file;
 }
 
+/* Dialog.file_ref_exists(ref) -- returns whether the file exists
+ */
 function file_ref_exists(ref) {
     var statstring = localStorage.getItem(ref.dirent);
     if (!statstring)
@@ -458,11 +484,23 @@ function file_ref_exists(ref) {
         return true;
 }
 
+/* Dialog.file_remove_ref(ref) -- delete the file, if it exists
+ */
 function file_remove_ref(ref) {
     localStorage.removeItem(ref.dirent);
     localStorage.removeItem(ref.content);
 }
 
+/* Dialog.file_write(ref, content, israw) -- write data to the file
+ *
+ * The "content" argument is stored to the file. If "israw" is true, the
+ * content must be a string. Otherwise, the content is converted to JSON (using
+ * JSON.stringify) before being stored.
+ *
+ * HTML's localStorage mechanism has no incremental storage API; you have to
+ * store the entire chunk of data at once. Therefore, the given content
+ * replaces the existing contents of the file (if any).
+ */
 function file_write(dirent, content, israw) {
     var val, ls;
 
@@ -493,6 +531,12 @@ function file_write(dirent, content, israw) {
     return true;
 }
 
+/* Dialog.file_read(ref, israw) -- read data from the file
+ *
+ * Read the (entire) content of the file. If "israw" is true, this returns the
+ * string that was stored. Otherwise, the content is converted from JSON (using
+ * JSON.parse) before being returned.
+ */
 function file_read(dirent, israw) {
     var file = file_load_dirent(dirent);
     if (!file)
@@ -515,20 +559,28 @@ function file_read(dirent, israw) {
         return decode_array(content);
 }
 
-function file_dirent_matches(dirent, usage, gameid) {
+/* Check whether a given fileref matches the given usage and gameid strings. If
+   you don't want to check one attribute or the other, pass null for that
+   argument.
+*/
+function file_ref_matches(ref, usage, gameid) {
     if (usage != null) {
-        if (dirent.usage != usage)
+        if (ref.usage != usage)
             return false;
     }
 
     if (gameid != null) {
-        if (dirent.gameid != gameid)
+        if (ref.gameid != gameid)
             return false;
     }
 
     return true;
 }
 
+/* Return the list of files (actually directory entries) matching the given
+   given usage and gameid strings. If you don't want to check one attribute or
+   the other, pass null for that argument.
+*/
 function files_list(usage, gameid) {
     var key;
     var ls = [];
@@ -540,7 +592,7 @@ function files_list(usage, gameid) {
         var dirent = file_decode_ref(key);
         if (!dirent)
             continue;
-        if (!file_dirent_matches(dirent, usage, gameid))
+        if (!file_ref_matches(dirent, usage, gameid))
             continue;
         var file = file_load_dirent(dirent);
         ls.push(file);
@@ -550,6 +602,8 @@ function files_list(usage, gameid) {
     return ls;
 }
 
+/* Convert a date object to a (short) string.
+*/
 function format_date(date) {
     if (!date)
         return '???';
@@ -558,6 +612,10 @@ function format_date(date) {
     var time = date.getHours() + ':' + (date.getMinutes() < 10 ? '0' : '') + date.getMinutes();
     return day + ' ' + time;
 }
+
+/* Define encode_array() and decode_array() functions. These would be
+   JSON.stringify() and JSON.parse(), except not all browsers support those.
+*/
 
 if (window.JSON) {
     function encode_array(arr) {
