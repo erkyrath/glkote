@@ -1,4 +1,5 @@
-//### namespace
+
+Dialog = function() {
 
 var root_el_id = 'windowport';
 var dialog_el_id = 'dialog';
@@ -510,8 +511,7 @@ else {
 
 window.addEventListener('storage', evhan_storage_changed, false);
 
-//### namespace
-Dialog = {
+return {
     open: dialog_open,
 
     file_construct_ref: file_construct_ref,
@@ -520,3 +520,5 @@ Dialog = {
     file_write: file_write,
     file_read: file_read,
 };
+
+}();
