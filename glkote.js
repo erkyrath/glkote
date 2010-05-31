@@ -9,6 +9,30 @@
  * modify this code and use and distribute the modified version, as long
  * as you retain a notice in your program or documentation which mentions
  * my name and the URL shown above.
+ *
+ * GlkOte is a tool for creating interactive fiction -- and other text-based
+ * applications -- on a web page. It is a Javascript library which handles
+ * the mechanics of displaying text, arranging panes of text, and accepting
+ * text input from the user.
+ *
+ * GlkOte is based on the Glk API. However, GlkOte's API is not identical to
+ * Glk, even allowing for the differences between Javascript and C. GlkOte is
+ * adapted to the realities of a web application environment -- a thin
+ * Javascript layer which communicates with a distant server in intermittent
+ * bursts.
+ *
+ * GlkOte can be used from two angles. First, in a purely client-side IF
+ * application. The (included, optional) glkapi.js file facilitates this; it
+ * wraps around GlkOte and provides an API that is identical to Glk, as
+ * closely as Javascript allows. An IF interpreter written in Javascript,
+ * running entirely within the user's web browser, can use glkapi.js just as
+ * a C interpreter uses a normal Glk library. Or it could bypass glkapi.js
+ * and use GlkOte directly.
+ *
+ * Alternatively, GlkOte could be used with a Glk library which acts as a
+ * web service. However, this has not yet been implemented.
+ *
+ * For full documentation, see the docs.html file in this package.
  */
 
 
@@ -226,11 +250,17 @@ function glkote_update(arg) {
     glkote_log('Ignoring out-of-order generation number: got ' + arg.gen + ', currently at ' + generation);
     return;
   }
-  if (disabled && !arg.disable) {
-    glkote_log('UI was disabled last generation, but it was never re-enabled.');
-    return;
-  }
   generation = arg.gen;
+
+  /* Un-disable the UI, if it was previously disabled. */
+  if (disabled) {
+    windowdic.values().each(function(win) {
+      if (win.inputel) {
+        win.inputel.disabled = false;
+      }
+    });
+    disabled = false;
+  }
 
   /* Perform the updates, in a most particular order. */
 
@@ -255,6 +285,7 @@ function glkote_update(arg) {
   });
 
   /* Disable everything, if that was requested. */
+  disabled = false;
   if (arg.disable) {
     disabled = true;
     windowdic.values().each(function(win) {
@@ -801,21 +832,6 @@ function accept_inputset(arg) {
       }
     }
   });
-}
-
-function glkote_reenable() {
-  if (!disabled) {
-    glkote_log("Attempt to re-enable UI when it is not disabled.");
-    return;
-  }
-
-  windowdic.values().each(function(win) {
-    if (win.inputel) {
-      win.inputel.disabled = false;
-    }
-  });
-
-  disabled = false;
 }
 
 /* Log the message in the browser's error log, if it has one. (This shows
@@ -1409,7 +1425,6 @@ return {
   version:  '1.1.0',
   init:     glkote_init, 
   update:   glkote_update,
-  reenable: glkote_reenable,
   extevent: glkote_extevent,
   log:      glkote_log,
   error:    glkote_error

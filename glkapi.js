@@ -2755,7 +2755,6 @@ function glk_fileref_create_by_prompt(usage, fmode, rock) {
         if (gli_selectref)
             return;
         ui_disabled = false;
-        GlkOte.reenable();
         event_generation += 1;
         var fref = null;
         if (ref) {
