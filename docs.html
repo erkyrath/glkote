@@ -141,6 +141,7 @@ Commons Attribution-Noncommercial-Share Alike 3.0 Unported License</a>.
     <li><a href="#bufferupdate">Buffer Window Updates</a>
   </ul>
 </ul>
+<li><a href="#disabling">Disabling the UI</a>
 <li><a href="#gameinterface">The Game Interface Object</a>
 <li><a href="#layout">Laying Out Windows</a>
 <ul>
@@ -724,7 +725,8 @@ A pure Javascript game will not use this. RemGlk uses it if the server is runnin
 
 <pre class="Def">
 { type: 'update', gen: GENERATION,
-  windows: WINDOWS_ARRAY, content: CONTENT_ARRAY, input: INPUT_ARRAY }
+  windows: WINDOWS_ARRAY, content: CONTENT_ARRAY, input: INPUT_ARRAY,
+  disable: BOOLEAN }
 </pre>
 <p>
 
@@ -735,6 +737,9 @@ The <code>windows</code>, <code>content</code>, and <code>input</code> fields ar
 <p>
 
 The order of the values in the <code>windows</code>, <code>content</code>, and <code>input</code> arrays is not significant.
+<p>
+
+The <code>disable</code> flag (if present and true) places the entire game into a disabled state. See "<a href="#disabling">Disabling the UI</a>". If the flag is absent or false, the UI will be enabled (or re-enabled).
 <p>
 
 <h3><a name="windowsupdate">The Windows Update Array</a></h3>
@@ -896,6 +901,20 @@ The <code>clear</code> and <code>append</code> values may be omitted; they defau
 <p>
 
 (For efficiency, only the first element of the <code>text</code> array should have <code>append</code>. Condense elements into complete paragraphs where possible.)
+<p>
+
+<h2><a name="disabling">Disabling the UI</a></h2>
+
+If you want to temporarily suspend all UI activity, call <code>GlkOte.update</code> with an update that includes the <code>disable</code> flag. The display will be updated as you request, but it will also be disabled. All input fields will be disabled (given the HTML <code>disabled</code> attribute). All input events, including keyboard input and hyperlinks, will be suppressed. Scrolling will work normally.
+<p>
+
+If the user resizes the window while the UI is disabled, you will not get an <code>arrange</code> event immediately. The event will arrive after you re-enable the UI.
+<p>
+
+(You might disable the UI to block game activity while prompting for input outside the GlkOte library. For example, while prompting for a save-game location using the dialog.js library. It is also reasonable to disable the UI when the game is over, on the final game update.)
+<p>
+
+The UI will remain disabled until the next <code>GlkOte.update</code> call which lacks the <code>disable</code> flag.
 <p>
 
 <h2><a name="gameinterface">The Game Interface Object</a></h2>
