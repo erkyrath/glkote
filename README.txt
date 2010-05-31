@@ -1,6 +1,6 @@
 GlkOte -- a Javascript display library for IF interfaces
 
-GlkOte Library: version 1.###.
+GlkOte Library: version 1.1.
 Designed by Andrew Plotkin <erkyrath@eblong.com>
 <http://eblong.com/zarf/glk/glkote.html>
 
@@ -24,8 +24,10 @@ What you need:
 
 - glkote.js    -- the GlkOte library
 - glkapi.js    -- a Glk API layer
+- dialog.js    -- a library for loading and saving game data
 - prototype.js -- the Prototype library
 - glkote.css   -- the GlkOte default stylesheet
+- dialog.css   -- the stylesheet for the dialog library
 - waiting.gif  -- an animated "loading" image
 
 Example pages:
@@ -37,13 +39,14 @@ Example pages:
 
 * Permissions
 
-The GlkOte Javascript library is copyright 2008-10 by Andrew Plotkin. You
-may copy and distribute it freely, by any means and under any conditions,
-as long as the code and documentation is not changed. You may also
-incorporate this code into your own program and distribute that, or
-modify this code and use and distribute the modified version, as long
-as you retain a notice in your program or documentation which mentions
-my name and the URL shown above.
+The GlkOte, GlkAPI, and Dialog Javascript libraries are copyright
+2008-10 by Andrew Plotkin. You may copy and distribute them freely, by
+any means and under any conditions, as long as the code and
+documentation is not changed. You may also incorporate this code into
+your own program and distribute that, or modify this code and use and
+distribute the modified version, as long as you retain a notice in
+your program or documentation which mentions my name and the URL shown
+above.
 
 The GlkOte documentation is licensed under a Creative Commons
 Attribution-Noncommercial-Share Alike 3.0 Unported License.
