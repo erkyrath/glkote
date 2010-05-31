@@ -35,6 +35,22 @@
  * Dialog.file_read(ref, israw) -- read data from the file
  * Dialog.file_ref_exists(ref) -- returns whether the file exists
  * Dialog.file_remove_ref(ref) -- delete the file, if it exists
+ *
+ *
+ * The localStorage format is as follows. Each file is represented as two
+ * storage keys: "dirent:usage:gameid:filename" and
+ * "content:usage:gameid:filename". (The filename is last so that it can
+ * validly contain colons. Since this is a user-entered string, it can contain
+ * *any* typeable character.)
+ *
+ * The "content:" key contains the file content, as a string. (The HTML5
+ * browser storage spec says that you can store any serializable data, but the
+ * browsers have not yet implemented this. Thus the "israw" option in the read
+ * and write functions.)
+ *
+ * The "dirent:" key contains directory information. Currently this looks like
+ * "created:TIMESTAMP,modified:TIMESTAMP". Future version of this library may
+ * add a human-readable game name, a text/binary flag, or other data.
  */
 
 Dialog = function() {
@@ -81,12 +97,15 @@ function dialog_open(tosave, usage, gameid, callback) {
     if (!rootel)
         throw 'Dialog: unable to find root element #' + root_el_id + '.';
 
+    /* Create the grey-out screen. */
     var screen = $(dialog_el_id+'_screen');
     if (!screen) {
         screen = new Element('div',
             { id: dialog_el_id+'_screen' });
         rootel.insert(screen);
     }
+
+    /* And now, a lot of DOM creation for the dialog box. */
 
     var dia = $(dialog_el_id);
     if (dia)
@@ -107,7 +126,7 @@ function dialog_open(tosave, usage, gameid, callback) {
     dia.insert(form);
 
     row = new Element('div', { id: dialog_el_id+'_cap', 'class': 'DiaCaption' });
-    insert_text(row, 'XXX');
+    insert_text(row, 'XXX'); // the caption will be replaced momentarily.
     form.insert(row);
 
     if (will_save) {
@@ -200,8 +219,10 @@ function replace_text(el, val) {
 }
 
 /* Event handler: The user has changed which entry in the selection box is
-   highlighted. This is used only in save dialogs; the highlighted filename is
-   copied to the input field.
+   highlighted. 
+
+   This is used only in save dialogs; the highlighted filename is copied to the
+   input field.
 */
 function evhan_select_change() {
     if (!is_open)
@@ -250,7 +271,7 @@ function evhan_accept_load_button() {
     return false;
 }
 
-/* Event handler: The "Save" or "Confirm" button.
+/* Event handler: The "Save" or "Replace" button.
 */
 function evhan_accept_save_button() {
     if (!is_open)
@@ -267,6 +288,10 @@ function evhan_accept_save_button() {
     var dirent = file_construct_ref(filename, cur_usage, cur_gameid);
 
     if (file_ref_exists(dirent) && !confirming) {
+        /* If the file exists, and we are not already in confirm mode, go into
+           confirm mode. Yes, this is logistically messy. We change the button
+           label to "Replace"; if the user really meant it, we'll wind up back
+           in this event handler. */
         confirming = true;
         set_caption('You already have a save file "' + dirent.filename 
             + '". Do you want to replace it?', false);
@@ -286,6 +311,9 @@ function evhan_accept_save_button() {
 }
 
 /* Event handler: The "Cancel" button.
+
+   This can mean either cancelling the dialog, or cancelling confirm mode on a
+   "do you want to replace that?" query.
 */
 function evhan_cancel_button() {
     if (!is_open)
@@ -338,6 +366,8 @@ function evhan_storage_changed(ev) {
     ls = files_list(cur_usage, cur_gameid);
     //### sort ls by date
     cur_filelist = ls;
+
+    /* Adjust the contents of the selection box. */
     
     if (ls.length == 0) {
         remove_children(bodyel);
@@ -401,8 +431,9 @@ function file_construct_ref(filename, usage, gameid) {
     return ref;
 }
 
-/* Create a fileref from a browser storage key. If the key does not begin
-   with "dirent:" (ie, this key does not represent a file), this returns null.
+/* Create a fileref from a browser storage key (string). If the key does not
+   begin with "dirent:" (ie, this key does not represent a directory entry),
+   this returns null.
 */
 function file_decode_ref(dirkey) {
     if (!dirkey.startsWith('dirent:'))
@@ -506,6 +537,7 @@ function file_write(dirent, content, israw) {
 
     var file = file_load_dirent(dirent);
     if (!file) {
+        /* Newly-created file. */
         file = { dirent: dirent, created: new Date() };
     }
 
@@ -536,6 +568,9 @@ function file_write(dirent, content, israw) {
  * Read the (entire) content of the file. If "israw" is true, this returns the
  * string that was stored. Otherwise, the content is converted from JSON (using
  * JSON.parse) before being returned.
+ *
+ * As a special case, the empty string is converted to an empty array (when not
+ * in israw mode).
  */
 function file_read(dirent, israw) {
     var file = file_load_dirent(dirent);
