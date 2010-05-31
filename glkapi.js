@@ -3371,8 +3371,53 @@ function glk_get_line_stream_uni(str, buf) {
 }
 
 function glk_stream_open_file_uni(fref, fmode, rock) {
-    //### copy glk_stream_open_file
-    throw('glk_stream_open_file_uni: file streams not supported');
+    if (!fref)
+        throw('glk_stream_open_file_uni: invalid fileref');
+
+    var str;
+
+    if (fmode != Const.filemode_Read 
+        && fmode != Const.filemode_Write 
+        && fmode != Const.filemode_ReadWrite 
+        && fmode != Const.filemode_WriteAppend) 
+        throw('glk_stream_open_file_uni: illegal filemode');
+
+    if (fmode == Const.filemode_Read && !Dialog.file_ref_exists(fref.ref))
+        throw('glk_stream_open_file_uni: file not found for reading: ' + fref.ref.filename);
+
+    var content = null;
+    if (fmode != Const.filemode_Write) {
+        content = Dialog.file_read(fref.ref);
+    }
+    if (content == null) {
+        content = [];
+        if (fmode != Const.filemode_Read) {
+            /* We just created this file. (Or perhaps we're in Write mode and
+               we're truncating.) Write immediately, to create it and get the
+               creation date right. */
+            Dialog.file_write(fref.ref, '', true);
+        }
+    }
+
+    str = gli_new_stream(strtype_File, 
+        (fmode != Const.filemode_Write), 
+        (fmode != Const.filemode_Read), 
+        rock);
+    str.unicode = true;
+    str.ref = fref.ref;
+
+    str.buf = content;
+    str.buflen = 0xFFFFFFFF; /* enormous */
+    if (fmode == Const.filemode_Write)
+        str.bufeof = 0;
+    else
+        str.bufeof = content.length;
+    if (fmode == Const.filemode_WriteAppend)
+        str.bufpos = str.bufeof;
+    else
+        str.bufpos = 0;
+
+    return str;
 }
 
 function glk_stream_open_memory_uni(buf, fmode, rock) {
