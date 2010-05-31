@@ -1062,7 +1062,10 @@ function evhan_doc_resize(ev) {
 
 /* This executes when no new resize events have come along in the past
    0.5 seconds. (But if the UI is disabled, we delay again, because
-   the game can't deal with events yet.) */
+   the game can't deal with events yet.)
+   ### We really should distinguish between disabling the UI (delay
+   resize events) from shutting down the UI (ignore resize events).
+ */
 function doc_resize_real() {
   resize_timer = null;
 
@@ -1081,6 +1084,10 @@ function doc_resize_real() {
    Move the input focus to whichever window most recently had it.
 */
 function evhan_doc_keypress(ev) {
+  if (disabled) {
+    return;
+  }
+
   var keycode = 0;
   if (Prototype.Browser.IE) { /* MSIE broken event API */
     ev = Event.extend(window.event);
