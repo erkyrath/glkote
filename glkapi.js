@@ -1774,7 +1774,11 @@ function gli_stream_open_window(win) {
 }
 
 function gli_stream_dirty_file(str) {
-    //### set timer if none
+    /* ### Currently the library only writes out file data when the file is
+       closed. It would be nice to handle files that are written (or appended
+       to) intermittently. We could do this by setting a timer, and writing out
+       the file contents if there is no further change in (say) ten seconds.
+    */
 }
 
 function gli_new_fileref(filename, usage, rock, ref) {
@@ -2128,7 +2132,7 @@ function glk_gestalt(sel, val) {
 }
 
 function glk_gestalt_ext(sel, val, arr) {
-    //### more selectors
+    //#### more selectors
     switch (sel) {
     case 5: // gestalt_Timer
         return 1;
