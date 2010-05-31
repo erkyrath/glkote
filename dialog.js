@@ -1,3 +1,73 @@
+/* Dialog -- a Javascript load/save library for IF interfaces
+ * Designed by Andrew Plotkin <erkyrath@eblong.com>
+ * <http://eblong.com/zarf/glk/glkote.html>
+ * 
+ * This Javascript library is copyright 2010 by Andrew Plotkin. You may
+ * copy and distribute it freely, by any means and under any conditions,
+ * as long as the code and documentation is not changed. You may also
+ * incorporate this code into your own program and distribute that, or
+ * modify this code and use and distribute the modified version, as long
+ * as you retain a notice in your program or documentation which mentions
+ * my name and the URL shown above.
+ *
+ * This library lets you open a modal dialog box to select a "file" for saving
+ * or loading data. The web page must have a <div> with id "windowport" (this
+ * will be greyed out during the selection process, with the dialog box as a
+ * child of the div). It should also have the dialog.css stylesheet loaded.
+ *
+ * This library also contains utility routines to manage "files", which are
+ * actually entries in the browser's localStorage object.
+ *
+ *
+ * Dialog.open(tosave, usage, gameid, callback) -- open a file-choosing dialog
+ *
+ * The "tosave" flag should be true for a save dialog, false for a load
+ * dialog.
+ *
+ * The "usage" and "gameid" arguments are arbitrary strings which describe the
+ * file. These filter the list of files displayed; the dialog will only list
+ * files that match the arguments. Pass null to either argument (or both) to
+ * skip filtering.
+ *
+ * The "callback" should be a function. This will be called with a fileref
+ * argument (see below) when the user selects a file. If the user cancels the
+ * selection, the callback will be called with a null argument.
+ *
+ *
+ * The rest of the API concerns file reference objects. A fileref encodes a
+ * usage and gameid (as above), along with a filename (which can be any string
+ * at all). This trio specifies a "file", that is, a chunk of data in browser
+ * local storage.
+ *
+ * (These fileref objects are not the same as the filerefs used in the Glk API.
+ * A Glk fileref contains one of these filerefs, however.)
+ *
+ * Dialog.file_construct_ref(filename, usage, gameid) -- create a fileref
+ *
+ * Create a fileref. This does not create a file; it's just a thing you can use
+ * to read an existing file or create a new one. Any unspecified arguments are
+ * assumed to be the empty string.
+ *
+ * Dialog.file_write(ref, content, israw) -- write data to the file
+ *
+ * The "content" argument is stored to the file. If "israw" is true, the
+ * content must be a string. Otherwise, the content is converted to JSON (using
+ * JSON.stringify) before being stored.
+ *
+ * HTML's localStorage mechanism has no incremental storage API; you have to
+ * store the entire chunk of data at once. Therefore, the given content
+ * replaces the existing contents of the file (if any).
+ *
+ * Dialog.file_read(ref, israw) -- read data from the file
+ *
+ * Read the (entire) content of the file. If "israw" is true, this returns the
+ * string that was stored. Otherwise, the content is converted from JSON (using
+ * JSON.parse) before being returned.
+ *
+ * Dialog.file_ref_exists(ref) -- returns whether the file exists
+ *
+ * Dialog.file_remove_ref(ref) -- delete the file, if it exists
+ */
 
 Dialog = function() {
 
@@ -303,6 +373,8 @@ function evhan_storage_changed(ev) {
 }
 
 function file_construct_ref(filename, usage, gameid) {
+    if (!filename)
+        filename = '';
     if (!usage)
         useage = '';
     if (!gameid)
