@@ -132,6 +132,7 @@ function dialog_open(tosave, usage, gameid, callback) {
     if (will_save) {
         row = new Element('div', { id: dialog_el_id+'_input', 'class': 'DiaInput' });
         form.insert(row);
+        //### focus on el! (delayed slightly?)
         el = new Element('input', { id: dialog_el_id+'_infield', type: 'text', name: 'filename' });
         row.insert(el);
     }
@@ -617,13 +618,14 @@ function file_ref_matches(ref, usage, gameid) {
    the other, pass null for that argument.
 */
 function files_list(usage, gameid) {
-    var key;
+    var ix;
     var ls = [];
 
     if (!window.localStorage)
         return ls;
 
-    for (key in localStorage) {
+    for (ix=0; ix<localStorage.length; ix++) {
+        var key = localStorage.key(ix);
         var dirent = file_decode_ref(key);
         if (!dirent)
             continue;
