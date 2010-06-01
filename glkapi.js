@@ -2145,6 +2145,8 @@ function glk_gestalt_ext(sel, val, arr) {
             return 1;
         else
             return 0;
+    case 15: // gestalt_Unicode
+        return 1;
     }
 
     return 0;
