@@ -84,7 +84,7 @@ function dialog_open(tosave, usage, gameid, callback) {
     if (is_open)
         throw 'Dialog: dialog box is already open.';
 
-    if (!window.localStorage)
+    if (localStorage == null)
         throw 'Dialog: your browser does not support local storage.';
 
     dialog_callback = callback;
@@ -672,9 +672,19 @@ else {
     function decode_array(val) { return eval(val); }
 }
 
-/* Set up storage event handler at load time, but after all the handlers
-   are defined. 
+/* Locate the storage object, and set up the storage event handler, at load
+   time (but after all the handlers are defined).
 */
+
+var localStorage = null;
+if (window.localStorage != null) {
+    /* This is the API object for HTML5 browser storage. */
+    localStorage = window.localStorage;
+}
+else if (window.globalStorage != null) {
+    /* This is a non-standard API used in Firefox 3.0 (but not 3.5). */
+    localStorage = window.globalStorage[location.hostname];
+}
 
 window.addEventListener('storage', evhan_storage_changed, false);
 
