@@ -481,7 +481,7 @@ function file_load_dirent(dirent) {
 
     var ix, pos, key, val;
 
-    var ls = statstring.split(',');
+    var ls = statstring.toString().split(',');
     for (ix=0; ix<ls.length; ix++) {
         val = ls[ix];
         pos = val.indexOf(':');
@@ -621,7 +621,7 @@ function files_list(usage, gameid) {
     var ix;
     var ls = [];
 
-    if (!window.localStorage)
+    if (!localStorage)
         return ls;
 
     for (ix=0; ix<localStorage.length; ix++) {
