@@ -26,6 +26,7 @@
  * glkote.js directly.
  */
 
+//#### possibly we hate eval(). Test speed.
 
 /* Known problems:
 
