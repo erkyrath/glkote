@@ -46,6 +46,10 @@ li {
   margin-top: 2px;
 }
 
+dt {
+  margin-top: 4px;
+}
+
 .ContentTop > li > a {
   border-left: 2px solid #AAA;
   padding-left: 8px;
@@ -559,6 +563,17 @@ Tell the library to cause a special input event, immediately. This is routed thr
 <p>
 
 This function lets you handle external conditions (such as timers, or events caused by other libraries) in the same framework as GlkOte's events. You should only call <code>GlkOte.extevent</code> while waiting for input -- that is, in the interval after a <code>GlkOte.update</code> call.
+<p>
+
+<pre class="Def">
+GlkOte.interface()
+</pre>
+<p>
+
+Return the game interface object that the library is using. This is the global <code>Game</code> object, unless you passed something else to <code>GlkOte.init</code>. See "<a href="#gameinterface">The Game Interface Object</a>".
+<p>
+
+This exists in case another library (such as dialog.js) wants to imitate some of GlkOte's display preferences.
 <p>
 
 <pre class="Def">
@@ -1302,6 +1317,10 @@ By the way, in a buffer window, paragraphs of text are separated by blank lines 
 
 <dt>Release 1.1.0 (###)
 <dd>Added glkapi.js (a pure-Javascript Glk API which runs on top of GlkOte).
+<dd>Added dialog.js (a library which can display "file" dialogs and save data to browser storage).
+<dd>Added support for Glk-style hyperlinks.
+<dd>Added <code>extevent()</code> and <code>interface()</code> calls. Added <code>disable</code> flag to the <code>update()</code> call.
+<dd>Allowed LINE_DATA_ARRAY to be specified in a more flexible way (for hyperlinks).
 
 <dt>Release 1.0.0 (June 27, 2008)
 <dd>Original release.

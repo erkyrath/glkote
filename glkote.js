@@ -103,7 +103,7 @@ function glkote_init(iface) {
 
   var el = $(windowport_id);
   if (!el) {
-    glkote_error('Cannot find windowport element "'+windowport_id+'" in this document.');
+    glkote_error('Cannot find windowport element #'+windowport_id+' in this document.');
     return;
   }
   el.update();
@@ -141,7 +141,7 @@ function measure_window() {
      we're interested in. */
   el = $(gameport_id);
   if (!el)
-    return 'Cannot find gameport element "'+gameport_id+'" in this document.';
+    return 'Cannot find gameport element #'+gameport_id+' in this document.';
 
   var portsize = el.getDimensions();
   metrics.width  = portsize.width;
@@ -843,6 +843,15 @@ function accept_inputset(arg) {
   });
 }
 
+/* Return the game interface object that was provided to init(). Call
+   this if a subsidiary library (e.g., dialog.js) needs to imitate some
+   display setting. Do not try to modify the object; it will probably
+   not do what you want.
+*/
+function glkote_get_interface() {
+  return game_interface;
+}
+
 /* Log the message in the browser's error log, if it has one. (This shows
    up in Safari, in Opera, and in Firefox if you have Firebug installed.)
 */
@@ -1435,6 +1444,7 @@ return {
   init:     glkote_init, 
   update:   glkote_update,
   extevent: glkote_extevent,
+  interface: glkote_get_interface,
   log:      glkote_log,
   error:    glkote_error
 };

@@ -55,7 +55,6 @@
 
 Dialog = function() {
 
-var root_el_id = 'windowport'; //#### pull from options?
 var dialog_el_id = 'dialog';
 
 var is_open = false;
@@ -92,6 +91,18 @@ function dialog_open(tosave, usage, gameid, callback) {
     confirming = false;
     cur_usage = usage;
     cur_gameid = gameid;
+
+    /* Figure out what the root div is called. The dialog box will be
+       positioned in this div; also, the div will be greyed out by a 
+       translucent rectangle. We use the same default as GlkOte: 
+       "windowport". We also try to interrogate GlkOte to see if that
+       default has been changed. */
+    var root_el_id = 'windowport';
+    var iface = window.Game;
+    if (window.GlkOte) 
+        iface = window.GlkOte.interface();
+    if (iface && iface.windowport)
+        root_el_id = iface.windowport;
 
     var rootel = $(root_el_id);
     if (!rootel)
