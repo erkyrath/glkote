@@ -143,7 +143,6 @@ function dialog_open(tosave, usage, gameid, callback) {
     if (will_save) {
         row = new Element('div', { id: dialog_el_id+'_input', 'class': 'DiaInput' });
         form.insert(row);
-        //#### focus on el! (delayed slightly?)
         el = new Element('input', { id: dialog_el_id+'_infield', type: 'text', name: 'filename' });
         row.insert(el);
     }
@@ -169,6 +168,30 @@ function dialog_open(tosave, usage, gameid, callback) {
     is_open = true;
 
     evhan_storage_changed();
+
+    /* Set the input focus to the input field or the selection box.
+
+       MSIE is weird about when you can call focus(). The element has just been
+       added to the DOM, and MSIE balks at giving it the focus right away. So
+       we defer the call until after the javascript context has yielded control
+       to the browser. 
+    */
+    var focusfunc;
+    if (will_save) {
+        focusfunc = function() {
+            var el = $(dialog_el_id+'_infield');
+            if (el) 
+                el.focus();
+        };
+    }
+    else {
+        focusfunc = function() {
+            var el = $(dialog_el_id+'_select');
+            if (el) 
+                el.focus();
+        };
+    }
+    focusfunc.defer();
 }
 
 /* Close the dialog and remove the grey-out screen.
