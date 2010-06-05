@@ -55,7 +55,7 @@
 
 Dialog = function() {
 
-var root_el_id = 'windowport';
+var root_el_id = 'windowport'; //#### pull from options?
 var dialog_el_id = 'dialog';
 
 var is_open = false;
@@ -132,7 +132,7 @@ function dialog_open(tosave, usage, gameid, callback) {
     if (will_save) {
         row = new Element('div', { id: dialog_el_id+'_input', 'class': 'DiaInput' });
         form.insert(row);
-        //### focus on el! (delayed slightly?)
+        //#### focus on el! (delayed slightly?)
         el = new Element('input', { id: dialog_el_id+'_infield', type: 'text', name: 'filename' });
         row.insert(el);
     }

@@ -36,11 +36,15 @@
  */
 
 
+//#### to do soon: line input in grid windows.
+
 /* Put everything inside the GlkOte namespace. */
 GlkOte = function() {
 
 /* Module global variables */
 var game_interface = null;
+var windowport_id = 'windowport';
+var gameport_id = 'gameport';
 var generation = 0;
 var disabled = false;
 var loading_visible = null;
@@ -92,9 +96,14 @@ function glkote_init(iface) {
 
   windowdic = new Hash();
 
-  var el = $('windowport');
+  if (iface.windowport)
+      windowport_id = iface.windowport;
+  if (iface.gameport)
+      gameport_id = iface.gameport;
+
+  var el = $(windowport_id);
   if (!el) {
-    glkote_error('Cannot find windowport element in this document.');
+    glkote_error('Cannot find windowport element "'+windowport_id+'" in this document.');
     return;
   }
   el.update();
@@ -130,9 +139,9 @@ function measure_window() {
      is true on all browsers but IE7. Fortunately, on IE7 it's
      the windowport size that's wrong -- gameport is the size
      we're interested in. */
-  el = $('gameport');
+  el = $(gameport_id);
   if (!el)
-    return 'Cannot find gameport element in this document.';
+    return 'Cannot find gameport element "'+gameport_id+'" in this document.';
 
   var portsize = el.getDimensions();
   metrics.width  = portsize.width;
@@ -377,7 +386,7 @@ function accept_one_window(arg) {
     win.needscroll = false;
     win.history = new Array();
     win.historypos = 0;
-    $('windowport').insert(frameel);
+    $(windowport_id).insert(frameel);
   }
   else {
     frameel = win.frameel;

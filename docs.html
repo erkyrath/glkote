@@ -303,7 +303,7 @@ body {
 </pre>
 <p>
 
-These declarations lay out your document, and position the <code>gameport</code> div. GlkOte draws all of its content within the <code>gameport</code>. In this example, the <code>gameport</code> fills the entire page, but you can place it anywhere in your document (using normal CSS positioning).
+These declarations lay out your document, and position the <code>gameport</code> div. GlkOte draws all of its content within the <code>gameport</code>. In this example, the <code>gameport</code> fills the entire page, but you can place it anywhere in your document (using normal CSS positioning). (You can also rename the <code>gameport</code> div if you need to; see "<a href="#gameinterface">The Game Interface Object</a>".)
 <p>
 
 <pre class="Sample">
@@ -938,6 +938,22 @@ Game.accept()
 
 This is the only property you <em>must</em> provide. Your <code>Game.accept</code> function receives input events, and responds to them by updating the display. 
 See "<a href="#input">Accepting User Events</a>".
+<p>
+
+<pre class="Def">
+Game.gameport
+</pre>
+<p>
+
+This string defines the id of the <code>gameport</code> element -- the HTML div which contains GlkOte's content. The default value is "gameport". You can set this to something else if your HTML document structure requires the game to be built inside a different div.
+<p>
+
+<pre class="Def">
+Game.windowport
+</pre>
+<p>
+
+This string defines the id of the <code>windowport</code> element -- the HTML div which contains everything that the player sees. The default value is "windowport". You can set this to something else if your HTML document structure requires the game to be built inside a different div.
 <p>
 
 <pre class="Def">
