@@ -1422,6 +1422,11 @@ function gli_window_close(win, recurse) {
             }
         }
     }
+
+    if (window.GiDispa && win.linebuf) {
+        GiDispa.unretain_array(win.linebuf);
+        win.linebuf = null;
+    }
     
     switch (win.type) {
         case Const.wintype_Pair: 
@@ -1436,12 +1441,10 @@ function gli_window_close(win, recurse) {
             win.pair_key = null;
             break;
         case Const.wintype_TextBuffer: 
-            //### unretain line-input buffer, if active?
             win.accum = null;
             win.content = null;
             break;
         case Const.wintype_TextGrid: 
-            //### unretain line-input buffer, if active?
             win.lines = null;
             break;
     }
