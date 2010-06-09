@@ -36,8 +36,6 @@
  */
 
 
-//#### to do soon: line input in grid windows.
-
 /* Put everything inside the GlkOte namespace. */
 GlkOte = function() {
 
@@ -1104,7 +1102,6 @@ function doc_resize_real() {
   resize_timer = null;
 
   if (disabled) {
-    glkote_log("### procrastinating resize event...");
     resize_timer = doc_resize_real.delay(0.5);
     return;
   }
