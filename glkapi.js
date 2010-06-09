@@ -255,7 +255,6 @@ function handle_line_input(disprock, input) {
     if (win.echostr)
         glk_put_jstring_stream(win.echostr, input+"\n");
     gli_set_style(win.str, ix);
-    //### wrong for grid window?
 
     for (ix=0; ix<input.length; ix++)
         win.linebuf[ix] = input.charCodeAt(ix);
@@ -397,6 +396,11 @@ function update() {
             }
             obj = { id: win.disprock, type: 'line', gen: win.input_generation,
                     maxlen: win.linebuf.length, initial: initial };
+            if (win.type == Const.wintype_TextGrid) {
+                gli_window_grid_canonicalize(win);
+                obj.xpos = win.cursorx;
+                obj.ypos = win.cursory;
+            }
         }
         if (win.hyperlink_request) {
             if (!obj)
@@ -2907,7 +2911,6 @@ function glk_cancel_line_event(win, eventref) {
     if (win.echostr)
         glk_put_jstring_stream(win.echostr, input+"\n");
     gli_set_style(win.str, ix);
-    //### wrong for grid window?
 
     for (ix=0; ix<input.length; ix++)
         win.linebuf[ix] = input.charCodeAt(ix);
