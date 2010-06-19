@@ -25,7 +25,7 @@ What you need:
 - glkote.js    -- the GlkOte library
 - glkapi.js    -- a Glk API layer
 - dialog.js    -- a library for loading and saving game data
-- prototype.js -- the Prototype library
+- prototype-1.6.1.js -- the Prototype library
 - glkote.css   -- the GlkOte default stylesheet
 - dialog.css   -- the stylesheet for the dialog library
 - waiting.gif  -- an animated "loading" image
@@ -52,7 +52,7 @@ The GlkOte documentation is licensed under a Creative Commons
 Attribution-Noncommercial-Share Alike 3.0 Unported License.
 See <http://creativecommons.org/licenses/by-nc-sa/3.0>
 
-This package includes the Prototype JavaScript framework, version 1.6.0.2
-(c) 2005-2008 Sam Stephenson
+This package includes the Prototype JavaScript framework, version 1.6.1
+(c) 2005-2009 Sam Stephenson
 Prototype is freely distributable under the terms of an MIT-style license.
 For details, see the Prototype web site: <http://www.prototypejs.org/>
