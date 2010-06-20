@@ -41,6 +41,8 @@
    and will also double the write-count in a stream.
 */
 
+/* Put everything inside the Glk namespace. */
+
 Glk = function() {
 
 /* The VM interface object. */
@@ -3406,7 +3408,10 @@ function glk_request_line_event_uni(win, buf, initlen) {
     }
 }
 
+/* End of Glk namespace function. Return the object which will
+   become the Glk global. */
 return {
+    version: '0.2.0', /* GlkApi version */
     init : init,
     update : update,
     fatal_error : fatal_error,
@@ -3525,3 +3530,5 @@ return {
 };
 
 }();
+
+/* End of Glk library. */
