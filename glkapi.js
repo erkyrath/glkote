@@ -55,23 +55,22 @@ var current_partial_outputs = null;
 /* Initialize the library, initialize the VM, and set it running. (It will 
    run until the first glk_select() or glk_exit() call.)
 
-   The vm_api argument must be an appropriate VM interface object. (For 
-   example, Quixe.) It must have init() and resume() methods. 
+   The vm_options argument must have a vm_options.vm field, which must be an
+   appropriate VM interface object. (For example, Quixe.) This must have
+   init() and resume() methods.
 
-   The vm_options argument is optional; it is passed through to GlkOte
-   as the game interface object. It can be used to affect some GlkOte
-   display options, such as window spacing.
+   The vm_options argument is also passed through to GlkOte as the game
+   interface object. It can be used to affect some GlkOte display options,
+   such as window spacing.
 
    (You do not need to provide a vm_options.accept() function. The Glk
    library sets that up for you.)
 */
-function init(vm_api, vm_options) {
-    VM = vm_api;
+function init(vm_options) {
+    VM = vm_options.vm;
     if (window.GiDispa)
         GiDispa.set_vm(VM);
 
-    if (!vm_options)
-        vm_options = { spacing: 4 };
     vm_options.accept = accept_ui_event;
 
     GlkOte.init(vm_options);
