@@ -720,7 +720,7 @@ else if (window.globalStorage != null) {
     localStorage = window.globalStorage[location.hostname];
 }
 
-window.addEventListener('storage', evhan_storage_changed, false);
+Event.observe(window, 'storage', evhan_storage_changed); // prototype-ism
 
 return {
     open: dialog_open,
