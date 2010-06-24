@@ -62,6 +62,7 @@ var dialog_callback = null;
 var will_save; /* is this a save dialog? */
 var confirming; /* are we in a "confirm" sub-dialog? */
 var cur_usage; /* a string representing the file's category */
+var cur_usage_name; /* the file's category as a human-readable string */
 var cur_gameid; /* a string representing the game */
 var cur_filelist; /* the files currently on display */
 
@@ -91,6 +92,26 @@ function dialog_open(tosave, usage, gameid, callback) {
     confirming = false;
     cur_usage = usage;
     cur_gameid = gameid;
+
+    /* Pick a human-readable label for the usage. This will be displayed in the
+       dialog prompts. (Possibly pluralized, with an "s".) */
+    switch (cur_usage) {
+    case 'data': 
+        cur_usage_name = 'data file';
+        break;
+    case 'save': 
+        cur_usage_name = 'save file';
+        break;
+    case 'transcript': 
+        cur_usage_name = 'transcript';
+        break;
+    case 'command': 
+        cur_usage_name = 'command script';
+        break;
+    default:
+        cur_usage_name = 'file';
+        break;
+    }
 
     /* Figure out what the root div is called. The dialog box will be
        positioned in this div; also, the div will be greyed out by a 
@@ -328,8 +349,8 @@ function evhan_accept_save_button() {
            label to "Replace"; if the user really meant it, we'll wind up back
            in this event handler. */
         confirming = true;
-        set_caption('You already have a save file "' + dirent.filename 
-            + '". Do you want to replace it?', false);
+        set_caption('You already have a ' + cur_usage_name + ' "' 
+            + dirent.filename + '". Do you want to replace it?', false);
         fel.disabled = true;
         var butel = $(dialog_el_id+'_accept');
         replace_text(butel, 'Replace');
@@ -428,20 +449,19 @@ function evhan_storage_changed(ev) {
             selel.onchange = evhan_select_change;
     }
 
-    //### not "save files"
     if (will_save) {
-        set_caption('Name this save file.', true);
+        set_caption('Name this ' + cur_usage_name + '.', true);
         el = $(dialog_el_id+'_accept');
         el.disabled = false;
     }
     else {
         if (ls.length == 0) {
-            set_caption('You have no save files for this game.', true);
+            set_caption('You have no ' + cur_usage_name + 's for this game.', true);
             el = $(dialog_el_id+'_accept');
             el.disabled = true;
         }
         else {
-            set_caption('Select a saved game to load.', true);
+            set_caption('Select a ' + cur_usage_name + ' to load.', true);
             el = $(dialog_el_id+'_accept');
             el.disabled = false;
         }
