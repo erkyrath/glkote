@@ -53,6 +53,8 @@
  * add a human-readable game name, a text/binary flag, or other data.
  */
 
+/* Put everything inside the Dialog namespace. */
+
 Dialog = function() {
 
 var dialog_el_id = 'dialog';
@@ -743,6 +745,8 @@ else if (window.globalStorage != null) {
 
 Event.observe(window, 'storage', evhan_storage_changed); // prototype-ism
 
+/* End of Dialog namespace function. Return the object which will
+   become the Dialog global. */
 return {
     open: dialog_open,
 
@@ -754,3 +758,5 @@ return {
 };
 
 }();
+
+/* End of Dialog library. */
