@@ -1104,18 +1104,6 @@ function qobjdump(obj, depth) {
     return "{ " + proplist.join(", ") + " }";
 }
 
-//### debugging
-function qbusyspin(msec) {
-    var start = Date.now();
-    qlog("### busyspin begin: " + msec + " msec");
-    while (true) {
-        var now = Date.now();
-        if (now - start > msec)
-            break;
-    }
-    qlog("### busyspin end");
-}
-
 /* RefBox: Simple class used for "call-by-reference" Glk arguments. The object
    is just a box containing a single value, which can be written and read.
 */
@@ -1704,8 +1692,10 @@ function gli_new_fileref(filename, usage, rock, ref) {
     }
 
     if (!ref) {
-        //### gameid: grab for "save", use blank for other
-        ref = Dialog.file_construct_ref(fref.filename, fref.filetypename, '');
+        var gameid = '';
+        if (fref.filetype == Const.fileusage_SavedGame)
+            gameid = VM.get_signature();
+        ref = Dialog.file_construct_ref(fref.filename, fref.filetypename, gameid);
     }
     fref.ref = ref;
 
@@ -2682,9 +2672,11 @@ function glk_fileref_create_by_prompt(usage, fmode, rock) {
         VM.resume();
     }
 
-    //### gameid: grab for "save", use blank for other
     try {
-        Dialog.open(writable, filetypename, '', callback);
+        var gameid = '';
+        if (filetype == Const.fileusage_SavedGame)
+            gameid = VM.get_signature();
+        Dialog.open(writable, filetypename, gameid, callback);
     }
     catch (ex) {
         GlkOte.log('Unable to select file: ' + ex);
