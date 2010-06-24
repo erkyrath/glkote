@@ -399,7 +399,8 @@ function evhan_storage_changed(ev) {
         return false;
 
     ls = files_list(cur_usage, cur_gameid);
-    //### sort ls by date
+    /* Sort by date modified */
+    ls.sort(function(f1, f2) { return f2.modified.getTime() - f1.modified.getTime(); });
     cur_filelist = ls;
 
     /* Adjust the contents of the selection box. */
