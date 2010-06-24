@@ -2031,21 +2031,87 @@ function glk_gestalt(sel, val) {
 }
 
 function glk_gestalt_ext(sel, val, arr) {
-    //#### more selectors
     switch (sel) {
-    case 0: // gestalt_Version:
+
+    case 0: // gestalt_Version
         return 0x00000700;
+
+    case 1: // gestalt_CharInput
+        /* This is not a terrific approximation. Return false for function
+           keys, control keys, and the high-bit non-printables. For
+           everything else in the Unicode range, return true. */
+        if (val <= Const.keycode_Left && val >= Const.keycode_End)
+            return 1;
+        if (val >= 0x100000000-Const.keycode_MAXVAL)
+            return 0;
+        if (val > 0x10FFFF)
+            return 0;
+        if ((val >= 0 && val < 32) || (val >= 127 && val < 160))
+            return 0;
+        return 1;
+
+    case 2: // gestalt_LineInput
+        /* Same as the above, except no special keys. */
+        if (val > 0x10FFFF)
+            return 0;
+        if ((val >= 0 && val < 32) || (val >= 127 && val < 160))
+            return 0;
+        return 1;
+
+    case 3: // gestalt_CharOutput
+        /* Same thing again. We assume that all printable characters,
+           as well as the placeholders for nonprintables, are one character
+           wide. */
+        if ((val > 0x10FFFF) 
+            || (val >= 0 && val < 32) 
+            || (val >= 127 && val < 160)) {
+            if (arr)
+                arr[0] = 1;
+            return 0; // gestalt_CharOutput_CannotPrint
+        }
+        if (arr)
+            arr[0] = 1;
+        return 2; // gestalt_CharOutput_ExactPrint
+
+    case 4: // gestalt_MouseInput
+        return 0;
+
     case 5: // gestalt_Timer
         return 1;
+
+    case 6: // gestalt_Graphics
+        return 0;
+
+    case 7: // gestalt_DrawImage
+        return 0;
+
+    case 8: // gestalt_Sound
+        return 0;
+
+    case 9: // gestalt_SoundVolume
+        return 0;
+
+    case 10: // gestalt_SoundNotify
+        return 0;
+
     case 11: // gestalt_Hyperlinks
         return 1;
+
     case 12: // gestalt_HyperlinkInput
         if (val == 3 || val == 4) // TextBuffer or TextGrid
             return 1;
         else
             return 0;
+
+    case 13: // gestalt_SoundMusic
+        return 0;
+
+    case 14: // gestalt_GraphicsTransparency
+        return 0;
+
     case 15: // gestalt_Unicode
         return 1;
+
     }
 
     return 0;
