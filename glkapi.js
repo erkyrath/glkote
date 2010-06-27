@@ -1604,6 +1604,8 @@ function gli_new_stream(type, readable, writable, rock) {
     str.bufpos = 0;
     str.buflen = 0;
     str.bufeof = 0;
+    str.timer_id = null;
+    str.flush_func = null;
 
     str.readcount = 0;
     str.writecount = 0;
@@ -1669,12 +1671,31 @@ function gli_stream_open_window(win) {
     return str;
 }
 
+/* This is called on every write to a file stream. If a file is being
+   written intermittently (a transcript file, for example) we'd like to
+   flush the output every few seconds, in case the user closes the
+   browser without closing the file ("script off").
+
+   We do this by setting a ten-second timer (if there isn't one set already).
+   The timer calls a flush method on the stream.
+*/
 function gli_stream_dirty_file(str) {
-    /* ### Currently the library only writes out file data when the file is
-       closed. It would be nice to handle files that are written (or appended
-       to) intermittently. We could do this by setting a timer, and writing out
-       the file contents if there is no further change in (say) ten seconds.
-    */
+    if (str.timer_id === null) {
+        if (str.flush_func === null) {
+            /* Bodge together a closure to act as a stream method. */
+            str.flush_func = function() { gli_stream_flush_file(str); };
+        }
+        str.timer_id = setTimeout(str.flush_func, 10000);
+    }
+}
+
+/* Write out the contents of a file stream to the "disk file". Because
+   localStorage doesn't support appending, we have to dump the entire
+   buffer out.
+*/
+function gli_stream_flush_file(str) {
+    str.timer_id = null;
+    Dialog.file_write(str.ref, str.buf);
 }
 
 function gli_new_fileref(filename, usage, rock, ref) {
@@ -2651,7 +2672,10 @@ function glk_stream_close(str, result) {
         throw('glk_stream_close: cannot close window stream');
 
     if (str.type == strtype_File && str.writable) {
-        //### kill timer if set
+        if (!(str.timer_id === null)) {
+            clearTimeout(str.timer_id);
+            str.timer_id = null;
+        }
         Dialog.file_write(str.ref, str.buf);
     }
 
