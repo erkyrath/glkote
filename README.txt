@@ -13,6 +13,7 @@ text, and accepting text input from the user.
 GlkOte has been tested on Safari 3 through 5, Firefox 2 and 3, MSIE 6
 through 8, Opera 9.5, and Chrome 5.
 
+
 * Contents
 
 Documentation:
