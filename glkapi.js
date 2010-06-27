@@ -1189,7 +1189,6 @@ var gli_selectref = null;
    no GiDispa layer to provide them. */
 var gli_api_display_rocks = 1;
 
-//### kill timer when library exits, or on fatal error
 /* A positive number if the timer is set. */
 var gli_timer_interval = null; 
 var gli_timer_id = null; /* Currently active setTimeout ID */
@@ -2002,10 +2001,18 @@ function gli_set_hyperlink(str, val) {
 
 function gli_timer_callback() {
     if (ui_disabled) {
-        /* Put off dealing with this for a half-second. */
-        GlkOte.log("### procrastinating timer event...");
-        gli_timer_id = setTimeout(gli_timer_callback, 500);
-        return;
+        if (has_exited) {
+            /* The game shut down and left us hanging. */
+            GlkOte.log("### dropping timer event...");
+            gli_timer_id = null;
+            return;
+        }
+        else {
+            /* Put off dealing with this for a half-second. */
+            GlkOte.log("### procrastinating timer event...");
+            gli_timer_id = setTimeout(gli_timer_callback, 500);
+            return;
+        }
     }
     gli_timer_id = setTimeout(gli_timer_callback, gli_timer_interval);
     gli_timer_started = Date.now();
