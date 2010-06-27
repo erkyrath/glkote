@@ -10,8 +10,8 @@ text-based applications -- on a web page. It is a Javascript library
 which handles the mechanics of displaying text, arranging panes of
 text, and accepting text input from the user.
 
-GlkOte has been tested on Safari 3, Firefox 2 and 3, MSIE 6 and 7,
-and Opera 9.5.
+GlkOte has been tested on Safari 3 through 5, Firefox 2 and 3, MSIE 6
+through 8, Opera 9.5, and Chrome 5.
 
 * Contents
 
