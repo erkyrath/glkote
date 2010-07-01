@@ -41,6 +41,7 @@ game_inputinitial_right = null;
 game_timed_timer = null;
 game_simulate_crash = false;
 game_simulate_timeout = false;
+game_simulate_dialog = false;
 
 game_mood = 0;
 game_mood_list = [ 'cheery', 'dopey', 'hungry', 'explodey' ];
@@ -101,7 +102,7 @@ function game_print(val) {
 }
 
 function game_select() {
-  if (game_simulate_crash)
+  if (game_simulate_crash || game_simulate_dialog)
     return;
 
   game_generation = game_generation+1;
@@ -507,6 +508,17 @@ function game_submit_timer_input() {
   game_print('The timer has gone off. Ding!');
 }
 
+function game_file_selected(ref) {
+  if (!ref) {
+    game_print('Selection cancelled.');
+  }
+  else {
+    game_print('You selected a file (although nothing was actually saved).');
+  }
+  game_simulate_dialog = false;
+  game_select();
+}
+
 function game_parse(val) {
   if (val == 'help' || val == '?') {
     game_print('This is an interface demo of the RemGlk Javascript front end. There is no IF interpreter behind the display library -- just a few lines of Javascript. It accepts some commands which demonstrate the capabilities of the display system.\n');
@@ -531,6 +543,7 @@ function game_parse(val) {
     helpopt('unsplit', 'close the second story window');
     helpopt('both',    'print output in both story windows');
     helpopt('timer',   'set a timed event to fire in two seconds');
+    helpopt('save',    'open a file dialog');
     helpopt('crash',   'react as if the game had crashed');
     helpopt('slow',    'react as if the game were taking a long time to compute its output');
     helpopt('todo',    'what do I still need to fix in this interface?');
@@ -730,6 +743,19 @@ function game_parse(val) {
     return;
   }
 
+  if (val == 'save') {
+    try {
+      Dialog.open(true, 'save', 'sample-demo', game_file_selected);
+    }
+    catch (ex) {
+      game_print('Your browser does not support game-saving.');
+      return;
+    }
+    game_simulate_dialog = true;
+    GlkOte.update({ type:'update', disable:true });
+    return;
+  }
+
   if (val == 'look' || val == 'l') {
     game_print();
     if (game_print_left) {
@@ -756,7 +782,8 @@ function game_parse(val) {
   if (val == 'crash') {
     /* This simulates the case where RemGlk, on the other end of the line,
        has died; we never get another Game.update. */
-    GlkOte.update({type:'error', message:'The game has pretended to crash.'});
+    GlkOte.update({ type:'error', 
+      message:'The game has pretended to crash.' });
     game_simulate_crash = true;
     return;
   }
