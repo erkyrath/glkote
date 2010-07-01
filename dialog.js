@@ -639,6 +639,7 @@ function file_read(dirent, israw) {
     if (content == null)
         return null;
 
+    content = content.toString();
     if (!content) {
         if (israw)
             return '';
@@ -683,7 +684,9 @@ function files_list(usage, gameid) {
 
     for (ix=0; ix<localStorage.length; ix++) {
         var key = localStorage.key(ix);
-        var dirent = file_decode_ref(key);
+        if (!key)
+            continue;
+        var dirent = file_decode_ref(key.toString());
         if (!dirent)
             continue;
         if (!file_ref_matches(dirent, usage, gameid))
