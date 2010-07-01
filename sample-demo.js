@@ -513,7 +513,7 @@ function game_file_selected(ref) {
     game_print('Selection cancelled.');
   }
   else {
-    game_print('You selected a file (although nothing was actually saved).');
+    game_print('You selected the file "' + ref.filename + '" (although nothing was actually saved).');
   }
   game_simulate_dialog = false;
   game_select();
@@ -744,6 +744,10 @@ function game_parse(val) {
   }
 
   if (val == 'save') {
+    if (!window.Dialog) {
+      game_print('The "dialog.js" script was not loaded by this page, so you cannot test the file-selection dialog.');
+      return;
+    }
     try {
       Dialog.open(true, 'save', 'sample-demo', game_file_selected);
     }
