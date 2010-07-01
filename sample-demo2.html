@@ -3,20 +3,34 @@
 <head>
 <title>GlkOte: Not A Real Game</title>
 
-<link rel="stylesheet" href="glkote.css" type="text/css">
+<link rel="stylesheet" href="glkote-demo2.css" type="text/css">
 
 <style type="text/css">
 
 body {
+  position: absolute;
+  width: 100%;
   margin: 0px;
   height: 100%;
+  background: #C0C0B0;
+}
+
+#mainpage {
+  position: relative;
+  max-width: 600px;
+  margin: 0px auto;
+  height: 100%;
+  background: white;
+  -webkit-box-shadow: 0px 0px 30px #444;
+  -moz-box-shadow: 0px 0px 30px #444;
 }
 
 #banner {
   position: absolute;
   top: 0px;
   height: 45px;
-  width: 100%;
+  left: 10px;
+  right: 0px;
   background: #DDDDFF;
   border-bottom: 4px;
   border-top: 0px;
@@ -24,18 +38,20 @@ body {
   border-right: 0px;
   border-color: #E8E8FF;
   border-style: solid;
+  border-bottom-left-radius: 45px;
+  -moz-border-radius-bottomleft: 45px;
 }
 
 #bannertitle {
   font-size: 18px;
   font-weight: bold;
   margin-top: 8px;
-  margin-left: 16px;
+  margin-left: 30px;
 }
 
 #bannerhowto {
   text-align: right;
-  margin-right: 16px;
+  margin-right: 20px;
 }
 
 #gameport {
@@ -43,11 +59,11 @@ body {
   overflow: hidden;
   left: 0px;
   right: 0px;
-  top: 54px;
+  top: 56px;
   bottom: 0px;
   /* See the "unpleasant stanza" in sample-demo.js for a hack to make MSIE6 
      accept these top/bottom properties. */
-  background: #CCAA88;
+  background: white;
   margin: 0px;
 }
 
@@ -62,6 +78,8 @@ body {
 /* The game interface object. */
 Game = {
   accept: game_accept,
+  outspacingx: 8,
+  outspacingy: 0,
   spacing: 4
 };
 
@@ -69,6 +87,7 @@ Game = {
 
 </head>
 <body onLoad="GlkOte.init();">
+<div id="mainpage">
 <div id="banner">
 <div id="bannertitle">Not A Real Game</div>
 <div id="bannerhowto"><em><a target="_blank" href="sample-help.html">How do I play?</a></em></div>
@@ -91,5 +110,6 @@ This should not be visible
 </div>
 </div>
 
+</div>
 </body>
 </html>
