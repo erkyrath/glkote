@@ -1,6 +1,6 @@
 GlkOte -- a Javascript display library for IF interfaces
 
-GlkOte Library: version 1.1.
+GlkOte Library: version 1.1.0.
 Designed by Andrew Plotkin <erkyrath@eblong.com>
 <http://eblong.com/zarf/glk/glkote.html>
 
@@ -34,6 +34,9 @@ What you need:
 Example pages:
 
 - sample-demo.html    -- a "fake game" that demonstrates library features
+- sample-demo.js      -- source code for the fake game
+- sample-demo2.html   -- same fake game with a different stylesheet
+- glkote-demo2.css    -- the different stylesheet
 - sample-help.html    -- pop-up help page for the fake game
 - sample-minimal.html -- minimal, no-window use of the library
 
