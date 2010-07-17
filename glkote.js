@@ -50,9 +50,12 @@ var windowdic = null;
 var current_metrics = null;
 var currently_focussed = false;
 var last_known_focus = 0;
+var last_known_paging = 0;
+var windows_paging_count = 0;
 var resize_timer = null;
 var retry_timer = null;
 var is_ie7 = false;
+var perform_paging = true;
 
 /* Some handy constants */
 /* A non-breaking space character. */
@@ -285,11 +288,42 @@ function glkote_update(arg) {
 
   windowdic.values().each(function(win) {
     if (win.type == 'buffer' && win.needscroll) {
+      /* needscroll is true if the window has accumulated any content or
+         an input field in this update cycle. needspaging is true if
+         the window has any unviewed content from *last* cycle; we set 
+         it now if any new content remains unviewed after the first
+         obligatory scrolldown. 
+         (If perform_paging is false, we forget about needspaging and
+         just always scroll to the bottom.) */
       win.needscroll = false;
       var frameel = win.frameel;
-      frameel.scrollTop = frameel.scrollHeight;
+      if (!win.needspaging) {
+        if (!perform_paging) {
+          /* Scroll all the way down. */
+          frameel.scrollTop = frameel.scrollHeight;
+          win.needspaging = false;
+        }
+        else {
+          /* Scroll down one page. */
+          var frameheight = frameel.getHeight();
+          //### not right if window was initially clear
+          frameel.scrollTop = frameel.scrollTop + frameheight; //### minus a line?
+          if (frameel.scrollTop + frameheight >= frameel.scrollHeight) {
+            win.needspaging = false;
+            glkote_log('### update ' + win.id + ': fully scrolled');
+          }
+          else {
+            win.needspaging = true;
+            glkote_log('### update ' + win.id + ': only ' + (frameel.scrollTop+frameheight) + ' of ' + frameel.scrollHeight);
+          }
+        }
+      }
     }
   });
+
+  /* Set windows_paging_count. (But don't set the focus -- we'll do that
+     momentarily.) */
+  readjust_paging_focus(false);
 
   /* Disable everything, if that was requested. */
   disabled = false;
@@ -302,10 +336,13 @@ function glkote_update(arg) {
     });
   }
 
-  /* Figure out which window to set the focus to. */
+  /* Figure out which window to set the focus to. (But not if the UI is
+     disabled. We also skip this if there's paging to be done, because
+     focussing might autoscroll and we want to trap keystrokes for 
+     paging anyhow.) */
 
   var newinputwin = 0;
-  if (!disabled) {
+  if (!disabled && !windows_paging_count) {
     windowdic.values().each(function(win) {
       if (win.input) {
         if (!newinputwin || win.id == last_known_focus)
@@ -323,6 +360,7 @@ function glkote_update(arg) {
       var win = windowdic.get(newinputwin);
       if (win.inputel) {
         win.inputel.focus();
+        //#### tricky
         if (Prototype.Browser.IE)
           win.frameel.scrollTop = win.frameel.scrollHeight;
       }
@@ -375,6 +413,8 @@ function accept_one_window(arg) {
         'class': 'WindowFrame ' + typeclass + ' ' + rockclass });
     frameel.winid = arg.id;
     frameel.onmousedown = function() { evhan_window_mousedown(frameel); };
+    if (perform_paging && win.type == 'buffer')
+      frameel.onscroll = function() { evhan_window_scroll(frameel); };
     win.frameel = frameel;
     win.gridheight = 0;
     win.gridwidth = 0;
@@ -382,6 +422,7 @@ function accept_one_window(arg) {
     win.inputel = null;
     win.reqhyperlink = false;
     win.needscroll = false;
+    win.needspaging = false;
     win.history = new Array();
     win.historypos = 0;
     $(windowport_id).insert(frameel);
@@ -841,6 +882,59 @@ function accept_inputset(arg) {
   });
 }
 
+/* Set windows_paging_count to the number of windows that need paging.
+   If that's nonzero, pick an appropriate window for the paging focus.
+
+   The canfocus flag determines whether this function can jump to an
+   input field focus (should paging be complete).
+
+   This must be called whenever a window's needspaging flag changes.
+*/
+function readjust_paging_focus(canfocus) {
+  windows_paging_count = 0;
+  var pageable_win = 0;
+
+  if (perform_paging) {
+    windowdic.values().each(function(win) {
+        if (win.needspaging) {
+          windows_paging_count += 1;
+          if (!pageable_win || win.id == last_known_paging)
+            pageable_win = win.id;
+        }
+      });
+  }
+    
+  if (windows_paging_count) {
+    /* pageable_win will be set. This is our new paging focus. */
+    glkote_log('### readjust: ' + windows_paging_count + ' windows need paging, picking ' + pageable_win);
+    last_known_paging = pageable_win;
+  }
+
+  if (!windows_paging_count && canfocus) {
+    /* Time to set the input field focus. This is the same code as in
+       the update routine, although somewhat simplified since we don't
+       need to worry about the DOM being in flux. */
+    glkote_log('### readjust: bing! Time for input focus.');
+
+    var newinputwin = 0;
+    if (!disabled && !windows_paging_count) {
+      windowdic.values().each(function(win) {
+          if (win.input) {
+            if (!newinputwin || win.id == last_known_focus)
+              newinputwin = win.id;
+          }
+        });
+    }
+    
+    if (newinputwin) {
+      var win = windowdic.get(newinputwin);
+      if (win.inputel) {
+        win.inputel.focus();
+      }
+    }
+  }
+}
+
 /* Return the game interface object that was provided to init(). Call
    this if a subsidiary library (e.g., dialog.js) needs to imitate some
    display setting. Do not try to modify the object; it will probably
@@ -1150,13 +1244,39 @@ function evhan_doc_keypress(ev) {
       return;
   }
 
-  var win = windowdic.get(last_known_focus);
+  var win;
+
+  if (windows_paging_count) {
+    win = windowdic.get(last_known_paging);
+    if (win 
+      && ((keycode >= 32 && keycode <= 126) || keycode == 13)) {
+      glkote_log('### keypress: paging with focus in ' + win.id);
+      ev.preventDefault();
+      var frameel = win.frameel;
+      var frameheight = frameel.getHeight();
+      frameel.scrollTop = frameel.scrollTop + frameheight; //### minus a line?
+      if (win.needspaging) {
+        /* The scroll-down might have cleared needspaging already. But 
+           if not... */
+        if (frameel.scrollTop + frameheight >= frameel.scrollHeight) {
+          win.needspaging = false;
+          glkote_log('### keypress ' + win.id + ': fully scrolled');
+          readjust_paging_focus(true);
+        }
+      }
+      return;
+    }
+  }
+
+  win = windowdic.get(last_known_focus);
   if (!win)
     return;
   if (!win.inputel)
     return;
 
+  glkote_log('### keypress: focus to ' + win.id);
   win.inputel.focus();
+  //#### tricky
   if (Prototype.Browser.IE || Prototype.Browser.Gecko)
     win.frameel.scrollTop = win.frameel.scrollHeight;
 
@@ -1212,7 +1332,7 @@ function evhan_doc_keypress(ev) {
 /* Event handler: mousedown events on windows.
 
    Remember which window the user clicked in last, as a hint for setting
-   the focus.
+   the focus. (Input focus and paging focus are tracked separately.)
 */
 function evhan_window_mousedown(frameel) {
   if (!frameel.winid)
@@ -1220,9 +1340,14 @@ function evhan_window_mousedown(frameel) {
   var win = windowdic.get(frameel.winid);
   if (!win)
     return;
-  if (!win.inputel)
-    return;
-  last_known_focus = win.id;
+
+  if (win.inputel)
+    last_known_focus = win.id;
+
+  if (win.needspaging)
+    last_known_paging = win.id;
+  else if (win.inputel)
+    last_known_paging = 0;
 }
 
 /* Event handler: keydown events on input fields (character input)
@@ -1399,6 +1524,7 @@ function evhan_input_focus(winid) {
 
   currently_focussed = true;
   last_known_focus = winid;
+  last_known_paging = winid;
 }
 
 /* Event handler: blur events on input fields
@@ -1411,6 +1537,27 @@ function evhan_input_blur(winid) {
     return;
 
   currently_focussed = false;
+}
+
+function evhan_window_scroll(frameel) {
+  if (!frameel.winid)
+    return;
+  var win = windowdic.get(frameel.winid);
+  if (!win)
+    return;
+
+  if (!win.needspaging)
+    return;
+
+  var frameheight = frameel.getHeight();
+  if (frameel.scrollTop + frameheight >= frameel.scrollHeight) {
+    win.needspaging = false;
+    glkote_log('### onscroll ' + win.id + ': fully scrolled');
+    readjust_paging_focus(true);
+    return;
+  }
+
+  glkote_log('### onscroll ' + win.id + ': only ' + (frameel.scrollTop+frameheight) + ' of ' + frameel.scrollHeight);
 }
 
 /* Event handler constructor: report a click on a hyperlink

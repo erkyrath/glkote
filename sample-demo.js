@@ -51,6 +51,19 @@ function game_version() {
     + '; last updated 30-Jun-2010');
 }
 
+function game_generate_long_text(count, label) {
+  var msg = 'This is a very';
+  var opts = [ ' very', ' extremely', ' really', ' seriously', ' awfully' ];
+  for (var ix=0; ix<count; ix++) {
+    if (Math.random() < 0.01)
+      msg += ' wicked';
+    var val = Math.floor(Math.random() * opts.length);
+    msg += opts[val];
+  }
+  msg += ' ' + label + '.';
+  return msg;
+}
+
 function game_clear_window(val) {
   if (game_print_left) {
     game_streamout_left.clear();
@@ -542,6 +555,7 @@ function game_parse(val) {
     helpopt('split',   'open a second story window');
     helpopt('unsplit', 'close the second story window');
     helpopt('both',    'print output in both story windows');
+    helpopt('bothlong','print long output in both story windows');
     helpopt('timer',   'set a timed event to fire in two seconds');
     helpopt('save',    'open a file dialog');
     helpopt('crash',   'react as if the game had crashed');
@@ -584,15 +598,7 @@ function game_parse(val) {
   }
 
   if (val == 'long') {
-    var msg = 'This is a very';
-    var opts = [ ' very', ' extremely', ' really', ' seriously', ' awfully' ];
-    for (var ix=0; ix<150; ix++) {
-      if (Math.random() < 0.01)
-        msg += ' wicked';
-      var val = Math.floor(Math.random() * opts.length);
-      msg += opts[val];
-    }
-    msg += ' long line of text.';
+    var msg = game_generate_long_text(150, 'long line of text');
     game_print(msg);
     return;
   }
@@ -647,6 +653,29 @@ function game_parse(val) {
     game_print('This message appears both here and in the right-hand window.');
     game_print_left = false;
     game_print('This message appears both here and in the left-hand window.');
+    game_print_left = printtmp;
+    return;
+  }
+
+  if (val == 'bothlong' || val == 'longboth') {
+    if (!game_splitwin) {
+      game_print('The story window is not currently split.');
+      return;
+    }
+
+    var msg1 = game_generate_long_text(150, 'long line of text, in the primary window');
+    var msg2 = game_generate_long_text(120, 'long line of text (although not quite as long) in the secondary window');
+
+    game_inputgen_left = 0;
+    game_inputgen_right = 0;
+    game_inputline_left = true;
+    game_inputline_right = true;
+    /* leave game_inputinitial_left/right as set */
+    var printtmp = game_print_left;
+    game_print_left = true;
+    game_print(printtmp ? msg1 : msg2);
+    game_print_left = false;
+    game_print(printtmp ? msg2 : msg1);
     game_print_left = printtmp;
     return;
   }
