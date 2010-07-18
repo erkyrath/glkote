@@ -283,8 +283,9 @@ function glkote_update(arg) {
   if (arg.input != null)
     accept_inputset(arg.input);
 
-  /* Any buffer windows that have changed need to be scrolled to the
-     bottom. */
+  /* Any buffer windows that have changed need to be scrolled down.
+     Then, we take the opportunity to update topunseen. (If a buffer
+     window hasn't changed, topunseen hasn't changed.) */
 
   windowdic.values().each(function(win) {
     if (win.type == 'buffer' && win.needscroll) {
@@ -304,17 +305,25 @@ function glkote_update(arg) {
           win.needspaging = false;
         }
         else {
-          /* Scroll down one page. */
+          /* Scroll the unseen content to the top. */
+          frameel.scrollTop = win.topunseen;
+          /* Compute the new topunseen value. */
           var frameheight = frameel.getHeight();
-          //### not right if window was initially clear
-          frameel.scrollTop = frameel.scrollTop + frameheight; //### minus a line?
+          var realbottom = last_line_top_offset(frameel);
+          var newtopunseen = frameel.scrollTop + frameheight;
+          if (newtopunseen > realbottom)
+            newtopunseen = realbottom;
+          if (win.topunseen < newtopunseen)
+            win.topunseen = newtopunseen;
+          /* The scroll-down has not touched needspaging, because it is
+             currently false. Let's see if it should be true. */
           if (frameel.scrollTop + frameheight >= frameel.scrollHeight) {
             win.needspaging = false;
-            glkote_log('### update ' + win.id + ': fully scrolled');
+            glkote_log('### update ' + win.id + ': fully scrolled, topunseen ' + win.topunseen);
           }
           else {
             win.needspaging = true;
-            glkote_log('### update ' + win.id + ': only ' + (frameel.scrollTop+frameheight) + ' of ' + frameel.scrollHeight);
+            glkote_log('### update ' + win.id + ': only ' + (frameel.scrollTop+frameheight) + ' of ' + frameel.scrollHeight + ', topunseen ' + win.topunseen);
           }
         }
       }
@@ -423,6 +432,7 @@ function accept_one_window(arg) {
     win.reqhyperlink = false;
     win.needscroll = false;
     win.needspaging = false;
+    win.topunseen = 0;
     win.history = new Array();
     win.historypos = 0;
     $(windowport_id).insert(frameel);
@@ -601,7 +611,8 @@ function accept_one_content(arg) {
     cursel = null;
 
     if (arg.clear) {
-      win.frameel.update();
+      win.frameel.update(); // remove all children
+      win.topunseen = 0;
     }
 
     /* Each line we receive has a flag indicating whether it *starts*
@@ -695,6 +706,10 @@ function accept_one_content(arg) {
       var totrim = parals.length - max_buffer_length;
       if (totrim > 0) {
         var ix, obj;
+        win.topunseen -= parals[totrim].offsetTop;
+        if (win.topunseen < 0)
+          win.topunseen = 0;
+        glkote_log('### trimmed, topunseen now ' + win.topunseen);
         for (ix=0; ix<totrim; ix++) {
           obj = parals.item(0);
           if (obj)
@@ -880,6 +895,16 @@ function accept_inputset(arg) {
       }
     }
   });
+}
+
+/* Return the vertical offset (relative to the parent) of the top of the 
+   last child of the parent.
+*/
+function last_line_top_offset(el) {
+  var ls = el.childElements();
+  if (ls.length == 0)
+    return 0;
+  return ls[ls.length-1].offsetTop;
 }
 
 /* Set windows_paging_count to the number of windows that need paging.
@@ -1253,8 +1278,16 @@ function evhan_doc_keypress(ev) {
       glkote_log('### keypress: paging with focus in ' + win.id);
       ev.preventDefault();
       var frameel = win.frameel;
+      /* Scroll the unseen content to the top. */
+      frameel.scrollTop = win.topunseen;
+      /* Compute the new topunseen value. */
       var frameheight = frameel.getHeight();
-      frameel.scrollTop = frameel.scrollTop + frameheight; //### minus a line?
+      var realbottom = last_line_top_offset(frameel);
+      var newtopunseen = frameel.scrollTop + frameheight;
+      if (newtopunseen > realbottom)
+        newtopunseen = realbottom;
+      if (win.topunseen < newtopunseen)
+        win.topunseen = newtopunseen;
       if (win.needspaging) {
         /* The scroll-down might have cleared needspaging already. But 
            if not... */
@@ -1550,14 +1583,21 @@ function evhan_window_scroll(frameel) {
     return;
 
   var frameheight = frameel.getHeight();
+  var realbottom = last_line_top_offset(frameel);
+  var newtopunseen = frameel.scrollTop + frameheight;
+  if (newtopunseen > realbottom)
+    newtopunseen = realbottom;
+  if (win.topunseen < newtopunseen)
+    win.topunseen = newtopunseen;
+
   if (frameel.scrollTop + frameheight >= frameel.scrollHeight) {
     win.needspaging = false;
-    glkote_log('### onscroll ' + win.id + ': fully scrolled');
+    glkote_log('### onscroll ' + win.id + ': fully scrolled, topunseen ' + win.topunseen);
     readjust_paging_focus(true);
     return;
   }
 
-  glkote_log('### onscroll ' + win.id + ': only ' + (frameel.scrollTop+frameheight) + ' of ' + frameel.scrollHeight);
+  glkote_log('### onscroll ' + win.id + ': only ' + (frameel.scrollTop+frameheight) + ' of ' + frameel.scrollHeight + ', topunseen ' + win.topunseen);
 }
 
 /* Event handler constructor: report a click on a hyperlink
