@@ -99,7 +99,7 @@
 .MorePrompt {
   /* This describes the "More" prompt that flashes in the bottom right corner
      of a window when it needs paging. */
-  position: fixed;
+  position: absolute;
   background: #804020;
   color: #FFFFCC;
   padding: 2px 6px;
