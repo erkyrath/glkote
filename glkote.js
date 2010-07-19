@@ -1667,7 +1667,7 @@ function build_evhan_hyperlink(winid, linkval) {
 /* End of GlkOte namespace function. Return the object which will
    become the GlkOte global. */
 return {
-  version:  '1.1.1',
+  version:  '1.2.0',
   init:     glkote_init, 
   update:   glkote_update,
   extevent: glkote_extevent,
