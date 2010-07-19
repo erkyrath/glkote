@@ -297,8 +297,10 @@ function glkote_update(arg) {
          (If perform_paging is false, we forget about needspaging and
          just always scroll to the bottom.) */
       win.needscroll = false;
-      var frameel = win.frameel;
+
       if (!win.needspaging) {
+        var frameel = win.frameel;
+
         if (!perform_paging) {
           /* Scroll all the way down. */
           frameel.scrollTop = frameel.scrollHeight;
@@ -306,7 +308,7 @@ function glkote_update(arg) {
         }
         else {
           /* Scroll the unseen content to the top. */
-          frameel.scrollTop = win.topunseen;
+          frameel.scrollTop = win.topunseen - current_metrics.buffercharheight;
           /* Compute the new topunseen value. */
           var frameheight = frameel.getHeight();
           var realbottom = last_line_top_offset(frameel);
@@ -324,6 +326,25 @@ function glkote_update(arg) {
           else {
             win.needspaging = true;
             glkote_log('### update ' + win.id + ': only ' + (frameel.scrollTop+frameheight) + ' of ' + frameel.scrollHeight + ', topunseen ' + win.topunseen);
+          }
+        }
+
+        /* Add or remove the more prompt, based on the new needspaging flag. */
+        var moreel = $('win'+win.id+'_moreprompt');
+        if (!win.needspaging) {
+          if (moreel)
+            moreel.remove();
+        }
+        else {
+          if (!moreel) {
+            moreel = new Element('div',
+              { id: 'win'+win.id+'_moreprompt', 'class': 'MorePrompt' } );
+            insert_text(moreel, 'More');
+            /* 20 pixels is a cheap approximation of a scrollbar-width. */
+            var morex = win.coords.right + 20;
+            var morey = win.coords.bottom;
+            moreel.setStyle({ bottom:morey+'px', right:morex+'px' });
+            $(windowport_id).insert(moreel);
           }
         }
       }
@@ -433,6 +454,7 @@ function accept_one_window(arg) {
     win.needscroll = false;
     win.needspaging = false;
     win.topunseen = 0;
+    win.coords = { left:null, top:null, right:null, bottom:null };
     win.history = new Array();
     win.historypos = 0;
     $(windowport_id).insert(frameel);
@@ -476,8 +498,9 @@ function accept_one_window(arg) {
      border. (Measured by the browser's DOM methods, I mean.) */
   var styledic;
   if (Prototype.Browser.IE) {
-    /* Actually this works in Safari also, but in Firefox the buffer
-       windows are too narrow by a scrollbar-width. */
+    /* Actually this method works in Safari also, but in Firefox the buffer
+       windows are too narrow by a scrollbar-width. So we don't use it
+       generally. */
     var width = arg.width;
     var height = arg.height;
     if (arg.type == 'grid') {
@@ -490,12 +513,22 @@ function accept_one_window(arg) {
     }
     styledic = { left: arg.left+'px', top: arg.top+'px',
       width: width+'px', height: height+'px' };
+    win.coords.left = arg.left;
+    win.coords.top = arg.top;
+    //#### probably wrong for IE
+    win.coords.right = current_metrics.width - (arg.left+arg.width);
+    win.coords.bottom = current_metrics.height - (arg.top+arg.height);
   }
   else {
+    /* This method works in everything but IE. */
     var right = current_metrics.width - (arg.left + arg.width);
     var bottom = current_metrics.height - (arg.top + arg.height);
     styledic = { left: arg.left+'px', top: arg.top+'px',
       right: right+'px', bottom: bottom+'px' };
+    win.coords.left = arg.left;
+    win.coords.top = arg.top;
+    win.coords.right = right;
+    win.coords.bottom = bottom;
   }
   frameel.setStyle(styledic);
 }
@@ -505,6 +538,10 @@ function close_one_window(win) {
   win.frameel.remove();
   windowdic.unset(win.id);
   win.frameel = null;
+
+  var moreel = $('win'+win.id+'_moreprompt');
+  if (moreel)
+    moreel.remove();
 }
 
 /* Regular expressions used in twiddling runs of whitespace. */
@@ -1279,7 +1316,7 @@ function evhan_doc_keypress(ev) {
       ev.preventDefault();
       var frameel = win.frameel;
       /* Scroll the unseen content to the top. */
-      frameel.scrollTop = win.topunseen;
+      frameel.scrollTop = win.topunseen - current_metrics.buffercharheight;
       /* Compute the new topunseen value. */
       var frameheight = frameel.getHeight();
       var realbottom = last_line_top_offset(frameel);
@@ -1293,6 +1330,9 @@ function evhan_doc_keypress(ev) {
            if not... */
         if (frameel.scrollTop + frameheight >= frameel.scrollHeight) {
           win.needspaging = false;
+          var moreel = $('win'+win.id+'_moreprompt');
+          if (moreel)
+            moreel.remove();
           glkote_log('### keypress ' + win.id + ': fully scrolled');
           readjust_paging_focus(true);
         }
@@ -1592,6 +1632,9 @@ function evhan_window_scroll(frameel) {
 
   if (frameel.scrollTop + frameheight >= frameel.scrollHeight) {
     win.needspaging = false;
+    var moreel = $('win'+win.id+'_moreprompt');
+    if (moreel)
+      moreel.remove();
     glkote_log('### onscroll ' + win.id + ': fully scrolled, topunseen ' + win.topunseen);
     readjust_paging_focus(true);
     return;
