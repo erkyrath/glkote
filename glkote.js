@@ -1310,8 +1310,13 @@ function evhan_doc_keypress(ev) {
 
   if (windows_paging_count) {
     win = windowdic.get(last_known_paging);
-    if (win 
-      && ((keycode >= 32 && keycode <= 126) || keycode == 13)) {
+    if (win) {
+      if (!((keycode >= 32 && keycode <= 126) || keycode == 13)) {
+        /* If the keystroke is not a printable character (or Enter),
+           we return and let the default behavior happen. That lets
+           pageup/pagedown/home/end work normally. */
+        return;
+      }
       glkote_log('### keypress: paging with focus in ' + win.id);
       ev.preventDefault();
       var frameel = win.frameel;
