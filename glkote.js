@@ -321,11 +321,9 @@ function glkote_update(arg) {
              currently false. Let's see if it should be true. */
           if (frameel.scrollTop + frameheight >= frameel.scrollHeight) {
             win.needspaging = false;
-            glkote_log('### update ' + win.id + ': fully scrolled, topunseen ' + win.topunseen);
           }
           else {
             win.needspaging = true;
-            glkote_log('### update ' + win.id + ': only ' + (frameel.scrollTop+frameheight) + ' of ' + frameel.scrollHeight + ', topunseen ' + win.topunseen);
           }
         }
 
@@ -391,8 +389,8 @@ function glkote_update(arg) {
       if (win.inputel) {
         win.inputel.focus();
         //#### tricky
-        if (Prototype.Browser.IE)
-          win.frameel.scrollTop = win.frameel.scrollHeight;
+        //if (Prototype.Browser.IE)
+        //  win.frameel.scrollTop = win.frameel.scrollHeight;
       }
     };
     focusfunc.defer();
@@ -746,7 +744,6 @@ function accept_one_content(arg) {
         win.topunseen -= parals[totrim].offsetTop;
         if (win.topunseen < 0)
           win.topunseen = 0;
-        glkote_log('### trimmed, topunseen now ' + win.topunseen);
         for (ix=0; ix<totrim; ix++) {
           obj = parals.item(0);
           if (obj)
@@ -968,7 +965,6 @@ function readjust_paging_focus(canfocus) {
     
   if (windows_paging_count) {
     /* pageable_win will be set. This is our new paging focus. */
-    glkote_log('### readjust: ' + windows_paging_count + ' windows need paging, picking ' + pageable_win);
     last_known_paging = pageable_win;
   }
 
@@ -976,7 +972,6 @@ function readjust_paging_focus(canfocus) {
     /* Time to set the input field focus. This is the same code as in
        the update routine, although somewhat simplified since we don't
        need to worry about the DOM being in flux. */
-    glkote_log('### readjust: bing! Time for input focus.');
 
     var newinputwin = 0;
     if (!disabled && !windows_paging_count) {
@@ -1317,7 +1312,6 @@ function evhan_doc_keypress(ev) {
            pageup/pagedown/home/end work normally. */
         return;
       }
-      glkote_log('### keypress: paging with focus in ' + win.id);
       ev.preventDefault();
       var frameel = win.frameel;
       /* Scroll the unseen content to the top. */
@@ -1338,7 +1332,6 @@ function evhan_doc_keypress(ev) {
           var moreel = $('win'+win.id+'_moreprompt');
           if (moreel)
             moreel.remove();
-          glkote_log('### keypress ' + win.id + ': fully scrolled');
           readjust_paging_focus(true);
         }
       }
@@ -1352,11 +1345,10 @@ function evhan_doc_keypress(ev) {
   if (!win.inputel)
     return;
 
-  glkote_log('### keypress: focus to ' + win.id);
   win.inputel.focus();
   //#### tricky
-  if (Prototype.Browser.IE || Prototype.Browser.Gecko)
-    win.frameel.scrollTop = win.frameel.scrollHeight;
+  //if (Prototype.Browser.IE || Prototype.Browser.Gecko)
+  //  win.frameel.scrollTop = win.frameel.scrollHeight;
 
   if (win.input.type == 'line') {
 
@@ -1640,12 +1632,9 @@ function evhan_window_scroll(frameel) {
     var moreel = $('win'+win.id+'_moreprompt');
     if (moreel)
       moreel.remove();
-    glkote_log('### onscroll ' + win.id + ': fully scrolled, topunseen ' + win.topunseen);
     readjust_paging_focus(true);
     return;
   }
-
-  glkote_log('### onscroll ' + win.id + ': only ' + (frameel.scrollTop+frameheight) + ' of ' + frameel.scrollHeight + ', topunseen ' + win.topunseen);
 }
 
 /* Event handler constructor: report a click on a hyperlink
