@@ -388,9 +388,6 @@ function glkote_update(arg) {
       var win = windowdic.get(newinputwin);
       if (win.inputel) {
         win.inputel.focus();
-        //#### tricky
-        //if (Prototype.Browser.IE)
-        //  win.frameel.scrollTop = win.frameel.scrollHeight;
       }
     };
     focusfunc.defer();
@@ -1346,9 +1343,6 @@ function evhan_doc_keypress(ev) {
     return;
 
   win.inputel.focus();
-  //#### tricky
-  //if (Prototype.Browser.IE || Prototype.Browser.Gecko)
-  //  win.frameel.scrollTop = win.frameel.scrollHeight;
 
   if (win.input.type == 'line') {
 
