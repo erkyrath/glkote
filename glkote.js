@@ -91,9 +91,16 @@ function glkote_init(iface) {
     return;
   }
 
+  if (Prototype.Browser.MobileSafari) {
+    /* Paging doesn't make sense for iphone/android, because you can't
+       get keystroke events from a window. */
+    perform_paging = false;
+  }
   if (Prototype.Browser.IE) {
     is_ie7 = window.XMLHttpRequest != null;
   }
+  glkote_log("### useragent: " + navigator.userAgent); //####
+  //glkote_log("### useragent: " + navigator.userAgent.slice(50)); //####
 
   windowdic = new Hash();
 
@@ -108,7 +115,8 @@ function glkote_init(iface) {
     return;
   }
   el.update();
-  Event.observe(document, 'keypress', evhan_doc_keypress);
+  if (!Prototype.Browser.MobileSafari) 
+    Event.observe(document, 'keypress', evhan_doc_keypress);
   Event.observe(window, 'resize', evhan_doc_resize);
 
   var res = measure_window();
@@ -437,7 +445,8 @@ function accept_one_window(arg) {
       { id: 'window'+arg.id,
         'class': 'WindowFrame ' + typeclass + ' ' + rockclass });
     frameel.winid = arg.id;
-    frameel.onmousedown = function() { evhan_window_mousedown(frameel); };
+    Event.observe(frameel, 'mousedown', 
+      function(ev) { evhan_window_mousedown(ev, frameel); });
     if (perform_paging && win.type == 'buffer')
       frameel.onscroll = function() { evhan_window_scroll(frameel); };
     win.frameel = frameel;
@@ -1403,15 +1412,23 @@ function evhan_doc_keypress(ev) {
    Remember which window the user clicked in last, as a hint for setting
    the focus. (Input focus and paging focus are tracked separately.)
 */
-function evhan_window_mousedown(frameel) {
+function evhan_window_mousedown(ev, frameel) {
   if (!frameel.winid)
     return;
   var win = windowdic.get(frameel.winid);
   if (!win)
     return;
+  glkote_log("### mousedown in " + win.id); //####
 
-  if (win.inputel)
+  if (win.inputel) {
     last_known_focus = win.id;
+    if (Prototype.Browser.MobileSafari) {
+      ev.stop();
+      //glkote_log("### focus to " + win.id); //####
+      //### This doesn't always work, blah
+      win.inputel.focus();
+    }
+  }
 
   if (win.needspaging)
     last_known_paging = win.id;
