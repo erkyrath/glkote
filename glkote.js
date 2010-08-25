@@ -858,6 +858,8 @@ function accept_inputset(arg) {
       inputel = new Element('input',
         { id: 'win'+win.id+'_input',
           'class': classes, type: 'text', maxlength: maxlen });
+      if (Prototype.Browser.MobileSafari)
+        inputel.writeAttribute('autocapitalize', 'off');
       if (argi.type == 'line') {
         inputel.onkeypress = evhan_input_keypress;
         inputel.onkeydown = evhan_input_keydown;
