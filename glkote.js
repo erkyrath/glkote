@@ -99,8 +99,6 @@ function glkote_init(iface) {
   if (Prototype.Browser.IE) {
     is_ie7 = window.XMLHttpRequest != null;
   }
-  glkote_log("### useragent: " + navigator.userAgent); //####
-  //glkote_log("### useragent: " + navigator.userAgent.slice(50)); //####
 
   windowdic = new Hash();
 
@@ -1418,7 +1416,6 @@ function evhan_window_mousedown(ev, frameel) {
   var win = windowdic.get(frameel.winid);
   if (!win)
     return;
-  glkote_log("### mousedown in " + win.id); //####
 
   if (win.inputel) {
     last_known_focus = win.id;
@@ -1513,6 +1510,11 @@ function evhan_input_char_keypress(ev) {
   }
   if (!keycode) return false;
 
+  if (keycode == 10 && Prototype.Browser.MobileSafari) {
+    /* This case only occurs on old iPhones (iOS 3.1.3). */
+    keycode = 13;
+  }
+
   var res;
   if (keycode == 13)
     res = 'return';
@@ -1584,6 +1586,11 @@ function evhan_input_keypress(ev) {
     if (ev) keycode = ev.which;
   }
   if (!keycode) return true;
+
+  if (keycode == 10 && Prototype.Browser.MobileSafari) {
+    /* This case only occurs on old iPhones (iOS 3.1.3). */
+    keycode = 13;
+  }
 
   if (keycode == 13) {
     if (!this.winid)
