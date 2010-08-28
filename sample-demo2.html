@@ -3,6 +3,8 @@
 <head>
 <title>GlkOte: Not A Real Game</title>
 
+<meta name="viewport" content="width=device-width, user-scalable=no">
+
 <link rel="stylesheet" href="glkote-demo2.css" type="text/css">
 <link rel="stylesheet" href="dialog.css" type="text/css">
 
@@ -67,6 +69,18 @@ body {
      accept these top/bottom properties. */
   background: white;
   margin: 0px;
+}
+
+@media screen and (max-device-width: 480px) {
+  /* This stanza simplifies the layout on small (iPhone-sized) screens.
+     The top blue banner is removed, so that the gameport can fill the
+     whole screen. */
+  #banner {
+    display: none;
+  }
+  #gameport {
+    top: 0px;
+  }
 }
 
 </style>
