@@ -580,6 +580,7 @@ function game_parse(val) {
     game_print({ style:'preformatted', text:'  |   |   |' });
     game_print({ style:'preformatted', text:'  |  / \\  |' });
     game_print({ style:'preformatted', text:'  +-------+' });
+    game_print({ style:'preformatted', text:'  [DUDEMAP]' });
     return;
   }
 
