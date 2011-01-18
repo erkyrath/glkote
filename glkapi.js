@@ -463,6 +463,10 @@ var Const = {
     gestalt_SoundMusic : 13,
     gestalt_GraphicsTransparency : 14,
     gestalt_Unicode : 15,
+    gestalt_UnicodeNorm : 16,
+    gestalt_LineInputEcho : 17,
+    gestalt_LineTerminators : 18,
+    gestalt_LineTerminatorKey : 19,
 
     keycode_Unknown  : 0xffffffff,
     keycode_Left     : 0xfffffffe,
@@ -531,6 +535,10 @@ var Const = {
     winmethod_Fixed : 0x10,
     winmethod_Proportional : 0x20,
     winmethod_DivisionMask : 0xf0,
+
+    winmethod_Border : 0x000,
+    winmethod_NoBorder : 0x100,
+    winmethod_BorderMask : 0x100,
 
     fileusage_Data : 0x00,
     fileusage_SavedGame : 0x01,
