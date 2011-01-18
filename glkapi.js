@@ -250,12 +250,17 @@ function handle_line_input(disprock, input) {
     if (input.length > win.linebuf.length)
         input = input.slice(0, win.linebuf.length);
 
-    ix = win.style;
-    gli_set_style(win.str, Const.style_Input);
-    gli_window_put_string(win, input+"\n");
-    if (win.echostr)
-        glk_put_jstring_stream(win.echostr, input+"\n");
-    gli_set_style(win.str, ix);
+    if (win.request_echo_line_input) {
+        ix = win.style;
+        gli_set_style(win.str, Const.style_Input);
+        gli_window_put_string(win, input);
+        if (win.echostr)
+            glk_put_jstring_stream(win.echostr, input);
+        gli_set_style(win.str, ix);
+        gli_window_put_string(win, "\n");
+        if (win.echostr)
+            glk_put_jstring_stream(win.echostr, "\n");
+    }
 
     for (ix=0; ix<input.length; ix++)
         win.linebuf[ix] = input.charCodeAt(ix);
@@ -269,6 +274,7 @@ function handle_line_input(disprock, input) {
         GiDispa.unretain_array(win.linebuf);
     win.line_request = false;
     win.line_request_uni = false;
+    win.request_echo_line_input = null;
     win.input_generation = null;
     win.linebuf = null;
 
@@ -1997,6 +2003,8 @@ function gli_new_window(type, rock) {
     win.char_request_uni = false;
     win.line_request_uni = false;
     win.hyperlink_request = false;
+    win.echo_line_input = true;
+    win.request_echo_line_input = null; /* only used during a request */
 
     /* window-type-specific info is set up in glk_window_open */
 
@@ -2927,6 +2935,9 @@ function glk_gestalt_ext(sel, val, arr) {
     case 16: // gestalt_UnicodeNorm
         return 1;
 
+    case 17: //gestalt_LineInputEcho
+        return 1;
+
     }
 
     return 0;
@@ -3753,6 +3764,10 @@ function glk_request_line_event(win, buf, initlen) {
         }
         win.line_request = true;
         win.line_request_uni = false;
+        if (win.type == Const.wintype_TextBuffer)
+            win.request_echo_line_input = win.echo_line_input;
+        else
+            win.request_echo_line_input = true;
         win.input_generation = event_generation;
         win.linebuf = buf;
         if (window.GiDispa)
@@ -3789,12 +3804,17 @@ function glk_cancel_line_event(win, eventref) {
     if (input.length > win.linebuf.length)
         input = input.slice(0, win.linebuf.length);
 
-    ix = win.style;
-    gli_set_style(win.str, Const.style_Input);
-    gli_window_put_string(win, input+"\n");
-    if (win.echostr)
-        glk_put_jstring_stream(win.echostr, input+"\n");
-    gli_set_style(win.str, ix);
+    if (win.request_echo_line_input) {
+        ix = win.style;
+        gli_set_style(win.str, Const.style_Input);
+        gli_window_put_string(win, input);
+        if (win.echostr)
+            glk_put_jstring_stream(win.echostr, input);
+        gli_set_style(win.str, ix);
+        gli_window_put_string(win, "\n");
+        if (win.echostr)
+            glk_put_jstring_stream(win.echostr, "\n");
+    }
 
     for (ix=0; ix<input.length; ix++)
         win.linebuf[ix] = input.charCodeAt(ix);
@@ -3810,6 +3830,7 @@ function glk_cancel_line_event(win, eventref) {
         GiDispa.unretain_array(win.linebuf);
     win.line_request = false;
     win.line_request_uni = false;
+    win.request_echo_line_input = null;
     win.input_generation = null;
     win.linebuf = null;
 }
@@ -3837,6 +3858,13 @@ function glk_cancel_char_event(win) {
 
     win.char_request = false;
     win.char_request_uni = false;
+}
+
+function glk_set_echo_line_event(win, val) {
+   if (!win)
+        throw('glk_set_echo_line_event: invalid window');
+
+   win.echo_line_input = (val != 0);
 }
 
 function glk_request_mouse_event(win) {
@@ -4405,6 +4433,10 @@ function glk_request_line_event_uni(win, buf, initlen) {
         }
         win.line_request = true;
         win.line_request_uni = true;
+        if (win.type == Const.wintype_TextBuffer)
+            win.request_echo_line_input = win.echo_line_input;
+        else
+            win.request_echo_line_input = true;
         win.input_generation = event_generation;
         win.linebuf = buf;
         if (window.GiDispa)
@@ -4535,7 +4567,8 @@ return {
     glk_stream_open_file_uni : glk_stream_open_file_uni,
     glk_stream_open_memory_uni : glk_stream_open_memory_uni,
     glk_request_char_event_uni : glk_request_char_event_uni,
-    glk_request_line_event_uni : glk_request_line_event_uni
+    glk_request_line_event_uni : glk_request_line_event_uni,
+    glk_set_echo_line_event : glk_set_echo_line_event
 };
 
 }();
