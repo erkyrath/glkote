@@ -1477,6 +1477,30 @@ function evhan_input_char_keydown(ev) {
       res = 'home'; break;
     case Event.KEY_END:
       res = 'end'; break;
+    case 112:
+      res = 'func1'; break;
+    case 113:
+      res = 'func2'; break;
+    case 114:
+      res = 'func3'; break;
+    case 115:
+      res = 'func4'; break;
+    case 116:
+      res = 'func5'; break;
+    case 117:
+      res = 'func6'; break;
+    case 118:
+      res = 'func7'; break;
+    case 119:
+      res = 'func8'; break;
+    case 120:
+      res = 'func9'; break;
+    case 121:
+      res = 'func10'; break;
+    case 122:
+      res = 'func11'; break;
+    case 123:
+      res = 'func12'; break;
   }
 
   if (res) {

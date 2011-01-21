@@ -597,7 +597,19 @@ var KeystrokeNameMap = {
     pageup : Const.keycode_PageUp,
     pagedown : Const.keycode_PageDown,
     home : Const.keycode_Home,
-    end : Const.keycode_End
+    end : Const.keycode_End,
+    func1 : Const.keycode_Func1,
+    func2 : Const.keycode_Func2,
+    func3 : Const.keycode_Func3,
+    func4 : Const.keycode_Func4,
+    func5 : Const.keycode_Func5,
+    func6 : Const.keycode_Func6,
+    func7 : Const.keycode_Func7,
+    func8 : Const.keycode_Func8,
+    func9 : Const.keycode_Func9,
+    func10 : Const.keycode_Func10,
+    func11 : Const.keycode_Func11,
+    func12 : Const.keycode_Func12
 };
 
 var StyleNameMap = {
