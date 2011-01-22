@@ -613,11 +613,21 @@ Since this arrives before you do any updates, the generation number will be zero
 <p>
 
 <pre class="Def">
-{ type: 'line', gen: GENERATION, window: WINDOW_ID, value: STRING }
+{ type: 'line', gen: GENERATION, window: WINDOW_ID, value: STRING, 
+    terminator: CHAR }
 </pre>
 <p>
 
 Line input in the named window. The <code>value</code> property will be the line which the user typed. (It will not have a terminal newline.)
+<p>
+
+If line input was entered in the normal way (typically the Enter key), the <code>terminator</code> property will be absent. If line input was terminated by a special terminator keystroke (see "<a href="#inputupdate">The Input Update Array</a>"), its name will be in the <code>terminator</code> property. This will be one of the following strings:
+<p>
+
+<pre class="Sample">
+escape, func1, func2, func3, func4, func5, func6,
+    func7, func8, func9, func10, func11, func12
+</pre>
 <p>
 
 <pre class="Def">
@@ -815,7 +825,7 @@ If <code>hyperlink</code> is false or missing, the window will accept no input a
   hyperlink: BOOLEAN }
 
 { id: WINDOW_ID, gen: GENERATION_NUMBER, type: 'line',
-  maxlen: MAX_INPUT_LENGTH, initial: STRING,
+  maxlen: MAX_INPUT_LENGTH, initial: STRING, terminators: KEY_ARRAY,
   hyperlink: BOOLEAN }
 </pre>
 <p>
@@ -826,14 +836,14 @@ These forms indicate that there will be character or line input in the given win
 If this is a grid window, you must also include <code>xpos</code> and <code>ypos</code> properties, indicating where the input field will begin. (An input field in a buffer window always appears at the end of the buffer's text.)
 <p>
 
-For line input, you must include the <code>maxlen</code> property, indicating the maximum number of characters the player may enter. You may include an <code>initial</code> property, giving a string to preload the input field with. (The <code>initial</code> field is optional, defaulting to the empty string.)
+For line input, you must include the <code>maxlen</code> property, indicating the maximum number of characters the player may enter. You may include an <code>initial</code> property, giving a string to preload the input field with. You may also include a <code>terminators</code> property, giving a list of names of keys that will terminate input. See <a href="#input">above</a> for the list of terminator key names. (The <code>initial</code> and <code>terminators</code> fields are optional, defaulting to the empty string or array.)
 <p>
 
 The <code>gen</code> field must contain the generation number at which this input field was created. If the library does not know about it (i.e., if the field is not already present in the window) then the <code>gen</code> makes no difference. However, if the field <em>is</em> present, then the <code>gen</code> is basically distinguishing between two cases:
 <p>
 
 <ul>
-<li>The field was created in some earlier update generation. The library will not touch it or affect the user's editing state; the <code>initial</code> field is ignored. In this case, you may not update the window's contents.
+<li>The field was created in some earlier update generation. The library will not touch it or affect the user's editing state; the <code>initial</code> and <code>terminators</code> fields are ignored. In this case, you may not update the window's contents.
 </ul>
 
 <ul>
@@ -843,7 +853,7 @@ The <code>gen</code> field must contain the generation number at which this inpu
 (To cancel the earlier input <em>without</em> creating a new version, just leave that entry out of the input update array.)
 <p>
 
-(The editing state and the <code>initial</code> property are meaningless for character input. But you must still provide the <code>gen</code> value, and -- if it is old -- obey the restriction about not updating the window.)
+(The editing state and the <code>initial</code> and <code>terminators</code> properties are meaningless for character input. But you must still provide the <code>gen</code> value, and -- if it is old -- obey the restriction about not updating the window.)
 <p>
 
 <h3><a name="contentupdate">The Content Update Array</a></h3>
