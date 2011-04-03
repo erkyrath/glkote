@@ -1285,7 +1285,7 @@ Because style classes only apply to spans, not divs, there is currently no way t
 
 <h3><a name="cssinput">The input field</a></h3>
 
-All input fields are &lt;input type="text"&gt; elements. Line input fields have the <code>Input</code> and <code>LineInput</code> CSS classes; character input fields have <code>Input</code> and <code>CharInput</code>.
+All input fields are <code>&lt;input type="text"&gt;</code> elements. Line input fields have the <code>Input</code> and <code>LineInput</code> CSS classes; character input fields have <code>Input</code> and <code>CharInput</code>.
 <p>
 
 The default stylesheet makes an input field as invisible as possible; no highlighting, border, or background color. This is the usual style for IF.
@@ -1319,7 +1319,7 @@ A window can also have a CSS <code>padding</code> property. This is the distance
 <em>Within</em> a window -- that is, within lines of text -- you are free to adjust the spacing however you want. The <code>letter-spacing</code> and <code>line-height</code> properties are safe. You can set <code>margin</code> values on <code>BufferLine</code>, but don't try it on <code>GridLine</code>.
 <p>
 
-By the way, in a buffer window, paragraphs of text are separated by blank lines -- that is, empty paragraphs. (More precisely, a blank line is a paragraph with a single non-breaking space in it, so that it doesn't collapse.) This is unlike the normal HTML model, in which paragraphs are &lt;p&gt; tags separated by the CSS <code>margin</code> property.
+By the way, in a buffer window, paragraphs of text are separated by blank lines -- that is, empty paragraphs. (More precisely, a blank line is a paragraph with a single non-breaking space in it, so that it doesn't collapse.) This is unlike the normal HTML model, in which paragraphs are <code>&lt;p&gt;</code> tags separated by the CSS <code>margin</code> property.
 <p>
 
 (If you think that's ugly, don't ask what I had to do to prevent runs of spaces from collapsing.)
