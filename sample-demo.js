@@ -533,7 +533,7 @@ function game_file_selected(ref) {
 }
 
 function game_parse(val) {
-  if (val == 'help' || val == '?') {
+  if (val == 'help' || val == 'about' || val == '?') {
     game_print('This is an interface demo of the RemGlk Javascript front end. There is no IF interpreter behind the display library -- just a few lines of Javascript. It accepts some commands which demonstrate the capabilities of the display system.\n');
 
     helpopt = function(cmd, val) {
@@ -584,7 +584,7 @@ function game_parse(val) {
     return;
   }
 
-  if (val == 'link') {
+  if (val == 'link' || val == 'links') {
     game_print('You could ');
     game_print({ newline:false, hyperlink:1, style:'normal', text: 'click here'});
     game_print({ newline:false, text:' for a borogove. '});
@@ -592,6 +592,9 @@ function game_parse(val) {
     game_print({ newline:false, hyperlink:2, style:'emphasized', text: 'click'});
     game_print({ newline:false, hyperlink:2, style:'normal', text: ' here'});
     game_print({ newline:false, text:' for a mome rath. (Note that the italics end in the middle of the second link.)\n'});
+    game_print('\nIn this paragraph, http://eblong.com/zarf/glk/glkote.html is an external URL. ');
+    game_print({ newline:false, style:'preformatted', text: 'http://eblong.com/zarf/glk/glkote.html'});
+    game_print({ newline:false, text:' is an external URL set off by a distinct style. (External hyperlinks may be clickable or not, depending on GlkOte\'s configuration.)\n'});
     game_quotemove = game_moves+1;
     game_quotehaslink = true;
     return;
