@@ -1295,7 +1295,7 @@ Because style classes only apply to spans, not divs, there is currently no way t
 
 <h3><a name="extlinks">External hyperlinks</a></h3>
 
-You can configure GlkOte to detect URLs in the displayed text, and turn them into external hyperlinks. GlkOte does not do this by default. You must turn on the feature by adding a <code>detect_external_links</code> property on your 
+You can configure GlkOte to detect URLs in the displayed text, and turn them into external hyperlinks. However, GlkOte does not do this by default. You must turn on the feature by adding a <code>detect_external_links</code> property on your 
 <a href="#gameinterface">game interface object</a>:
 <p>
 
@@ -1322,7 +1322,7 @@ say "Please see [fixed letter spacing]http://eblong.com/[variable
 By default, URLs are recognized using the regular expression <code>/^https?:.*$/i</code> -- any string beginning with <code>http:</code> or <code>https:</code>, ignoring case. You may customize this by setting the <code>regex_external_links</code> property on your game interface object. Your regex must attempt to match a complete string (<code>^...$</code>) or you will get surprisingly wrong results.
 <p>
 
-This external URL feature is completely separate from Glk's hyperlink feature. Glk hyperlinks are discussed under <a href="#contentupdate">The Content Update Array</a>. A span of text which is marked as a Glk hyperlink cannot also be an external hyperlinks.
+This external URL feature is completely separate from Glk's hyperlink feature. Glk hyperlinks are discussed under <a href="#contentupdate">The Content Update Array</a>. A span of text which is marked as a Glk hyperlink cannot also be an external hyperlink.
 <p>
 
 <h3><a name="cssinput">The input field</a></h3>
