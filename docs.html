@@ -158,6 +158,7 @@ Commons Attribution-Noncommercial-Share Alike 3.0 Unported License</a>.
   <li><a href="#cssgameport">The contents of the <code>gameport</code></a>
   <li><a href="#csswindowport">The contents of the <code>windowport</code></a>
   <li><a href="#csslines">Lines of text</a>
+  <li><a href="#extlinks">External hyperlinks</a>
   <li><a href="#cssinput">The input field</a>
   <li><a href="#cssspacing">Spacing, borders, and padding</a>
 </ul>
@@ -1001,6 +1002,15 @@ More precise control of the spacing value.
 See "<a href="#cssspacing">Spacing, borders, and padding</a>".
 <p>
 
+<pre class="Def">
+Game.detect_external_links, Game.regex_external_links
+</pre>
+<p>
+
+If <code>detect_external_links</code> is set, GlkOte will detect URLs in the displayed text, and turn them into external hyperlinks. <code>regex_external_links</code> allows you to customize the URL detector.
+See "<a href="#extlinks">External hyperlinks</a>".
+<p>
+
 <h2><a name="layout">Laying Out Windows</a></h2>
 
 The most painful task your game faces -- well, aside from creating a superior world model and IF English parser -- is placing your windows on the screen. When you define a <code>windows</code> property for <code>GlkOte.update</code>, you must give the position (left and top coordinates) and the size (width and height). But how do you know what they should be?
@@ -1281,6 +1291,38 @@ Since grid windows are grids, you must make sure that <em>all</em> styles in <em
 <p>
 
 Because style classes only apply to spans, not divs, there is currently no way to change the <code>text-align</code> or <code>text-indent</code> of a style. This is a bug. (You can still set these properties on an entire window.)
+<p>
+
+<h3><a name="extlinks">External hyperlinks</a></h3>
+
+You can configure GlkOte to detect URLs in the displayed text, and turn them into external hyperlinks. GlkOte does not do this by default. You must turn on the feature by adding a <code>detect_external_links</code> property on your 
+<a href="#gameinterface">game interface object</a>:
+<p>
+
+<pre class="Sample">
+Game = {
+  accept: accept,
+  detect_external_links: 'match'
+};
+</pre>
+<p>
+
+Any <em>complete span</em> which is a URL will be displayed as a hyperlink with class <code>External</code> and target <code>_blank</code>. (The <code>_blank</code> ensures that if the player clicks, the URL will open in a new window.)
+<p>
+
+This will not detect URLs which occur <em>within</em> a span. Therefore, for a game to take advantage of this feature, it must either print the URL on a line by itself (no leading or trailing spaces), or it must change the style immediately before and after the URL. In Inform 7, for example, you might write:
+<p>
+
+<pre class="Sample">
+say "Please see [fixed letter spacing]http://eblong.com/[variable
+  letter spacing].";
+</pre>
+<p>
+
+By default, URLs are recognized using the regular expression <code>/^https?:.*$/i</code> -- any string beginning with <code>http:</code> or <code>https:</code>, ignoring case. You may customize this by setting the <code>regex_external_links</code> property on your game interface object. Your regex must attempt to match a complete string (<code>^...$</code>) or you will get surprisingly wrong results.
+<p>
+
+This external URL feature is completely separate from Glk's hyperlink feature. Glk hyperlinks are discussed under <a href="#contentupdate">The Content Update Array</a>. A span of text which is marked as a Glk hyperlink cannot also be an external hyperlinks.
 <p>
 
 <h3><a name="cssinput">The input field</a></h3>
