@@ -648,7 +648,7 @@ function accept_one_content(arg) {
           if (rlink == undefined) {
             if (detect_external_links && regex_external_links.test(rtext)) {
               var ael = new Element('a',
-                { 'href': rtext, 'target': '_blank' } );
+                { 'href': rtext, 'class': 'External', 'target': '_blank' } );
               insert_text(ael, rtext);
               el.insert(ael);
             }
@@ -762,7 +762,7 @@ function accept_one_content(arg) {
         if (rlink == undefined) {
           if (detect_external_links && regex_external_links.test(rtext)) {
             var ael = new Element('a',
-              { 'href': rtext, 'target': '_blank' } );
+              { 'href': rtext, 'class': 'External', 'target': '_blank' } );
             insert_text(ael, rtext);
             el.insert(ael);
           }
