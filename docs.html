@@ -1310,7 +1310,7 @@ Game = {
 Any <em>complete span</em> which is a URL will be displayed as a hyperlink with class <code>External</code> and target <code>_blank</code>. (The <code>_blank</code> ensures that if the player clicks, the URL will open in a new window.)
 <p>
 
-This will not detect URLs which occur <em>within</em> a span. Therefore, for a game to take advantage of this feature, it must either print the URL on a line by itself (no leading or trailing spaces), or it must change the style immediately before and after the URL. In Inform 7, for example, you might write:
+Note that this just linkifies URLs; you cannot use this feature to apply an external hyperlink to an arbitrary word. Also, this cannot detect URLs which occur <em>within</em> a span. Therefore, for a game to take advantage of this feature, you must either print the URL on a line by itself (no leading or trailing spaces), or you must change the style immediately before and after the URL. In Inform 7, for example, you might write:
 <p>
 
 <pre class="Sample">
