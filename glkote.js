@@ -1,5 +1,5 @@
 /* GlkOte -- a Javascript display library for IF interfaces
- * GlkOte Library: version 1.2.3.
+ * GlkOte Library: version 1.2.4.
  * Designed by Andrew Plotkin <erkyrath@eblong.com>
  * <http://eblong.com/zarf/glk/glkote.html>
  * 
@@ -57,6 +57,8 @@ var resize_timer = null;
 var retry_timer = null;
 var is_ie7 = false;
 var perform_paging = true;
+var detect_external_links = false;
+var regex_external_links = null;
 
 /* Some handy constants */
 /* A non-breaking space character. */
@@ -140,6 +142,13 @@ function glkote_init(iface) {
     return;
   }
   current_metrics = res;
+
+  detect_external_links = iface.detect_external_links;
+  if (detect_external_links) {
+    regex_external_links = iface.regex_external_links;
+    if (!regex_external_links)
+      regex_external_links = RegExp('^https?:.*$', 'i');
+  }
 
   send_response('init', null, current_metrics);
 }
@@ -637,7 +646,15 @@ function accept_one_content(arg) {
           var el = new Element('span',
             { 'class': 'Style_' + rstyle } );
           if (rlink == undefined) {
-            insert_text(el, rtext);
+            if (detect_external_links && regex_external_links.test(rtext)) {
+              var ael = new Element('a',
+                { 'href': rtext, 'target': '_blank' } );
+              insert_text(ael, rtext);
+              el.insert(ael);
+            }
+            else {
+              insert_text(el, rtext);
+            }
           }
           else {
             var ael = new Element('a',
@@ -743,7 +760,15 @@ function accept_one_content(arg) {
           rtext = rtext.replace(regex_initial_whitespace, NBSP);
         }
         if (rlink == undefined) {
-          insert_text(el, rtext);
+          if (detect_external_links && regex_external_links.test(rtext)) {
+            var ael = new Element('a',
+              { 'href': rtext, 'target': '_blank' } );
+            insert_text(ael, rtext);
+            el.insert(ael);
+          }
+          else {
+            insert_text(el, rtext);
+          }
         }
         else {
           var ael = new Element('a',
@@ -1750,7 +1775,7 @@ function build_evhan_hyperlink(winid, linkval) {
 /* End of GlkOte namespace function. Return the object which will
    become the GlkOte global. */
 return {
-  version:  '1.2.2',
+  version:  '1.2.4',
   init:     glkote_init, 
   update:   glkote_update,
   extevent: glkote_extevent,
