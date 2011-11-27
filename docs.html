@@ -1302,15 +1302,49 @@ You can configure GlkOte to detect URLs in the displayed text, and turn them int
 <pre class="Sample">
 Game = {
   accept: accept,
-  detect_external_links: 'match'
+  detect_external_links: 'search'
 };
 </pre>
 <p>
 
-Any <em>complete span</em> which is a URL will be displayed as a hyperlink with class <code>External</code> and target <code>_blank</code>. (The <code>_blank</code> ensures that if the player clicks, the URL will open in a new window.)
+The value of the property controls the behavior of the URL detection. You have two choices:
 <p>
 
-Note that this just linkifies URLs; you cannot use this feature to apply an external hyperlink to an arbitrary word. Also, this cannot detect URLs which occur <em>within</em> a span. Therefore, for a game to take advantage of this feature, you must either print the URL on a line by itself (no leading or trailing spaces), or you must change the style immediately before and after the URL. In Inform 7, for example, you might write:
+<pre class="Def">
+detect_external_links: 'search'
+</pre>
+<p>
+
+Any URL in the output text is detected, as long as it's not split by a newline, space, or style change. Each URL will be displayed as a hyperlink with class <code>External</code> and target <code>_blank</code>. (The <code>_blank</code> ensures that the linked page will open in a new window.)
+<p>
+
+Note that this just linkifies URLs; you cannot use this feature to apply an external hyperlink to an arbitrary word. Also, this external URL feature is completely separate from Glk's hyperlink feature. Glk hyperlinks are discussed under <a href="#contentupdate">The Content Update Array</a>. A span of text which is marked as a Glk hyperlink cannot also be an external hyperlink.
+<p>
+
+<p>
+
+The regex employed for the <code>'search'</code> detector is this terrifying agglomeration:
+<p>
+
+<pre class="Sample">
+\b((?:https?://)(?:[^\s()&lt;&gt;]+|\(([^\s()&lt;&gt;]+|(\([^\s()&lt;&gt;]+\)))*\))+
+(?:\(([^\s()&lt;&gt;]+|(\([^\s()&lt;&gt;]+\)))*\)
+|[^\s`!()\[\]{};:'".,&lt;&gt;?\u00ab\u00bb\u201c\u201d\u2018\u2019]))
+</pre>
+<p>
+
+This basically looks for any URL-like string beginning with <code>http:</code> or <code>https:</code>, ignoring case. The complications come from being smart about closing punctuation; if a URL appears in a sentence, followed by a period, it will try to exclude the period. This is derived from <a href="http://daringfireball.net/2010/07/improved_regex_for_matching_urls">John Gruber's URL regex</a> (the "web URL only" variant). I made one change: unlike Gruber's, this does <em>not</em> attempt to recognize bare domain names like <code>www.eblong.com</code>.
+<p>
+
+If you want to customize the regex, you can assign a new regex object to the <code>regex_external_links</code> property on your game interface. You can use any regex, as long as it doesn't try to accept the empty string; whatever it accepts will be treated as a URL. (Do not use the <code>'g'</code> global-search flag for this regex. GlkOte is able to detect multiple URLs in a line anyway.)
+<p>
+
+<pre class="Def">
+detect_external_links: 'match'
+</pre>
+<p>
+
+The <code>'match'</code> detector is a much simpler and faster test, but it can only detect a URL which is a <em>complete span</em> in the output. Therefore, for a game to take advantage of this feature, you must either print the URL on a line by itself, or you must change the style immediately before and after the URL. (Either way, you must exclude all leading and trailing spaces and punctuation.) In Inform 7, for example, you might write:
 <p>
 
 <pre class="Sample">
@@ -1319,10 +1353,7 @@ say "Please see [fixed letter spacing]http://eblong.com/[variable
 </pre>
 <p>
 
-By default, URLs are recognized using the regular expression <code>/^https?:.*$/i</code> -- any string beginning with <code>http:</code> or <code>https:</code>, ignoring case. You may customize this by setting the <code>regex_external_links</code> property on your game interface object. Your regex must attempt to match a complete string (<code>^...$</code>) or you will get surprisingly wrong results.
-<p>
-
-This external URL feature is completely separate from Glk's hyperlink feature. Glk hyperlinks are discussed under <a href="#contentupdate">The Content Update Array</a>. A span of text which is marked as a Glk hyperlink cannot also be an external hyperlink.
+This detector uses the regex <code>/^https?:.*$/i</code> -- any string beginning with <code>http:</code> or <code>https:</code>, ignoring case. Again, you may customize this by setting the <code>regex_external_links</code> property on your game interface object. Your regex must match at the start of the string (start with <code>^</code>); otherwise you will get surprisingly wrong results.
 <p>
 
 <h3><a name="cssinput">The input field</a></h3>
