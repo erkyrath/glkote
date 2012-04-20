@@ -1,0 +1,225 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>GlkOte: Not A Real Game</title>
+
+<meta name="viewport" content="width=device-width, user-scalable=no">
+
+<link rel="stylesheet" href="glkote.css" type="text/css">
+<link rel="stylesheet" href="dialog.css" type="text/css">
+
+<style type="text/css">
+
+body {
+  margin: 0px;
+  height: 100%;
+}
+
+#banner {
+  position: absolute;
+  top: 0px;
+  height: 45px;
+  width: 100%;
+  background: #DDDDFF;
+  border-bottom: 4px;
+  border-top: 0px;
+  border-left: 0px;
+  border-right: 0px;
+  border-color: #E8E8FF;
+  border-style: solid;
+}
+
+#bannertitle {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 8px;
+  margin-left: 16px;
+}
+
+#bannerhowto {
+  text-align: right;
+  margin-right: 16px;
+}
+
+#gameport {
+  position: absolute;
+  overflow: hidden;
+  left: 0px;
+  right: 0px;
+  top: 54px;
+  bottom: 0px;
+  /* See the "unpleasant stanza" in sample-demo.js for a hack to make MSIE6 
+     accept these top/bottom properties. */
+  background: #CCAA88;
+  margin: 0px;
+}
+
+@media screen and (max-device-width: 480px) {
+  /* This stanza simplifies the layout on small (iPhone-sized) screens.
+     The top blue banner is removed, so that the gameport can fill the
+     whole screen. */
+  #banner {
+    display: none;
+  }
+  #gameport {
+    top: 0px;
+  }
+}
+
+</style>
+
+<script src="prototype-1.6.1.js" type="text/javascript"></script>
+<script src="glkote.js" type="text/javascript"></script>
+<script src="dialog.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+
+game_generation = 1;
+game_metrics = null;
+game_streamout = new Array();
+
+prompt = '\n>';
+
+/* Put your game-startup text here. 
+*/
+function startup() {
+  say('This is an easily-customizable demo of an IF app written in Javascript. You can use it as a starting point for your own IF project (or any web page that wants to accept command-line input and print responses!)\n\nJust customize the startup() function to print your initial text, and customize the respond() function to print a response based on its argument (the player\'s input). Use the say() and say_runon() functions to print game output.\n');
+
+  say('Welcome to...');
+  say('The Game', 'header');
+}
+
+/* Put your game-response code here. The val argument is the player's input.
+*/
+function respond(val) {
+  say('You typed "' + val + '".');
+}
+
+/* Print a line of text. (Or several lines, if the argument contains \n
+   characters.)
+
+   The optional second argument is the text style. The standard glkote.css
+   file defines all the usual Glk styles: 'normal', 'emphasized' (italics),
+   'preformatted' (fixed-width), 'subheader' (bold), 'header' (large bold),
+   'alert', 'note', and 'input'.
+
+   If the third argument is true, the text is appended to the previous
+   line instead of starting a new line.
+*/
+function say(val, style, runon) {
+  if (style == undefined)
+    style = 'normal';
+  var ls = val.split('\n');
+  for (ix=0; ix<ls.length; ix++) {
+    if (runon) {
+      if (ls[ix])
+        game_streamout.push({ content: [style, ls[ix]], append: 'true' });
+      runon = false;
+    }
+    else {
+      if (ls[ix])
+        game_streamout.push({ content: [style, ls[ix]] });
+      else
+        game_streamout.push({ });
+    }
+  }
+}
+
+/* Print a line of text, appending it to the previous line. This is a
+   clearer shortcut for say(val, style, true).
+*/
+function say_runon(val, style) {
+  say(val, style, true);
+}
+
+/* This is the top-level game event hook. It's all set up for a basic
+   game that accepts line input. */
+function game_accept(res) {
+  if (res.type == 'init') {
+    game_metrics = res.metrics;
+    startup();
+    say(prompt);
+  }
+  else if (res.type == 'arrange') {
+    game_metrics = res.metrics;
+  }
+  else if (res.type == 'line') {
+    say_runon(res.value, 'input');
+    respond(res.value);
+    say(prompt);
+  }
+
+  game_select();
+}
+
+/* This constructs the game display update and sends it to the display.
+   It's all set up for a basic game that accepts line input. */
+function game_select() {
+  game_generation = game_generation+1;
+
+  var metrics = game_metrics;
+  var pwidth = metrics.width;
+  var pheight = metrics.height;
+
+  var argw = [
+    { id: 1, type: 'buffer', rock: 11,
+      left: metrics.outspacingx,
+      top: metrics.outspacingy,
+      width: pwidth-(2*metrics.outspacingx),
+      height: pheight-(metrics.outspacingy+metrics.outspacingy) }
+  ];
+
+  var argc = [ ];
+  if (game_streamout.length) {
+    var obj = { id: 1 };
+    if (game_streamout.length)
+      obj.text = game_streamout;
+    argc.push(obj);
+  }
+
+
+  var argi = [ 
+    { id: 1, gen: game_generation, type: 'line', maxlen: 200 } 
+  ];
+
+  var arg = { type:'update', gen:game_generation, windows:argw, content:argc, input:argi };
+
+  GlkOte.update(arg);
+
+  game_streamout.clear();
+}
+
+/* The game interface object. */
+Game = {
+  accept: game_accept,
+  spacing: 0
+};
+
+</script>
+
+</head>
+<body onLoad="GlkOte.init();">
+<div id="banner">
+<div id="bannertitle">Not A Real Game</div>
+<div id="bannerhowto"><em><a target="_blank" href="sample-help.html">How do I play?</a></em></div>
+</div>
+<div id="gameport">
+<div id="windowport">
+<noscript><hr>
+<p>You'll need to turn on Javascript in your web browser to play this game.</p>
+<hr></noscript>
+</div>
+<div id="loadingpane">
+<img src="waiting.gif" alt="LOADING"><br>
+<em>&nbsp;&nbsp;&nbsp;Loading...</em>
+</div>
+<div id="errorpane" style="display:none;"><div id="errorcontent">...</div></div>
+<div id="layouttestpane">
+This should not be visible
+<div id="layouttest_grid" class="WindowFrame GridWindow"><div id="layouttest_gridline" class="GridLine"><span id="layouttest_gridspan" class="Style_normal">12345678</span></div><div id="layouttest_gridline2" class="GridLine"><span class="Style_normal">12345678</span></div></div>
+<div id="layouttest_buffer" class="WindowFrame BufferWindow"><div id="layouttest_bufferline" class="BufferLine"><span id="layouttest_bufferspan" class="Style_normal">12345678</span></div><div id="layouttest_bufferline2" class="BufferLine"><span class="Style_normal">12345678</span></div></div>
+</div>
+</div>
+
+</body>
+</html>
