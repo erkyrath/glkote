@@ -180,7 +180,7 @@ However, GlkOte's API is not identical to Glk, even allowing for the differences
 GlkOte can be used from two angles. First, in a purely client-side IF application. The (included, optional) glkapi.js file facilitates this; it wraps around GlkOte and provides an API that <em>is</em> identical to Glk, as closely as Javascript allows. An IF interpreter written in Javascript, running entirely within the user's web browser, can use glkapi.js just as a C interpreter uses a normal Glk library. Or it could bypass glkapi.js and use GlkOte directly.
 <p>
 
-Alternatively, GlkOte could be used with RemGlk, a Glk library which acts as a web service. <em>(NOT YET WRITTEN.)</em> Any Glk-compliant interpreter (including Glulx interpreters) can be compiled with RemGlk. The resulting program is then run on a web server. A GlkOte web page sends AJAX requests to the server, which relays them (via CGI script) to the RemGlk program; the game responds back up the chain to the user's web browser. Thus, RemGlk and GlkOte together form a complete Glk web application.
+Alternatively, GlkOte could be used with <a href="http://eblong.com/zarf/glk/remglk/docs.html">RemGlk</a>, a Glk library which acts as a web service. Any Glk-compliant interpreter (including Glulx interpreters) can be compiled with RemGlk. The resulting program is then run on a web server. A GlkOte web page sends AJAX requests to the server, which relays them (via CGI script) to the RemGlk program; the game responds back up the chain to the user's web browser. Thus, RemGlk and GlkOte together form a complete Glk web application.
 <p>
 
 Here is a 
@@ -192,6 +192,11 @@ It is not a full-fledged IF game; it has only a trivial one-word parser. However
 A more complete example:
 <a href="http://eblong.com/zarf/glulx/quixe/">Quixe</a> 
 is an implementation of the Glulx virtual machine, using glkapi.js and GlkOte.
+<p>
+
+A
+<a href="sample-demobase.html">stripped-down, but easily extendable example.</a>
+This just accepts lines of input and responds to them, with no status window.
 <p>
 
 <h2><a name="using">Using GlkOte</a></h2>
@@ -1177,7 +1182,7 @@ The height value comes straight from the rules mentioned above; the implicit <co
 
 <h3><a name="layoutwhy">And Why?</a></h3>
 
-Why is all this work foisted off on you? Basically, because RemGlk does it.
+Why is all this work foisted off on you? Basically, because <a href="http://eblong.com/zarf/glk/remglk/docs.html">RemGlk</a> does it.
 <p>
 
 RemGlk contains code to compute all the window sizes, based on the constraint mechanisms of the Glk API. It gets all of the math right, and then passes it on to GlkOte. This means that GlkOte doesn't contain any math cleverness.
@@ -1406,6 +1411,7 @@ By the way, in a buffer window, paragraphs of text are separated by blank lines 
 <dd>Added stubs for the Glk 0.7.3 sound functions.
 <dd>Added a feature to detect URLs and turn them into external hyperlinks. (This is not turned on by default.)
 <dd>Added an "Edit" button to the load/save dialog. This allows you to browse, delete, and display stored files.
+<dd>Added a simpler demo for people to extend.
 
 <dt>Release 1.2.3 (February 17, 2011)
 <dd>Support for Glk 0.7.2 -- the date-and-time feature.
@@ -1442,7 +1448,7 @@ terminator keys, line input echo control, Unicode normalization.
 </dl>
 
 <hr>
-Last updated March 11, 2012.
+Last updated April 20, 2012.
 <p>
 
 <em><a href="http://eblong.com/zarf/glk/glkote.html">GlkOte home page</a>
