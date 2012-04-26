@@ -1994,6 +1994,7 @@ function call_may_not_return(id) {
 var strtype_File = 1;
 var strtype_Window = 2;
 var strtype_Memory = 3;
+var strtype_Resource = 4;
 
 /* Beginning of linked list of windows. */
 var gli_windowlist = null;
@@ -3008,7 +3009,7 @@ function glk_gestalt_ext(sel, val, arr) {
         return 0;
 
     case 22: // gestalt_ResourceStream
-        return 0;
+        return 1;
 
     }
 
@@ -3533,6 +3534,62 @@ function glk_stream_open_memory(buf, fmode, rock) {
             str.bufeof = str.buflen;
         if (window.GiDispa)
             GiDispa.retain_array(buf);
+    }
+
+    return str;
+}
+
+function glk_stream_open_resource(filenum, rock) {
+    var str;
+
+    var buf = '###blorbmap###';
+    var isbinary = false; //###
+
+    str = gli_new_stream(strtype_Resource,
+        true, 
+        false, 
+        rock);
+    str.unicode = false;
+    str.isbinary = isbinary;
+
+    /* We have been handed an array of bytes. (They're big-endian four-byte
+       chunks, or perhaps a UTF-8 byte sequence, rather than native-endian
+       four-byte integers). We'll have to do the translation in the get()
+       functions. */
+
+    if (buf) {
+        str.buf = buf;
+        str.buflen = buf.length;
+        str.bufpos = 0;
+        str.bufeof = str.buflen;
+    }
+
+    return str;
+}
+
+function glk_stream_open_resource_uni(filenum, rock) {
+    var str;
+
+    var buf = '###blorbmap###';
+    var isbinary = false; //###
+
+    str = gli_new_stream(strtype_Resource,
+        true, 
+        false, 
+        rock);
+    str.unicode = true;
+    str.isbinary = isbinary;
+
+    /* We have been handed an array of bytes. (They're big-endian four-byte
+       chunks, or perhaps a UTF-8 byte sequence, rather than native-endian
+       four-byte integers). We'll have to do the translation in the get()
+       functions. */
+
+    if (buf) {
+        str.buf = buf;
+        str.buflen = buf.length;
+        str.bufpos = 0;
+        str.bufeof = str.buflen;
     }
 
     return str;
@@ -4854,7 +4911,9 @@ return {
     glk_date_to_time_utc : glk_date_to_time_utc,
     glk_date_to_time_local : glk_date_to_time_local,
     glk_date_to_simple_time_utc : glk_date_to_simple_time_utc,
-    glk_date_to_simple_time_local : glk_date_to_simple_time_local
+    glk_date_to_simple_time_local : glk_date_to_simple_time_local,
+    glk_stream_open_resource : glk_stream_open_resource,
+    glk_stream_open_resource_uni : glk_stream_open_resource_uni
 };
 
 }();
