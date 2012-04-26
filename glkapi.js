@@ -2803,7 +2803,6 @@ function gli_get_line(str, buf, want_unicode) {
                 buf[lx] = ch;
                 gotnewline = (ch == 10);
             }
-            str.readcount += lx;
             return lx;
         }
         /* non-unicode streams: fall through to memory... */
@@ -2861,7 +2860,6 @@ function gli_get_buffer(str, buf, want_unicode) {
                     break;
                 buf[lx] = ch;
             }
-            str.readcount += lx;
             return lx;
         }
         /* non-unicode streams: fall through to memory... */
@@ -3738,6 +3736,8 @@ function glk_stream_set_position(str, pos, seekmode) {
     case strtype_File:
         //### check if file has been modified? This is a half-decent time.
         /* fall through to memory... */
+    case strtype_Resource:
+        /* fall through to memory... */
     case strtype_Memory:
         if (seekmode == Const.seekmode_Current) {
             pos = str.bufpos + pos;
@@ -3762,6 +3762,8 @@ function glk_stream_get_position(str) {
 
     switch (str.type) {
     case strtype_File:
+        /* fall through to memory... */
+    case strtype_Resource:
         /* fall through to memory... */
     case strtype_Memory:
         return str.bufpos;
