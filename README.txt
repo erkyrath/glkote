@@ -10,8 +10,8 @@ text-based applications -- on a web page. It is a Javascript library
 which handles the mechanics of displaying text, arranging panes of
 text, and accepting text input from the user.
 
-GlkOte has been tested on Safari 3 through 5, Firefox 2 and 3, MSIE 6
-through 8, Opera 9.5, and Chrome 5.
+GlkOte has been tested on Safari 3 through 5, Firefox 2 and up, MSIE 6
+and up, Opera 9.5, and Chrome 5.
 
 
 * Contents
@@ -44,7 +44,7 @@ Example pages:
 * Permissions
 
 The GlkOte, GlkAPI, and Dialog Javascript libraries are copyright
-2008-2011 by Andrew Plotkin. You may copy and distribute them freely, by
+2008-2012 by Andrew Plotkin. You may copy and distribute them freely, by
 any means and under any conditions, as long as the code and
 documentation is not changed. You may also incorporate this code into
 your own program and distribute that, or modify this code and use and
