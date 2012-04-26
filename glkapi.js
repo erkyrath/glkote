@@ -3650,8 +3650,12 @@ function glk_stream_open_memory(buf, fmode, rock) {
 function glk_stream_open_resource(filenum, rock) {
     var str;
 
-    var buf = '###blorbmap###'; //###
-    var isbinary = false; //###
+    var el = GiLoad.find_data_chunk(filenum);
+    if (!el)
+        return null;
+
+    var buf = el.data;
+    var isbinary = (el.type == 'BINA');
 
     str = gli_new_stream(strtype_Resource,
         true, 
@@ -3678,8 +3682,12 @@ function glk_stream_open_resource(filenum, rock) {
 function glk_stream_open_resource_uni(filenum, rock) {
     var str;
 
-    var buf = '###blorbmap###';
-    var isbinary = false; //###
+    var el = GiLoad.find_data_chunk(filenum);
+    if (!el)
+        return null;
+
+    var buf = el.data;
+    var isbinary = (el.type == 'BINA');
 
     str = gli_new_stream(strtype_Resource,
         true, 
