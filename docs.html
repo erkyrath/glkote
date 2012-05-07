@@ -145,6 +145,7 @@ Commons Attribution-Noncommercial-Share Alike 3.0 Unported License</a>.
     <li><a href="#bufferupdate">Buffer Window Updates</a>
   </ul>
 </ul>
+<li><a href="#specialrequests">Special Input Requests</a>
 <li><a href="#disabling">Disabling the UI</a>
 <li><a href="#gameinterface">The Game Interface Object</a>
 <li><a href="#layout">Laying Out Windows</a>
@@ -672,6 +673,14 @@ Resize event. The <code>gameport</code> has changed size, and so the game window
 <p>
 
 <pre class="Def">
+{ type: 'specialresponse', gen: GENERATION, response: TYPE, value: VALUE }
+</pre>
+<p>
+
+A special response, responding to a special input request. See "<a href="#specialrequests">Special Input Requests</a>". The <code>response</code> field indicates the request type. (The only <code>response</code> value currently supported is <code>"fileref_prompt"</code>.)
+<p>
+
+<pre class="Def">
 { type: 'external', gen: GENERATION, value: VALUE }
 </pre>
 <p>
@@ -758,7 +767,7 @@ A pure Javascript game will not use this. RemGlk uses it if the server is runnin
 <pre class="Def">
 { type: 'update', gen: GENERATION,
   windows: WINDOWS_ARRAY, content: CONTENT_ARRAY, input: INPUT_ARRAY,
-  disable: BOOLEAN }
+  disable: BOOLEAN, specialinput: OBJ }
 </pre>
 <p>
 
@@ -772,6 +781,9 @@ The order of the values in the <code>windows</code>, <code>content</code>, and <
 <p>
 
 The <code>disable</code> flag (if present and true) places the entire game into a disabled state. See "<a href="#disabling">Disabling the UI</a>". If the flag is absent or false, the UI will be enabled (or re-enabled).
+<p>
+
+The <code>specialinput</code> value (if present and not null) indicates that the game should stop and display a special input request. See "<a href="#specialrequests">Special Input Requests</a>". The game is otherwise disabled, just as if the <code>disable</code> flag were set.
 <p>
 
 <h3><a name="windowsupdate">The Windows Update Array</a></h3>
@@ -947,6 +959,49 @@ If the user resizes the window while the UI is disabled, you will not get an <co
 <p>
 
 The UI will remain disabled until the next <code>GlkOte.update</code> call which lacks the <code>disable</code> flag.
+<p>
+
+<h2><a name="specialrequests">Special Input Requests</a></h2>
+
+Currently, the only supported special input is a request for a file. This will disable the UI and post a dialog box for the user to select (or create) a file.
+<p>
+
+To do this, include a <code>specialinput</code> object in your <code>GlkOte.update</code> call:
+<p>
+
+<pre class="Sample">
+specialinput: { type: 'fileref_prompt',
+  filemode: MODE, filetype: TYPE,
+  gameid: VALUE
+}
+</pre>
+<p>
+
+The <code>filemode</code> must be one of the strings <code>read</code>, <code>write</code>, <code>readwrite</code>, <code>writeappend</code>. These indicate what operation will be done with the file. (This affects whether a selection or creation dialog box is displayed.)
+<p>
+
+The <code>filetype</code> must be one of the strings <code>data</code>, <code>save</code>, <code>transcript</code>, <code>command</code>. These indicate what type of file is being requested. (This affects the prompt displayed in the dialog box.)
+<p>
+
+The <code>gameid</code> is a string which identifies what game is being played. This is used to filter the files listed in the dialog box, so that only files appropriate to the game are included. The <code>gameid</code> does not have to be human-readable; it could be (for example) a base64-encoded dump of the game's header.
+<p>
+
+The <code>gameid</code> field is optional. In general, you should only include it for the <code>save</code> filetype. (Save-game files are game-specific, but data files can be exchanged between games.)
+<p>
+
+When the user makes a selection, you will get a user event in this form:
+<p>
+
+<pre class="Sample">
+{ type: 'specialresponse', gen: GENERATION, response: 'fileref_prompt',
+  value: VALUE }
+</pre>
+<p>
+
+If the <code>value</code> is missing or null, the user hit Cancel. Otherwise, the <code>value</code> will be a fileref object. This can be used to read or write data to HTML browser storage. (See the documentation in the dialog.js library.)
+<p>
+
+Note that if GlkOte is connected to a server-side library (such as RemGlk), browser storage is not an appropriate solution. In that case, you would not use dialog.js, but an alternative library (not yet implemented). The user would simply be prompted for a filename, and <code>value</code> would contain this filename as a string.
 <p>
 
 <h2><a name="gameinterface">The Game Interface Object</a></h2>
@@ -1413,6 +1468,7 @@ By the way, in a buffer window, paragraphs of text are separated by blank lines 
 <dd>Added a feature to detect URLs and turn them into external hyperlinks. (This is not turned on by default.)
 <dd>Added an "Edit" button to the load/save dialog. This allows you to browse, delete, and display stored files.
 <dd>Fixed a bug whereby glk_cancel_hyperlink_event() did not work (in fact, turned hyperlink events on rather than off).
+<dd>Defined an update/accept interchange for the file selection dialog.
 <dd>Added a simpler demo for people to extend.
 
 <dt>Release 1.2.3 (February 17, 2011)
@@ -1450,7 +1506,7 @@ terminator keys, line input echo control, Unicode normalization.
 </dl>
 
 <hr>
-Last updated April 20, 2012.
+Last updated May 6, 2012.
 <p>
 
 <em><a href="http://eblong.com/zarf/glk/glkote.html">GlkOte home page</a>
