@@ -136,6 +136,7 @@ function glkote_init(iface) {
     perform_paging = false;
   }
 
+  /* Object mapping window ID (strings) to window description objects. */
   windowdic = {};
 
   if (iface.windowport)
@@ -154,7 +155,7 @@ function glkote_init(iface) {
   $(window).on('resize', evhan_doc_resize);
 
   var res = measure_window();
-  if (Object.isString(res)) {
+  if (jQuery.type(res) === 'string') {
     glkote_error(res);
     return;
   }
@@ -207,47 +208,57 @@ function measure_window() {
      is true on all browsers but IE7. Fortunately, on IE7 it's
      the windowport size that's wrong -- gameport is the size
      we're interested in. */
-  el = $(gameport_id);
-  if (!el)
+  el = $('#'+gameport_id);
+  if (!el.length)
     return 'Cannot find gameport element #'+gameport_id+' in this document.';
 
-  var portsize = el.getDimensions();
-  metrics.width  = portsize.width;
-  metrics.height = portsize.height;
+  /* Exclude padding and border. */
+  metrics.width  = el.width();
+  metrics.height = el.height();
 
-  el = $('layouttest_grid');
-  if (!el)
+  el = $('#layouttest_grid');
+  if (!el.length)
     return 'Cannot find layouttest_grid element for window measurement.';
 
-  winsize = el.getDimensions();
-  spansize = $('layouttest_gridspan').getDimensions();
-  line1size = $('layouttest_gridline').getDimensions();
-  line2size = $('layouttest_gridline2').getDimensions();
+  /* Here we will include padding and border. */
+  winsize = { width:el.outerWidth(), height:el.outerHeight() };
+  el = $('#layouttest_gridspan');
+  spansize = { width:el.outerWidth(), height:el.outerHeight() };
+  el = $('#layouttest_gridline');
+  line1size = { width:el.outerWidth(), height:el.outerHeight() };
+  el = $('#layouttest_gridline2');
+  line2size = { width:el.outerWidth(), height:el.outerHeight() };
 
-  metrics.gridcharheight = ($('layouttest_gridline2').positionedOffset().top
-    - $('layouttest_gridline').positionedOffset().top);
-  metrics.gridcharwidth = (spansize.width / 8);
+  metrics.gridcharheight = ($('#layouttest_gridline2').position().top
+    - $('#layouttest_gridline').position().top);
+  metrics.gridcharwidth = ($('#layouttest_gridspan').width() / 8);
   /* Yes, we can wind up with a non-integer charwidth value. */
 
-  /* these values include both sides (left+right, top+bottom) */
+  /* Find the total margin around the character grid (out to the window's
+     padding/border). These values include both sides (left+right,
+     top+bottom). */
   metrics.gridmarginx = winsize.width - spansize.width;
   metrics.gridmarginy = winsize.height - (line1size.height + line2size.height);
 
-  el = $('layouttest_buffer');
-  if (!el)
-    return 'Cannot find layouttest_grid element for window measurement.';
+  el = $('#layouttest_buffer');
+  if (!el.length)
+    return 'Cannot find layouttest_buffer element for window measurement.';
 
-  winsize = el.getDimensions();
-  spansize = $('layouttest_bufferspan').getDimensions();
-  line1size = $('layouttest_bufferline').getDimensions();
-  line2size = $('layouttest_bufferline2').getDimensions();
+  /* Here we will include padding and border. */
+  winsize = { width:el.outerWidth(), height:el.outerHeight() };
+  el = $('#layouttest_bufferspan');
+  spansize = { width:el.outerWidth(), height:el.outerHeight() };
+  el = $('#layouttest_bufferline');
+  line1size = { width:el.outerWidth(), height:el.outerHeight() };
+  el = $('#layouttest_bufferline2');
+  line2size = { width:el.outerWidth(), height:el.outerHeight() };
 
-  metrics.buffercharheight = ($('layouttest_bufferline2').positionedOffset().top
-    - $('layouttest_bufferline').positionedOffset().top);
-  metrics.buffercharwidth = (spansize.width / 8);
+  metrics.buffercharheight = ($('#layouttest_bufferline2').position().top
+    - $('#layouttest_bufferline').position().top);
+  metrics.buffercharwidth = ($('#layouttest_bufferspan').width() / 8);
   /* Yes, we can wind up with a non-integer charwidth value. */
 
-  /* these values include both sides (left+right, top+bottom) */
+  /* Again, these values include both sides (left+right, top+bottom). */
   metrics.buffermarginx = winsize.width - spansize.width;
   metrics.buffermarginy = winsize.height - (line1size.height + line2size.height);
 
@@ -1168,11 +1179,9 @@ function show_loading() {
 
 /* Add text to a DOM element.
 
-   Deliberately does not use any Prototype functionality. One reason
+   Deliberately does not use any jQuery functionality. One reason
    is that this is called in fatal errors, including the error of
-   failing to find the Prototype library. Another reason, sadly, is that
-   the Prototype library doesn't *have* a function to insert arbitrary
-   text into an element.
+   failing to find the jQuery library.
 */
 function insert_text(el, val) {
   var nod = document.createTextNode(val);
@@ -1181,7 +1190,7 @@ function insert_text(el, val) {
 
 /* Remove all children from a DOM element.
 
-   Deliberately does not use any Prototype functionality.
+   Deliberately does not use any jQuery functionality.
 */
 function remove_children(parent) {
   var obj, ls;
