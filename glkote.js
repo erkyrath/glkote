@@ -65,15 +65,35 @@ var NBSP = "\xa0";
 /* Number of paragraphs to retain in a buffer window's scrollback. */
 var max_buffer_length = 200;
 
+/* Some constants for key event native values. (Not including function 
+   keys.) */
+var key_codes = {
+  KEY_BACKSPACE: 8,
+  KEY_TAB:       9,
+  KEY_RETURN:   13,
+  KEY_ESC:      27,
+  KEY_LEFT:     37,
+  KEY_UP:       38,
+  KEY_RIGHT:    39,
+  KEY_DOWN:     40,
+  KEY_DELETE:   46,
+  KEY_HOME:     36,
+  KEY_END:      35,
+  KEY_PAGEUP:   33,
+  KEY_PAGEDOWN: 34,
+  KEY_INSERT:   45
+};
+
 /* All the keys that can be used as line input terminators, and their
    native values. */
 var terminator_key_names = {
-    escape : Event.KEY_ESC,
+    escape : key_codes.KEY_ESC,
     func1 : 112, func2 : 113, func3 : 114, func4 : 115, func5 : 116, 
     func6 : 117, func7 : 118, func8 : 119, func9 : 120, func10 : 121, 
     func11 : 122, func12 : 123
 };
-/* The inverse of the above. Set up at init time. */
+/* The inverse of the above. Maps native values to Glk key names. Set up at
+   init time. */
 var terminator_key_values = {};
 
 /* This function becomes GlkOte.init(). The document calls this to begin
@@ -1502,7 +1522,7 @@ function evhan_doc_keypress(ev) {
     var res = null;
     if (keycode == 13)
       res = 'return';
-    else if (keycode == Event.KEY_BACKSPACE)
+    else if (keycode == key_codes.KEY_BACKSPACE)
       res = 'delete';
     else if (keycode)
       res = String.fromCharCode(keycode);
@@ -1564,27 +1584,27 @@ function evhan_input_char_keydown(ev) {
      which results in a double input. */
 
   switch (keycode) {
-    case Event.KEY_LEFT:
+    case key_codes.KEY_LEFT:
       res = 'left'; break;
-    case Event.KEY_RIGHT:
+    case key_codes.KEY_RIGHT:
       res = 'right'; break;
-    case Event.KEY_UP:
+    case key_codes.KEY_UP:
       res = 'up'; break;
-    case Event.KEY_DOWN:
+    case key_codes.KEY_DOWN:
       res = 'down'; break;
-    case Event.KEY_BACKSPACE:
+    case key_codes.KEY_BACKSPACE:
       res = 'delete'; break;
-    case Event.KEY_ESC:
+    case key_codes.KEY_ESC:
       res = 'escape'; break;
-    case Event.KEY_TAB:
+    case key_codes.KEY_TAB:
       res = 'tab'; break;
-    case Event.KEY_PAGEUP:
+    case key_codes.KEY_PAGEUP:
       res = 'pageup'; break;
-    case Event.KEY_PAGEDOWN:
+    case key_codes.KEY_PAGEDOWN:
       res = 'pagedown'; break;
-    case Event.KEY_HOME:
+    case key_codes.KEY_HOME:
       res = 'home'; break;
-    case Event.KEY_END:
+    case key_codes.KEY_END:
       res = 'end'; break;
     case 112:
       res = 'func1'; break;
@@ -1676,14 +1696,14 @@ function evhan_input_keydown(ev) {
   if (ev) keycode = ev.keyCode;
   if (!keycode) return true;
 
-  if (keycode == Event.KEY_UP || keycode == Event.KEY_DOWN) {
+  if (keycode == key_codes.KEY_UP || keycode == key_codes.KEY_DOWN) {
     if (!this.winid)
       return true;
     var win = windowdic[this.winid];
     if (!win || !win.input)
       return true;
 
-    if (keycode == Event.KEY_UP && win.historypos > 0) {
+    if (keycode == key_codes.KEY_UP && win.historypos > 0) {
       win.historypos -= 1;
       if (win.historypos < win.history.length)
         this.value = win.history[win.historypos];
@@ -1691,7 +1711,7 @@ function evhan_input_keydown(ev) {
         this.value = '';
     }
 
-    if (keycode == Event.KEY_DOWN && win.historypos < win.history.length) {
+    if (keycode == key_codes.KEY_DOWN && win.historypos < win.history.length) {
       win.historypos += 1;
       if (win.historypos < win.history.length)
         this.value = win.history[win.historypos];
