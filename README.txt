@@ -64,9 +64,9 @@ For details, see the Prototype web site: <http://www.prototypejs.org/>
 ####
 
 Prototype idioms to beware:
-.map()
+.map() -> $.map?
 $ (anything)
-Hash
+Hash (each, get, index, keys, values, set) -> $.each?
 Event.extend
 Event.observe
 Object.keys
@@ -74,6 +74,17 @@ Object.is (isNumber, isString)
 func.defer
 func.delay
 str.startsWith
-str.strip
+str.strip  -> trim
 str.times
-
+(str.indexOf is safe)
+el.childElements
+el.getDimensions
+el.getWidth
+el.getHeight
+el.insert
+el.writeAttribute
+el.remove
+el.update
+el.positionedOffset
+el.scroll*
+el.show, el.hide

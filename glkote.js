@@ -55,7 +55,6 @@ var last_known_paging = 0;
 var windows_paging_count = 0;
 var resize_timer = null;
 var retry_timer = null;
-var is_ie7 = false;
 var perform_paging = true;
 var detect_external_links = false;
 var regex_external_links = null;
@@ -94,14 +93,14 @@ function glkote_init(iface) {
   }
   game_interface = iface;
 
-  if (!window.Prototype) {
-    glkote_error('The Prototype library has not been loaded.');
+  if (!window.jQuery || !$.fn.jquery) {
+    glkote_error('The jQuery library has not been loaded.');
     return;
   }
 
-  var version = Prototype.Version.split('.');
-  if (version.length < 2 || (version[0] == 1 && version[1] < 6)) {
-    glkote_error('This version of the Prototype library is too old. (Version ' + Prototype.Version + ' found; 1.6.0 required.)');
+  var version = $.fn.jquery.split('.');
+  if (version.length < 2 || (version[0] == 1 && version[1] < 9)) {
+    glkote_error('This version of the jQuery library is too old. (Version ' + $.fn.jquery + ' found; 1.9.0 required.)');
     return;
   }
 
@@ -110,29 +109,27 @@ function glkote_init(iface) {
     terminator_key_values[terminator_key_names[val]] = val;
   }
 
-  if (Prototype.Browser.MobileSafari) {
+  if (false) {
+    /* ### test for mobile browser? "'ontouchstart' in document.documentElement"? */
     /* Paging doesn't make sense for iphone/android, because you can't
        get keystroke events from a window. */
     perform_paging = false;
   }
-  if (Prototype.Browser.IE) {
-    is_ie7 = window.XMLHttpRequest != null;
-  }
 
-  windowdic = new Hash();
+  windowdic = {};
 
   if (iface.windowport)
       windowport_id = iface.windowport;
   if (iface.gameport)
       gameport_id = iface.gameport;
 
-  var el = $(windowport_id);
-  if (!el) {
+  var el = $('#'+windowport_id);
+  if (!el.length) {
     glkote_error('Cannot find windowport element #'+windowport_id+' in this document.');
     return;
   }
-  el.update();
-  if (!Prototype.Browser.MobileSafari) 
+  el.empty();
+  if (!perform_paging)
     Event.observe(document, 'keypress', evhan_doc_keypress);
   Event.observe(window, 'resize', evhan_doc_resize);
 
@@ -314,7 +311,7 @@ function glkote_update(arg) {
 
   /* Un-disable the UI, if it was previously disabled. */
   if (disabled) {
-    windowdic.values().each(function(win) {
+    $.each(windowdic, function(winid, win) {
       if (win.inputel) {
         win.inputel.disabled = false;
       }
@@ -340,7 +337,7 @@ function glkote_update(arg) {
      Then, we take the opportunity to update topunseen. (If a buffer
      window hasn't changed, topunseen hasn't changed.) */
 
-  windowdic.values().each(function(win) {
+  $.each(windowdic, function(winid, win) {
     if (win.type == 'buffer' && win.needscroll) {
       /* needscroll is true if the window has accumulated any content or
          an input field in this update cycle. needspaging is true if
@@ -411,7 +408,7 @@ function glkote_update(arg) {
   disabled = false;
   if (arg.disable || arg.specialinput) {
     disabled = true;
-    windowdic.values().each(function(win) {
+    $.each(windowdic, function(winid, win) {
       if (win.inputel) {
         win.inputel.disabled = true;
       }
@@ -425,7 +422,7 @@ function glkote_update(arg) {
 
   var newinputwin = 0;
   if (!disabled && !windows_paging_count) {
-    windowdic.values().each(function(win) {
+    $.each(windowdic, function(winid, win) {
       if (win.input) {
         if (!newinputwin || win.id == last_known_focus)
           newinputwin = win.id;
@@ -439,7 +436,7 @@ function glkote_update(arg) {
        giving it the focus right away. So we defer the call until
        after the javascript context has yielded control to the browser. */
     var focusfunc = function() {
-      var win = windowdic.get(newinputwin);
+      var win = windowdic[newinputwin];
       if (win.inputel) {
         win.inputel.focus();
       }
@@ -458,7 +455,7 @@ function glkote_update(arg) {
    an empty argument object (which would mean "close all windows").
 */
 function accept_windowset(arg) {
-  windowdic.values().each(function(win) { win.inplace = false; });
+  $.each(windowdic, function(winid, win) { win.inplace = false; });
   arg.map(accept_one_window);
 
   /* Close any windows not mentioned in the argument. */
@@ -476,11 +473,11 @@ function accept_one_window(arg) {
     return;
   }
 
-  win = windowdic.get(arg.id);
+  win = windowdic[arg.id];
   if (win == null) {
     /* The window must be created. */
     win = { id: arg.id, type: arg.type, rock: arg.rock };
-    windowdic.set(arg.id, win);
+    windowdic[arg.id] = win;
     var typeclass;
     if (win.type == 'grid')
       typeclass = 'GridWindow';
@@ -590,7 +587,7 @@ function accept_one_window(arg) {
 /* Handle closing one window. */
 function close_one_window(win) {
   win.frameel.remove();
-  windowdic.unset(win.id);
+  delete windowdic[win.id];
   win.frameel = null;
 
   var moreel = $('win'+win.id+'_moreprompt');
@@ -617,7 +614,7 @@ function accept_contentset(arg) {
 
 /* Handle the content changes for a single window. */
 function accept_one_content(arg) {
-  var win = windowdic.get(arg.id);
+  var win = windowdic[arg.id];
 
   /* Check some error conditions. */
 
@@ -852,15 +849,15 @@ function accept_one_content(arg) {
    (The latter case means that input was cancelled and restarted.)
 */
 function accept_inputcancel(arg) {
-  var hasinput = new Hash();
+  var hasinput = {};
   arg.map(function(argi) { 
     if (argi.type)
-      hasinput.set(argi.id, argi); 
+      hasinput[argi.id] = argi;
   });
 
-  windowdic.values().each(function(win) {
+  $.each(windowdic, function(winid, win) {
     if (win.input) {
-      var argi = hasinput.get(win.id);
+      var argi = hasinput[win.id];
       if (argi == null || argi.gen > win.input.gen) {
         /* cancel this input. */
         win.input = null;
@@ -877,19 +874,19 @@ function accept_inputcancel(arg) {
    to change position, move it.
 */
 function accept_inputset(arg) {
-  var hasinput = new Hash();
-  var hashyperlink = new Hash();
+  var hasinput = {};
+  var hashyperlink = {};
   arg.map(function(argi) {
     if (argi.type)
-      hasinput.set(argi.id, argi); 
+      hasinput[argi.id] = argi;
     if (argi.hyperlink)
-      hashyperlink.set(argi.id, true);
+      hashyperlink[argi.id] = true;
   });
 
-  windowdic.values().each(function(win) {
-    win.reqhyperlink = hashyperlink.get(win.id);
+  $.each(windowdic, function(winid, win) {
+    win.reqhyperlink = hashyperlink[win.id];
 
-    var argi = hasinput.get(win.id);
+    var argi = hasinput[win.id];
     if (argi == null)
       return;
     win.input = argi;
@@ -931,13 +928,11 @@ function accept_inputset(arg) {
         inputel.onkeypress = evhan_input_char_keypress;
         inputel.onkeydown = evhan_input_char_keydown;
       }
-      /* Subtle point: the winid variable here is never reused, because we're
-         inside a function being map()ed. Therefore, winid is safe to use in
-         a closure. */
-      var winid = win.id;
+      /* Subtle point: the winid variable here is a function argument.
+         Therefore, winid is safe to use in a closure. */
       inputel.onfocus = function() { evhan_input_focus(winid); };
       inputel.onblur = function() { evhan_input_blur(winid); };
-      inputel.winid = win.id;
+      inputel.winid = winid;
       win.inputel = inputel;
       win.historypos = win.history.length;
       win.needscroll = true;
@@ -1038,7 +1033,7 @@ function readjust_paging_focus(canfocus) {
   var pageable_win = 0;
 
   if (perform_paging) {
-    windowdic.values().each(function(win) {
+    $.each(windowdic, function(winid, win) {
         if (win.needspaging) {
           windows_paging_count += 1;
           if (!pageable_win || win.id == last_known_paging)
@@ -1059,7 +1054,7 @@ function readjust_paging_focus(canfocus) {
 
     var newinputwin = 0;
     if (!disabled && !windows_paging_count) {
-      windowdic.values().each(function(win) {
+      $.each(windowdic, function(winid, win) {
           if (win.input) {
             if (!newinputwin || win.id == last_known_focus)
               newinputwin = win.id;
@@ -1068,7 +1063,7 @@ function readjust_paging_focus(canfocus) {
     }
     
     if (newinputwin) {
-      var win = windowdic.get(newinputwin);
+      var win = windowdic[newinputwin];
       if (win.inputel) {
         win.inputel.focus();
       }
@@ -1354,7 +1349,7 @@ function send_response(type, win, val, val2) {
   }
 
   if (!(type == 'init' || type == 'refresh' || type == 'specialresponse')) {
-    windowdic.values().each(function(win) {
+    $.each(windowdic, function(tmpid, win) {
       var savepartial = (type != 'line' && type != 'char') 
                         || (win.id != winid);
       if (savepartial && win.input && win.input.type == 'line'
@@ -1454,7 +1449,7 @@ function evhan_doc_keypress(ev) {
   var win;
 
   if (windows_paging_count) {
-    win = windowdic.get(last_known_paging);
+    win = windowdic[last_known_paging];
     if (win) {
       if (!((keycode >= 32 && keycode <= 126) || keycode == 13)) {
         /* If the keystroke is not a printable character (or Enter),
@@ -1489,7 +1484,7 @@ function evhan_doc_keypress(ev) {
     }
   }
 
-  win = windowdic.get(last_known_focus);
+  win = windowdic[last_known_focus];
   if (!win)
     return;
   if (!win.inputel)
@@ -1554,7 +1549,7 @@ function evhan_doc_keypress(ev) {
 function evhan_window_mousedown(ev, frameel) {
   if (!frameel.winid)
     return;
-  var win = windowdic.get(frameel.winid);
+  var win = windowdic[frameel.winid];
   if (!win)
     return;
 
@@ -1647,7 +1642,7 @@ function evhan_input_char_keydown(ev) {
   if (res) {
     if (!this.winid)
       return true;
-    var win = windowdic.get(this.winid);
+    var win = windowdic[this.winid];
     if (!win || !win.input)
       return true;
 
@@ -1688,7 +1683,7 @@ function evhan_input_char_keypress(ev) {
 
   if (!this.winid)
     return true;
-  var win = windowdic.get(this.winid);
+  var win = windowdic[this.winid];
   if (!win || !win.input)
     return true;
 
@@ -1711,7 +1706,7 @@ function evhan_input_keydown(ev) {
   if (keycode == Event.KEY_UP || keycode == Event.KEY_DOWN) {
     if (!this.winid)
       return true;
-    var win = windowdic.get(this.winid);
+    var win = windowdic[this.winid];
     if (!win || !win.input)
       return true;
 
@@ -1736,7 +1731,7 @@ function evhan_input_keydown(ev) {
   else if (terminator_key_values[keycode]) {
     if (!this.winid)
       return true;
-    var win = windowdic.get(this.winid);
+    var win = windowdic[this.winid];
     if (!win || !win.input)
       return true;
 
@@ -1774,7 +1769,7 @@ function evhan_input_keypress(ev) {
   if (keycode == 13) {
     if (!this.winid)
       return true;
-    var win = windowdic.get(this.winid);
+    var win = windowdic[this.winid];
     if (!win || !win.input)
       return true;
 
@@ -1790,7 +1785,7 @@ function evhan_input_keypress(ev) {
    Notice that the focus has switched to a line/char input field.
 */
 function evhan_input_focus(winid) {
-  var win = windowdic.get(winid);
+  var win = windowdic[winid];
   if (!win)
     return;
 
@@ -1804,7 +1799,7 @@ function evhan_input_focus(winid) {
    Notice that the focus has switched away from a line/char input field.
 */
 function evhan_input_blur(winid) {
-  var win = windowdic.get(winid);
+  var win = windowdic[winid];
   if (!win)
     return;
 
@@ -1814,7 +1809,7 @@ function evhan_input_blur(winid) {
 function evhan_window_scroll(frameel) {
   if (!frameel.winid)
     return;
-  var win = windowdic.get(frameel.winid);
+  var win = windowdic[frameel.winid];
   if (!win)
     return;
 
@@ -1848,7 +1843,7 @@ function evhan_window_scroll(frameel) {
 */
 function build_evhan_hyperlink(winid, linkval) {
   return function() {
-    var win = windowdic.get(winid);
+    var win = windowdic[winid];
     if (!win)
       return false;
     if (!win.reqhyperlink)
