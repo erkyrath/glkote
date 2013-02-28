@@ -828,18 +828,10 @@ function accept_one_content(arg) {
         var width = win.frameel.getWidth() - (current_metrics.buffermarginx + pos.left + 2);
         if (width < 1)
           width = 1;
-        if (Prototype.Browser.Opera) {
-          /* I swear I don't understand what Opera thinks absolute positioning
-             means. We will avoid it. */
-          inputel.setStyle({ position: 'relative',
-            left: '0px', top: '0px', width: width+'px' });
-          cursel.insert({ top:inputel });
-        }
-        else {
-          inputel.setStyle({ position: 'absolute',
-            left: '0px', top: '0px', width: width+'px' });
-          cursel.insert(inputel);
-        }
+        /* ### opera absolute positioning failure? */
+        inputel.setStyle({ position: 'absolute',
+          left: '0px', top: '0px', width: width+'px' });
+        cursel.insert(inputel);
       }
     }
   }
@@ -976,18 +968,10 @@ function accept_inputset(arg) {
       var width = win.frameel.getWidth() - (current_metrics.buffermarginx + pos.left + 2);
       if (width < 1)
         width = 1;
-      if (Prototype.Browser.Opera) {
-        /* I swear I don't understand what Opera thinks absolute positioning
-           means. We will avoid it. */
-        inputel.setStyle({ position: 'relative',
-          left: '0px', top: '0px', width: width+'px' });
-        cursel.insert({ top:inputel });
-      }
-      else {
-        inputel.setStyle({ position: 'absolute',
-          left: '0px', top: '0px', width: width+'px' });
-        cursel.insert(inputel);
-      }
+      /* ### opera absolute positioning failure? */
+      inputel.setStyle({ position: 'absolute',
+        left: '0px', top: '0px', width: width+'px' });
+      cursel.insert(inputel);
     }
   });
 }
@@ -1425,7 +1409,7 @@ function evhan_doc_keypress(ev) {
     return;
   }
 
-  if (Prototype.Browser.Opera) {
+  if (0) { /*### opera browser?*/
     /* Opera inexplicably generates keypress events for the shift, option,
        and command keys. The keycodes are 16...18. We don't want those
        to focus-and-scroll-down. */
