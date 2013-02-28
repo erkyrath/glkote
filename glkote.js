@@ -456,11 +456,14 @@ function glkote_update(arg) {
 */
 function accept_windowset(arg) {
   $.each(windowdic, function(winid, win) { win.inplace = false; });
-  arg.map(accept_one_window);
+  $.map(arg, accept_one_window);
 
   /* Close any windows not mentioned in the argument. */
-  var closewins = windowdic.values().reject(function(win) { return win.inplace; });
-  closewins.map(close_one_window);
+  var closewins = $.map(windowdic, function(win, winid) {
+      if (!win.inplace)
+        return win;
+    });
+  $.map(closewins, close_one_window);
 }
 
 /* Handle the update for a single window. Open it if it doesn't already
@@ -609,7 +612,7 @@ function func_long_whitespace(match) {
 
 /* Handle all of the window content changes. */
 function accept_contentset(arg) {
-  arg.map(accept_one_content);
+  $.map(arg, accept_one_content);
 }
 
 /* Handle the content changes for a single window. */
@@ -850,7 +853,7 @@ function accept_one_content(arg) {
 */
 function accept_inputcancel(arg) {
   var hasinput = {};
-  arg.map(function(argi) { 
+  $.map(arg, function(argi) { 
     if (argi.type)
       hasinput[argi.id] = argi;
   });
@@ -876,7 +879,7 @@ function accept_inputcancel(arg) {
 function accept_inputset(arg) {
   var hasinput = {};
   var hashyperlink = {};
-  arg.map(function(argi) {
+  $.map(arg, function(argi) {
     if (argi.type)
       hasinput[argi.id] = argi;
     if (argi.hyperlink)
@@ -1254,33 +1257,19 @@ function insert_text_detecting(el, val) {
 }
 
 /* Debugging utility: return a string displaying all of an object's
-   properties. */
-function inspect_method() {
-  var keys = Object.keys(this);
-  keys.sort();
-  var els = keys.map(function(key) {
-      var val = this[key];
-      if (val == inspect_method)
-        val = '[...]';
-      return key + ':' + val;
-    }, this);
-  return '{' + els.join(', ') + '}';
-}
-
-/* Debugging utility: return a string displaying all of an object's
    properties, recursively. (Do not call this on an object which references
    anything big!) */
 function inspect_deep(res) {
-  var keys = Object.keys(res);
+  var keys = $.map(res, function(val, key) { return key; });
   keys.sort();
-  var els = keys.map(function(key) {
+  var els = $.map(keys, function(key) {
       var val = res[key];
-      if (Object.isString(val))
+      if (jQuery.type(val) === 'string')
         val = "'" + val + "'";
-      else if (!Object.isNumber(val))
+      else if (!(jQuery.type(val) === 'number'))
         val = inspect_deep(val);
       return key + ':' + val;
-    }, res);
+    });
   return '{' + els.join(', ') + '}';
 }
 
