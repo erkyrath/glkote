@@ -149,9 +149,9 @@ function glkote_init(iface) {
     return;
   }
   el.empty();
-  if (!perform_paging)
-    Event.observe(document, 'keypress', evhan_doc_keypress);
-  Event.observe(window, 'resize', evhan_doc_resize);
+  if (perform_paging)
+    $(document).on('keypress', evhan_doc_keypress);
+  $(window).on('resize', evhan_doc_resize);
 
   var res = measure_window();
   if (Object.isString(res)) {
@@ -511,8 +511,7 @@ function accept_one_window(arg) {
       { id: 'window'+arg.id,
         'class': 'WindowFrame ' + typeclass + ' ' + rockclass });
     frameel.winid = arg.id;
-    Event.observe(frameel, 'mousedown', 
-      function(ev) { evhan_window_mousedown(ev, frameel); });
+    frameel.on('mousedown', frameel, evhan_window_mousedown);
     if (perform_paging && win.type == 'buffer')
       frameel.onscroll = function() { evhan_window_scroll(frameel); };
     win.frameel = frameel;
@@ -1409,13 +1408,7 @@ function evhan_doc_keypress(ev) {
   }
 
   var keycode = 0;
-  if (Prototype.Browser.IE) { /* MSIE broken event API */
-    ev = Event.extend(window.event);
-    if (ev) keycode = ev.keyCode;
-  }
-  else {
-    if (ev) keycode = ev.which;
-  }
+  if (ev) keycode = ev.which;
 
   if (ev.target.tagName.toUpperCase() == 'INPUT') {
     /* If the focus is already on an input field, don't mess with it. */
@@ -1539,7 +1532,8 @@ function evhan_doc_keypress(ev) {
    Remember which window the user clicked in last, as a hint for setting
    the focus. (Input focus and paging focus are tracked separately.)
 */
-function evhan_window_mousedown(ev, frameel) {
+function evhan_window_mousedown(ev) {
+  var frameel = ev.data;
   if (!frameel.winid)
     return;
   var win = windowdic[frameel.winid];
@@ -1571,10 +1565,7 @@ function evhan_window_mousedown(ev, frameel) {
 */
 function evhan_input_char_keydown(ev) {
   var keycode = 0;
-  if (!ev) { /* MSIE broken event API */
-    ev = Event.extend(window.event);
-  }
-  if (ev) keycode = ev.keyCode;
+  if (ev) keycode = ev.keyCode; //### ev.which?
   if (!keycode) return true;
 
   var res = null;
@@ -1654,19 +1645,8 @@ function evhan_input_char_keydown(ev) {
 */
 function evhan_input_char_keypress(ev) {
   var keycode = 0;
-  if (!ev) { /* MSIE broken event API */
-    ev = Event.extend(window.event);
-    if (ev) keycode = ev.keyCode;
-  }
-  else {
-    if (ev) keycode = ev.which;
-  }
+  if (ev) keycode = ev.which;
   if (!keycode) return false;
-
-  if (keycode == 10 && Prototype.Browser.MobileSafari) {
-    /* This case only occurs on old iPhones (iOS 3.1.3). */
-    keycode = 13;
-  }
 
   var res;
   if (keycode == 13)
@@ -1690,10 +1670,7 @@ function evhan_input_char_keypress(ev) {
    for this window. */
 function evhan_input_keydown(ev) {
   var keycode = 0;
-  if (!ev) { /* MSIE broken event API */
-    ev = Event.extend(window.event);
-  }
-  if (ev) keycode = ev.keyCode;
+  if (ev) keycode = ev.keyCode; //### ev.which?
   if (!keycode) return true;
 
   if (keycode == key_codes.KEY_UP || keycode == key_codes.KEY_DOWN) {
@@ -1745,19 +1722,8 @@ function evhan_input_keydown(ev) {
 */
 function evhan_input_keypress(ev) {
   var keycode = 0;
-  if (!ev) { /* MSIE broken event API */
-    ev = Event.extend(window.event);
-    if (ev) keycode = ev.keyCode;
-  }
-  else {
-    if (ev) keycode = ev.which;
-  }
+  if (ev) keycode = ev.which;
   if (!keycode) return true;
-
-  if (keycode == 10 && Prototype.Browser.MobileSafari) {
-    /* This case only occurs on old iPhones (iOS 3.1.3). */
-    keycode = 13;
-  }
 
   if (keycode == 13) {
     if (!this.winid)
