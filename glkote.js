@@ -1110,8 +1110,8 @@ function glkote_log(msg) {
 /* Display the red error pane, with a message in it. This is called on
    fatal errors.
 
-   Deliberately does not use any Prototype functionality, because this
-   is called when Prototype couldn't be loaded.
+   Deliberately does not use any jQuery functionality, because this
+   is called when jQuery couldn't be loaded.
 */
 function glkote_error(msg) {
   var el = document.getElementById('errorcontent');
@@ -1149,7 +1149,7 @@ function clear_error() {
 /* Hide the loading pane (the spinny compass), if it hasn't already been
    hidden.
 
-   Deliberately does not use any Prototype functionality.
+   Deliberately does not use any jQuery functionality.
 */
 function hide_loading() {
   if (loading_visible == false)
@@ -1164,7 +1164,7 @@ function hide_loading() {
 
 /* Show the loading pane (the spinny compass), if it isn't already visible.
 
-   Deliberately does not use any Prototype functionality.
+   Deliberately does not use any jQuery functionality.
 */
 function show_loading() {
   if (loading_visible == true)
