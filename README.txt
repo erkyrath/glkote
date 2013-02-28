@@ -60,3 +60,20 @@ This package includes the Prototype JavaScript framework, version 1.6.1
 (c) 2005-2009 Sam Stephenson
 Prototype is freely distributable under the terms of an MIT-style license.
 For details, see the Prototype web site: <http://www.prototypejs.org/>
+
+####
+
+Prototype idioms to beware:
+.map()
+$ (anything)
+Hash
+Event.extend
+Event.observe
+Object.keys
+Object.is (isNumber, isString)
+func.defer
+func.delay
+str.startsWith
+str.strip
+str.times
+
