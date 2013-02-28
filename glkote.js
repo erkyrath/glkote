@@ -411,11 +411,11 @@ function glkote_update(arg) {
         /* Add or remove the more prompt, based on the new needspaging flag. */
         var moreel = $('#win'+win.id+'_moreprompt');
         if (!win.needspaging) {
-          if (moreel)
+          if (moreel.length)
             moreel.remove();
         }
         else {
-          if (!moreel) {
+          if (!moreel.length) {
             moreel = new Element('div',
               { id: 'win'+win.id+'_moreprompt', 'class': 'MorePrompt' } );
             insert_text(moreel, 'More');
@@ -562,7 +562,7 @@ function accept_one_window(arg) {
     if (arg.gridheight < win.gridheight) {
       for (ix=arg.gridheight; ix<win.gridheight; ix++) {
         var el = $('#win'+win.id+'_ln'+ix);
-        if (el)
+        if (el.length)
           el.remove();
       }
     }
@@ -624,7 +624,7 @@ function close_one_window(win) {
   win.frameel = null;
 
   var moreel = $('#win'+win.id+'_moreprompt');
-  if (moreel)
+  if (moreel.length)
     moreel.remove();
 }
 
@@ -672,7 +672,7 @@ function accept_one_content(arg) {
       var linenum = linearg.line;
       var content = linearg.content;
       var lineel = $('#win'+win.id+'_ln'+linenum);
-      if (!lineel) {
+      if (!lineel.length) {
         glkote_error('Got content for nonexistent line ' + linenum + ' of window ' + arg.id + '.');
         continue;
       }
@@ -727,7 +727,7 @@ function accept_one_content(arg) {
     }
 
     var cursel = $('#win'+win.id+'_cursor');
-    if (cursel)
+    if (cursel.length)
       cursel.remove();
     cursel = null;
 
@@ -965,7 +965,7 @@ function accept_inputset(arg) {
 
     if (win.type == 'grid') {
       var lineel = $('#win'+win.id+'_ln'+argi.ypos);
-      if (!lineel) {
+      if (!lineel.length) {
         glkote_error('Window ' + win.id + ' has requested input at unknown line ' + argi.ypos + '.');
         return;
       }
@@ -984,7 +984,7 @@ function accept_inputset(arg) {
 
     if (win.type == 'buffer') {
       var cursel = $('#win'+win.id+'_cursor');
-      if (!cursel) {
+      if (!cursel.length) {
         cursel = new Element('span',
           { id: 'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
         insert_text(cursel, NBSP);
@@ -1470,7 +1470,7 @@ function evhan_doc_keypress(ev) {
         if (frameel.scrollTop + frameheight >= frameel.scrollHeight) {
           win.needspaging = false;
           var moreel = $('#win'+win.id+'_moreprompt');
-          if (moreel)
+          if (moreel.length)
             moreel.remove();
           readjust_paging_focus(true);
         }
@@ -1795,7 +1795,7 @@ function evhan_window_scroll(frameel) {
   if (frameel.scrollTop + frameheight >= frameel.scrollHeight) {
     win.needspaging = false;
     var moreel = $('#win'+win.id+'_moreprompt');
-    if (moreel)
+    if (moreel.length)
       moreel.remove();
     readjust_paging_focus(true);
     return;
