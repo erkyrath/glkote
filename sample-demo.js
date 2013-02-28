@@ -2,20 +2,6 @@
    interface. In a complete RemGlk implementation, this code would all be
    whacked out and replaced with a single AJAX call. */
 
-/* This unpleasant stanza permits MSIE6 to work correctly with gameport
-   CSS definition, which uses "top" and "bottom" instead of "top" and
-   "height". If you are not using "top" and "bottom" in your gameport
-   CSS, delete this. */
-if (window.Prototype && Prototype.Browser.IE && (window.XMLHttpRequest == null)) {
-  /* This is MSIE6, and we have to adjust the gameport height manually. */
-  var func = function() {
-    var el = $('gameport');
-    el.style['height'] = (el.parentNode.clientHeight-el.offsetTop + 'px');
-  }
-  func.defer();
-  Event.observe(window, 'resize', func);
-}
-
 /* Define a whole lot of global variables, representing game state. */
 
 game_metrics = null;
@@ -49,6 +35,14 @@ game_mood_list = [ 'cheery', 'dopey', 'hungry', 'explodey' ];
 function game_version() {
   return ('Release 17; GlkOte library ' + GlkOte.version 
     + '; last updated 26-Nov-2011');
+}
+
+function game_n_spaces(count) {
+  var arr = [];
+  for (var ix=0; ix<count; ix++) {
+    arr.push(' ');
+  }
+  return arr.join('');
 }
 
 function game_generate_long_text(count, label) {
@@ -89,7 +83,7 @@ function game_print(val) {
     return;
   }
 
-  if (Object.isString(val)) {
+  if (jQuery.type(val) === 'string') {
     var ls = val.split('\n');
     for (ix=0; ix<ls.length; ix++) {
       if (ls[ix])
@@ -223,7 +217,7 @@ function game_select() {
   var statright = game_moves+' moves';
   if (game_moves == 1)
     statright = 'first move';
-  var statmiddle = ' '.times(gridchars - (statleft.length+statright.length+1));
+  var statmiddle = game_n_spaces(gridchars - (statleft.length+statright.length+1));
   var linelist = [
     { line: 0, content: ['normal', statleft+statmiddle+statright] },
     { line: 1, content: ['normal', ' Your mood: ', 'emphasized', game_mood_list[game_mood] ] }
@@ -262,7 +256,7 @@ function game_select() {
 
   if (have_quotewin) {
     var indent = Math.floor((gridchars - '  Pay no attention to the  '.length) / 2);
-    indent = ' '.times(indent);
+    indent = game_n_spaces(indent);
     if (!game_quotehaslink) {
       argc.push({ id: 3, lines: [
           { line: 0, content: ['normal', indent,

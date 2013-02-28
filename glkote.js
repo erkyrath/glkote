@@ -637,7 +637,10 @@ var regex_long_whitespace = new RegExp('  +', 'g'); /* two or more spaces */
    a normal one. */
 function func_long_whitespace(match) {
   var len = match.length;
-  return (NBSP.times(len-1)) + ' ';
+  if (len == 1)
+    return ' ';
+  /* Evil trick I picked up from Prototype. Gives len-1 copies of NBSP. */
+  return new Array(len).join(NBSP);
 }
 
 /* Handle all of the window content changes. */
