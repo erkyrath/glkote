@@ -681,10 +681,10 @@ function accept_one_content(arg) {
         continue;
       }
       if (!content || !content.length) {
-        lineel.update(NBSP);
+        lineel.text(NBSP);
       }
       else {
-        lineel.update();
+        lineel.empty();
         for (sx=0; sx<content.length; sx++) {
           var rdesc = content[sx];
           var rstyle, rtext, rlink;
@@ -736,7 +736,7 @@ function accept_one_content(arg) {
     cursel = null;
 
     if (arg.clear) {
-      win.frameel.update(); // remove all children
+      win.frameel.empty();
       win.topunseen = 0;
     }
 
@@ -773,12 +773,12 @@ function accept_one_content(arg) {
       }
       if (!content || !content.length) {
         if (divel.blankpara)
-          divel.update(NBSP);
+          divel.text(NBSP);
         continue;
       }
       if (divel.blankpara) {
         divel.blankpara = false;
-        divel.update();
+        divel.empty();
       }
       /* We must munge long strings of whitespace to make sure they aren't
          collapsed. (This wouldn't be necessary if "white-space: pre-wrap"
