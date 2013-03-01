@@ -423,7 +423,7 @@ function glkote_update(arg) {
             var morex = win.coords.right + 20;
             var morey = win.coords.bottom;
             moreel.setStyle({ bottom:morey+'px', right:morex+'px' });
-            $(windowport_id).insert(moreel);
+            $('#'+windowport_id).insert(moreel);
           }
         }
       }
@@ -538,7 +538,7 @@ function accept_one_window(arg) {
     win.coords = { left:null, top:null, right:null, bottom:null };
     win.history = new Array();
     win.historypos = 0;
-    $(windowport_id).insert(frameel);
+    $('#'+windowport_id).insert(frameel);
   }
   else {
     frameel = win.frameel;

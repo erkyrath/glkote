@@ -115,13 +115,13 @@ function dialog_open(tosave, usage, gameid, callback) {
     if (iface && iface.windowport)
         root_el_id = iface.windowport;
 
-    var rootel = $(root_el_id);
-    if (!rootel)
+    var rootel = $('#'+root_el_id);
+    if (!rootel.length)
         throw 'Dialog: unable to find root element #' + root_el_id + '.';
 
     /* Create the grey-out screen. */
-    var screen = $(dialog_el_id+'_screen');
-    if (!screen) {
+    var screen = $('#'+dialog_el_id+'_screen');
+    if (!screen.length) {
         screen = $('<div>',
             { id: dialog_el_id+'_screen' });
         rootel.insert(screen);
@@ -129,15 +129,15 @@ function dialog_open(tosave, usage, gameid, callback) {
 
     /* And now, a lot of DOM creation for the dialog box. */
 
-    var frame = $(dialog_el_id+'_frame');
-    if (!frame) {
+    var frame = $('#'+dialog_el_id+'_frame');
+    if (!frame.length) {
         frame = $('<div>',
             { id: dialog_el_id+'_frame' });
         rootel.insert(frame);
     }
 
-    var dia = $(dialog_el_id);
-    if (dia)
+    var dia = $('#'+dialog_el_id);
+    if (dia.length)
         dia.remove();
 
     dia = $('<div>', { id: dialog_el_id });
@@ -217,15 +217,15 @@ function dialog_open(tosave, usage, gameid, callback) {
     var focusfunc;
     if (will_save) {
         focusfunc = function() {
-            var el = $(dialog_el_id+'_infield');
-            if (el) 
+            var el = $('#'+dialog_el_id+'_infield');
+            if (el.length) 
                 el.focus();
         };
     }
     else {
         focusfunc = function() {
-            var el = $(dialog_el_id+'_select');
-            if (el) 
+            var el = $('#'+dialog_el_id+'_select');
+            if (el.length) 
                 el.focus();
         };
     }
@@ -235,14 +235,14 @@ function dialog_open(tosave, usage, gameid, callback) {
 /* Close the dialog and remove the grey-out screen.
 */
 function dialog_close() {
-    var dia = $(dialog_el_id);
-    if (dia)
+    var dia = $('#'+dialog_el_id);
+    if (dia.length)
         dia.remove();
-    var frame = $(dialog_el_id+'_frame');
-    if (frame)
+    var frame = $('#'+dialog_el_id+'_frame');
+    if (frame.length)
         frame.remove();
-    var screen = $(dialog_el_id+'_screen');
-    if (screen)
+    var screen = $('#'+dialog_el_id+'_screen');
+    if (screen.length)
         screen.remove();
 
     is_open = false;
@@ -257,8 +257,8 @@ function dialog_close() {
 */
 function set_caption(msg, isupper) {
     var elid = (isupper ? dialog_el_id+'_cap' : dialog_el_id+'_cap2');
-    var el = $(elid);
-    if (!el)
+    var el = $('#'+elid);
+    if (!el.length)
         return;
 
     if (!msg) {
@@ -334,15 +334,15 @@ function evhan_select_change() {
         return false;
 
     //GlkOte.log('### select changed');
-    var selel = $(dialog_el_id+'_select');
-    if (!selel)
+    var selel = $('#'+dialog_el_id+'_select');
+    if (!selel.length)
         return false;
     var pos = selel.selectedIndex;
     if (!cur_filelist || pos < 0 || pos >= cur_filelist.length)
         return false;
     var file = cur_filelist[pos];
-    var fel = $(dialog_el_id+'_infield');
-    if (!fel)
+    var fel = $('#'+dialog_el_id+'_infield');
+    if (!fel.length)
         return false;
     fel.value = file.dirent.filename;
     return false;
@@ -359,8 +359,8 @@ function evhan_select_change_editing() {
     if (!editing || editing_dirent)
         return false;
 
-    var selel = $(dialog_el_id+'_select');
-    if (!selel)
+    var selel = $('#'+dialog_el_id+'_select');
+    if (!selel.length)
         return false;
     var pos = selel.selectedIndex;
     if (!cur_filelist || pos < 0 || pos >= cur_filelist.length)
@@ -369,9 +369,9 @@ function evhan_select_change_editing() {
     if (!file.dirent || !file_ref_exists(file.dirent))
         return false;
 
-    butel = $(dialog_el_id+'_delete');
+    butel = $('#'+dialog_el_id+'_delete');
     butel.disabled = false;
-    butel = $(dialog_el_id+'_display');
+    butel = $('#'+dialog_el_id+'_display');
     butel.disabled = !usage_is_textual(file.dirent.usage);
     //### use binary flag?
 }
@@ -386,8 +386,8 @@ function evhan_accept_load_button(ev) {
         return false;
 
     //GlkOte.log('### accept load');
-    var selel = $(dialog_el_id+'_select');
-    if (!selel)
+    var selel = $('#'+dialog_el_id+'_select');
+    if (!selel.length)
         return false;
     var pos = selel.selectedIndex;
     if (!cur_filelist || pos < 0 || pos >= cur_filelist.length)
@@ -415,8 +415,8 @@ function evhan_accept_save_button(ev) {
         return false;
 
     //GlkOte.log('### accept save');
-    var fel = $(dialog_el_id+'_infield');
-    if (!fel)
+    var fel = $('#'+dialog_el_id+'_infield');
+    if (!fel.length)
         return false;
     var filename = fel.value;
     filename = filename.strip(); // prototype-ism
@@ -433,7 +433,7 @@ function evhan_accept_save_button(ev) {
         set_caption('You already have a ' + cur_usage_name + ' "' 
             + dirent.filename + '". Do you want to replace it?', false);
         fel.disabled = true;
-        var butel = $(dialog_el_id+'_accept');
+        var butel = $('#'+dialog_el_id+'_accept');
         replace_text(butel, 'Replace');
         return false;
     }
@@ -464,26 +464,26 @@ function evhan_edit_button(ev) {
             /* Cancel the confirmation, first */
             confirming = false;
             set_caption(null, false);
-            var fel = $(dialog_el_id+'_infield');
+            var fel = $('#'+dialog_el_id+'_infield');
             fel.disabled = false;
-            var butel = $(dialog_el_id+'_accept');
+            var butel = $('#'+dialog_el_id+'_accept');
             butel.disabled = false;
             replace_text(butel, 'Save');
         }
 
-        var fel = $(dialog_el_id+'_input');
-        if (fel) {
+        var fel = $('#'+dialog_el_id+'_input');
+        if (fel.length) {
             fel.hide();
         }
 
-        var butel = $(dialog_el_id+'_edit');
+        var butel = $('#'+dialog_el_id+'_edit');
         replace_text(butel, 'Done');
 
-        butel = $(dialog_el_id+'_delete');
+        butel = $('#'+dialog_el_id+'_delete');
         butel.show();
-        butel = $(dialog_el_id+'_display');
+        butel = $('#'+dialog_el_id+'_display');
         butel.show();
-        butel = $(dialog_el_id+'_accept');
+        butel = $('#'+dialog_el_id+'_accept');
         butel.hide();
 
         evhan_storage_changed();
@@ -493,19 +493,19 @@ function evhan_edit_button(ev) {
         editing = false;
         editing_dirent = null;
 
-        var fel = $(dialog_el_id+'_input');
-        if (fel) {
+        var fel = $('#'+dialog_el_id+'_input');
+        if (fel.length) {
             fel.show();
         }
 
-        var butel = $(dialog_el_id+'_edit');
+        var butel = $('#'+dialog_el_id+'_edit');
         replace_text(butel, 'Edit');
 
-        butel = $(dialog_el_id+'_delete');
+        butel = $('#'+dialog_el_id+'_delete');
         butel.hide();
-        butel = $(dialog_el_id+'_display');
+        butel = $('#'+dialog_el_id+'_display');
         butel.hide();
-        butel = $(dialog_el_id+'_accept');
+        butel = $('#'+dialog_el_id+'_accept');
         butel.show();
 
         evhan_storage_changed();
@@ -516,9 +516,9 @@ function evhan_edit_button(ev) {
         editing = true;
         editing_dirent = null;
 
-        $(dialog_el_id+'_buttonrow').show();
+        $('#'+dialog_el_id+'_buttonrow').show();
 
-        var butel = $(dialog_el_id+'_edit');
+        var butel = $('#'+dialog_el_id+'_edit');
         replace_text(butel, 'Done');
 
         evhan_storage_changed();
@@ -536,8 +536,8 @@ function evhan_delete_button(ev) {
         return false;
 
     //GlkOte.log('### delete');
-    var selel = $(dialog_el_id+'_select');
-    if (!selel)
+    var selel = $('#'+dialog_el_id+'_select');
+    if (!selel.length)
         return false;
     var pos = selel.selectedIndex;
     if (!cur_filelist || pos < 0 || pos >= cur_filelist.length)
@@ -563,8 +563,8 @@ function evhan_display_button(ev) {
         return false;
 
     //GlkOte.log('### display');
-    var selel = $(dialog_el_id+'_select');
-    if (!selel)
+    var selel = $('#'+dialog_el_id+'_select');
+    if (!selel.length)
         return false;
     var pos = selel.selectedIndex;
     if (!cur_filelist || pos < 0 || pos >= cur_filelist.length)
@@ -573,9 +573,9 @@ function evhan_display_button(ev) {
     if (!file.dirent || !file_ref_exists(file.dirent))
         return false;
 
-    $(dialog_el_id+'_buttonrow').hide();
+    $('#'+dialog_el_id+'_buttonrow').hide();
 
-    var butel = $(dialog_el_id+'_edit');
+    var butel = $('#'+dialog_el_id+'_edit');
     replace_text(butel, 'Close');
 
     editing_dirent = file.dirent;
@@ -598,9 +598,9 @@ function evhan_cancel_button(ev) {
     if (confirming) {
         confirming = false;
         set_caption(null, false);
-        var fel = $(dialog_el_id+'_infield');
+        var fel = $('#'+dialog_el_id+'_infield');
         fel.disabled = false;
-        var butel = $(dialog_el_id+'_accept');
+        var butel = $('#'+dialog_el_id+'_accept');
         butel.disabled = false;
         replace_text(butel, 'Save');
         return false;
@@ -637,8 +637,8 @@ function evhan_storage_changed(ev) {
     /* We could use the changedkey to decide whether it's worth redrawing 
        the field here. */
 
-    bodyel = $(dialog_el_id+'_body');
-    if (!bodyel)
+    bodyel = $('#'+dialog_el_id+'_body');
+    if (!bodyel.length)
         return false;
 
     if (editing && editing_dirent) {
@@ -646,8 +646,8 @@ function evhan_storage_changed(ev) {
            display. */
         if (!file_ref_exists(editing_dirent)) {
             editing_dirent = null;
-            $(dialog_el_id+'_buttonrow').show();
-            var butel = $(dialog_el_id+'_edit');
+            $('#'+dialog_el_id+'_buttonrow').show();
+            var butel = $('#'+dialog_el_id+'_edit');
             replace_text(butel, 'Done');
         }
     }
@@ -692,9 +692,9 @@ function evhan_storage_changed(ev) {
 
         if (ls.length == 0) {
             remove_children(bodyel);
-            butel = $(dialog_el_id+'_delete');
+            butel = $('#'+dialog_el_id+'_delete');
             butel.disabled = true;
-            butel = $(dialog_el_id+'_display');
+            butel = $('#'+dialog_el_id+'_display');
             butel.disabled = true;
             set_caption('You have no stored files. Press Done to continue.', true);
             return false;
@@ -780,18 +780,18 @@ function evhan_storage_changed(ev) {
 
     if (will_save) {
         set_caption('Name this ' + cur_usage_name + '.', true);
-        el = $(dialog_el_id+'_accept');
+        el = $('#'+dialog_el_id+'_accept');
         el.disabled = false;
     }
     else {
         if (ls.length == 0) {
             set_caption('You have no ' + cur_usage_name + 's for this game.', true);
-            el = $(dialog_el_id+'_accept');
+            el = $('#'+dialog_el_id+'_accept');
             el.disabled = true;
         }
         else {
             set_caption('Select a ' + cur_usage_name + ' to load.', true);
-            el = $(dialog_el_id+'_accept');
+            el = $('#'+dialog_el_id+'_accept');
             el.disabled = false;
         }
     }
