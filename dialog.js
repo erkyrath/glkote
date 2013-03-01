@@ -122,7 +122,7 @@ function dialog_open(tosave, usage, gameid, callback) {
     /* Create the grey-out screen. */
     var screen = $(dialog_el_id+'_screen');
     if (!screen) {
-        screen = new Element('div',
+        screen = $('<div>',
             { id: dialog_el_id+'_screen' });
         rootel.insert(screen);
     }
@@ -131,7 +131,7 @@ function dialog_open(tosave, usage, gameid, callback) {
 
     var frame = $(dialog_el_id+'_frame');
     if (!frame) {
-        frame = new Element('div',
+        frame = $('<div>',
             { id: dialog_el_id+'_frame' });
         rootel.insert(frame);
     }
@@ -140,61 +140,61 @@ function dialog_open(tosave, usage, gameid, callback) {
     if (dia)
         dia.remove();
 
-    dia = new Element('div', { id: dialog_el_id });
+    dia = $('<div>', { id: dialog_el_id });
 
     var form, el, row;
 
-    form = new Element('form');
+    form = $('<form>');
     form.observe('submit', 
         (will_save ? evhan_accept_save_button : evhan_accept_load_button));
     dia.insert(form);
 
-    row = new Element('div', { 'class': 'DiaButtonsFloat' });
-    el = new Element('button', { id: dialog_el_id+'_edit', type: 'button' });
+    row = $('<div>', { 'class': 'DiaButtonsFloat' });
+    el = $('<button>', { id: dialog_el_id+'_edit', type: 'button' });
     insert_text(el, 'Edit');
     el.observe('click', evhan_edit_button);
     row.insert(el);
     form.insert(row);
 
-    row = new Element('div', { id: dialog_el_id+'_cap', 'class': 'DiaCaption' });
+    row = $('<div>', { id: dialog_el_id+'_cap', 'class': 'DiaCaption' });
     insert_text(row, 'XXX'); // the caption will be replaced momentarily.
     form.insert(row);
 
     if (will_save) {
-        row = new Element('div', { id: dialog_el_id+'_input', 'class': 'DiaInput' });
+        row = $('<div>', { id: dialog_el_id+'_input', 'class': 'DiaInput' });
         form.insert(row);
-        el = new Element('input', { id: dialog_el_id+'_infield', type: 'text', name: 'filename' });
+        el = $('<input>', { id: dialog_el_id+'_infield', type: 'text', name: 'filename' });
         row.insert(el);
     }
 
-    row = new Element('div', { id: dialog_el_id+'_body', 'class': 'DiaBody' });
+    row = $('<div>', { id: dialog_el_id+'_body', 'class': 'DiaBody' });
     form.insert(row);
 
-    row = new Element('div', { id: dialog_el_id+'_cap2', 'class': 'DiaCaption' });
+    row = $('<div>', { id: dialog_el_id+'_cap2', 'class': 'DiaCaption' });
     row.hide();
     form.insert(row);
 
-    row = new Element('div', { id: dialog_el_id+'_buttonrow', 'class': 'DiaButtons' });
+    row = $('<div>', { id: dialog_el_id+'_buttonrow', 'class': 'DiaButtons' });
     {
         /* Row of buttons */
-        el = new Element('button', { id: dialog_el_id+'_cancel', type: 'button' });
+        el = $('<button>', { id: dialog_el_id+'_cancel', type: 'button' });
         insert_text(el, 'Cancel');
         el.observe('click', evhan_cancel_button);
         row.insert(el);
 
-        el = new Element('button', { id: dialog_el_id+'_delete', type: 'button' });
+        el = $('<button>', { id: dialog_el_id+'_delete', type: 'button' });
         insert_text(el, 'Delete');
         el.observe('click', evhan_delete_button);
         el.hide();
         row.insert(el);
 
-        el = new Element('button', { id: dialog_el_id+'_display', type: 'button' });
+        el = $('<button>', { id: dialog_el_id+'_display', type: 'button' });
         insert_text(el, 'Display');
         el.observe('click', evhan_display_button);
         el.hide();
         row.insert(el);
 
-        el = new Element('button', { id: dialog_el_id+'_accept', type: 'submit' });
+        el = $('<button>', { id: dialog_el_id+'_accept', type: 'submit' });
         insert_text(el, (will_save ? 'Save' : 'Load'));
         el.observe('click', 
             (will_save ? evhan_accept_save_button : evhan_accept_load_button));
@@ -665,7 +665,7 @@ function evhan_storage_changed(ev) {
            16-bit range. */
         dat = String.fromCharCode.apply(this, dat);
 
-        var textel = new Element('div', { 'class': 'DiaDisplayText' });
+        var textel = $('<div>', { 'class': 'DiaDisplayText' });
         var nod = document.createTextNode(dat);
         textel.appendChild(nod);
         bodyel.insert(textel);
@@ -714,20 +714,20 @@ function evhan_storage_changed(ev) {
 
         remove_children(bodyel);
         
-        var selel = new Element('select', { id: dialog_el_id+'_select', name:'files', size:'5' });
+        var selel = $('<select>', { id: dialog_el_id+'_select', name:'files', size:'5' });
         var ix, file, datestr;
         var anyselected = false;
         for (ix=0; ix<ls.length; ix++) {
             file = ls[ix];
             if (!file.dirent) {
-                el = new Element('option', { name:'f'+ix } );
+                el = $('<option>', { name:'f'+ix } );
                 el.disabled = true;
                 insert_text(el, '-- ' + label_for_usage(file.label) + 's --');
                 selel.insert(el);
                 continue;
             }
 
-            el = new Element('option', { name:'f'+ix } );
+            el = $('<option>', { name:'f'+ix } );
             if (!anyselected) {
                 anyselected = true;
                 el.selected = true;
@@ -761,11 +761,11 @@ function evhan_storage_changed(ev) {
     else {
         remove_children(bodyel);
         
-        var selel = new Element('select', { id: dialog_el_id+'_select', name:'files', size:'5' });
+        var selel = $('<select>', { id: dialog_el_id+'_select', name:'files', size:'5' });
         var ix, file, datestr;
         for (ix=0; ix<ls.length; ix++) {
             file = ls[ix];
-            el = new Element('option', { name:'f'+ix } );
+            el = $('<option>', { name:'f'+ix } );
             if (ix == 0)
                 el.selected = true;
             datestr = format_date(file.modified);
@@ -1113,7 +1113,7 @@ if (localStorage == null) {
     }
 }
 
-Event.observe(window, 'storage', evhan_storage_changed); // prototype-ism
+$(window).on('storage', evhan_storage_changed);
 
 /* End of Dialog namespace function. Return the object which will
    become the Dialog global. */

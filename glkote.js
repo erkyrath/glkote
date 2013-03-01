@@ -416,7 +416,7 @@ function glkote_update(arg) {
         }
         else {
           if (!moreel.length) {
-            moreel = new Element('div',
+            moreel = $('<div>',
               { id: 'win'+win.id+'_moreprompt', 'class': 'MorePrompt' } );
             insert_text(moreel, 'More');
             /* 20 pixels is a cheap approximation of a scrollbar-width. */
@@ -518,7 +518,7 @@ function accept_one_window(arg) {
     if (win.type == 'buffer')
       typeclass = 'BufferWindow';
     var rockclass = 'WindowRock_' + arg.rock;
-    frameel = new Element('div',
+    frameel = $('<div>',
       { id: 'window'+arg.id,
         'class': 'WindowFrame ' + typeclass + ' ' + rockclass });
     frameel.winid = arg.id;
@@ -553,7 +553,7 @@ function accept_one_window(arg) {
     var ix;
     if (arg.gridheight > win.gridheight) {
       for (ix=win.gridheight; ix<arg.gridheight; ix++) {
-        var el = new Element('div',
+        var el = $('<div>',
           { id: 'win'+win.id+'_ln'+ix, 'class': 'GridLine' });
         el.insert(NBSP);
         win.frameel.insert(el);
@@ -699,13 +699,13 @@ function accept_one_content(arg) {
             rtext = content[sx];
             rlink = undefined;
           }
-          var el = new Element('span',
+          var el = $('<span>',
             { 'class': 'Style_' + rstyle } );
           if (rlink == undefined) {
             insert_text_detecting(el, rtext);
           }
           else {
-            var ael = new Element('a',
+            var ael = $('<a>',
               { 'href': '#' } );
             insert_text(ael, rtext);
             ael.onclick = build_evhan_hyperlink(win.id, rlink);
@@ -766,7 +766,7 @@ function accept_one_content(arg) {
       }
       if (divel == null) {
         /* Create a new paragraph div */
-        divel = new Element('div', { 'class': 'BufferLine' })
+        divel = $('<div>', { 'class': 'BufferLine' })
         divel.blankpara = true;
         divel.endswhite = true;
         win.frameel.insert(divel);
@@ -801,7 +801,7 @@ function accept_one_content(arg) {
           rtext = content[sx];
           rlink = undefined;
         }
-        var el = new Element('span',
+        var el = $('<span>',
           { 'class': 'Style_' + rstyle } );
         rtext = rtext.replace(regex_long_whitespace, func_long_whitespace);
         if (divel.endswhite) {
@@ -811,7 +811,7 @@ function accept_one_content(arg) {
           insert_text_detecting(el, rtext);
         }
         else {
-          var ael = new Element('a',
+          var ael = $('<a>',
             { 'href': '#' } );
           insert_text(ael, rtext);
           ael.onclick = build_evhan_hyperlink(win.id, rlink);
@@ -846,7 +846,7 @@ function accept_one_content(arg) {
        position the input box. */
     var divel = last_child_of(win.frameel);
     if (divel) {
-      cursel = new Element('span',
+      cursel = $('<span>',
         { id: 'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
       insert_text(cursel, NBSP);
       divel.insert(cursel);
@@ -937,7 +937,7 @@ function accept_inputset(arg) {
       else {
         glkote_error('Window ' + win.id + ' has requested unrecognized input type ' + argi.type + '.');
       }
-      inputel = new Element('input',
+      inputel = $('<input>',
         { id: 'win'+win.id+'_input',
           'class': classes, type: 'text', maxlength: maxlen });
       if (Prototype.Browser.MobileSafari)
@@ -989,7 +989,7 @@ function accept_inputset(arg) {
     if (win.type == 'buffer') {
       var cursel = $('#win'+win.id+'_cursor');
       if (!cursel.length) {
-        cursel = new Element('span',
+        cursel = $('<span>',
           { id: 'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
         insert_text(cursel, NBSP);
         win.frameel.insert(cursel);
@@ -1230,7 +1230,7 @@ function insert_text_detecting(el, val) {
     /* For 'match', we test the entire span of text to see if it's a URL.
        This is simple and fast. */
     if (regex_external_links.test(val)) {
-      var ael = new Element('a',
+      var ael = $('<a>',
         { 'href': val, 'class': 'External', 'target': '_blank' } );
       var nod = document.createTextNode(val);
       ael.appendChild(nod);
@@ -1254,7 +1254,7 @@ function insert_text_detecting(el, val) {
         el.appendChild(nod);
       }
       /* Add the URL. */
-      var ael = new Element('a',
+      var ael = $('<a>',
         { 'href': match[0], 'class': 'External', 'target': '_blank' } );
       var nod = document.createTextNode(match[0]);
       ael.appendChild(nod);

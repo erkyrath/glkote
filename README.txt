@@ -66,6 +66,7 @@ For details, see the Prototype web site: <http://www.prototypejs.org/>
 Prototype idioms to beware:
 .map() -> $.map?
 $ (anything)
+.on...?
 Hash (each, get, index, keys, values, set) -> $.each?
 Event.extend
 Event.observe
