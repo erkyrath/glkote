@@ -124,7 +124,7 @@ function dialog_open(tosave, usage, gameid, callback) {
     if (!screen.length) {
         screen = $('<div>',
             { id: dialog_el_id+'_screen' });
-        rootel.insert(screen);
+        rootel.append(screen);
     }
 
     /* And now, a lot of DOM creation for the dialog box. */
@@ -133,7 +133,7 @@ function dialog_open(tosave, usage, gameid, callback) {
     if (!frame.length) {
         frame = $('<div>',
             { id: dialog_el_id+'_frame' });
-        rootel.insert(frame);
+        rootel.append(frame);
     }
 
     var dia = $('#'+dialog_el_id);
@@ -147,32 +147,32 @@ function dialog_open(tosave, usage, gameid, callback) {
     form = $('<form>');
     form.observe('submit', 
         (will_save ? evhan_accept_save_button : evhan_accept_load_button));
-    dia.insert(form);
+    dia.append(form);
 
     row = $('<div>', { 'class': 'DiaButtonsFloat' });
     el = $('<button>', { id: dialog_el_id+'_edit', type: 'button' });
     insert_text(el, 'Edit');
     el.observe('click', evhan_edit_button);
-    row.insert(el);
-    form.insert(row);
+    row.append(el);
+    form.append(row);
 
     row = $('<div>', { id: dialog_el_id+'_cap', 'class': 'DiaCaption' });
     insert_text(row, 'XXX'); // the caption will be replaced momentarily.
-    form.insert(row);
+    form.append(row);
 
     if (will_save) {
         row = $('<div>', { id: dialog_el_id+'_input', 'class': 'DiaInput' });
-        form.insert(row);
+        form.append(row);
         el = $('<input>', { id: dialog_el_id+'_infield', type: 'text', name: 'filename' });
-        row.insert(el);
+        row.append(el);
     }
 
     row = $('<div>', { id: dialog_el_id+'_body', 'class': 'DiaBody' });
-    form.insert(row);
+    form.append(row);
 
     row = $('<div>', { id: dialog_el_id+'_cap2', 'class': 'DiaCaption' });
     row.hide();
-    form.insert(row);
+    form.append(row);
 
     row = $('<div>', { id: dialog_el_id+'_buttonrow', 'class': 'DiaButtons' });
     {
@@ -180,29 +180,29 @@ function dialog_open(tosave, usage, gameid, callback) {
         el = $('<button>', { id: dialog_el_id+'_cancel', type: 'button' });
         insert_text(el, 'Cancel');
         el.observe('click', evhan_cancel_button);
-        row.insert(el);
+        row.append(el);
 
         el = $('<button>', { id: dialog_el_id+'_delete', type: 'button' });
         insert_text(el, 'Delete');
         el.observe('click', evhan_delete_button);
         el.hide();
-        row.insert(el);
+        row.append(el);
 
         el = $('<button>', { id: dialog_el_id+'_display', type: 'button' });
         insert_text(el, 'Display');
         el.observe('click', evhan_display_button);
         el.hide();
-        row.insert(el);
+        row.append(el);
 
         el = $('<button>', { id: dialog_el_id+'_accept', type: 'submit' });
         insert_text(el, (will_save ? 'Save' : 'Load'));
         el.observe('click', 
             (will_save ? evhan_accept_save_button : evhan_accept_load_button));
-        row.insert(el);
+        row.append(el);
     }
-    form.insert(row);
+    form.append(row);
 
-    frame.insert(dia);
+    frame.append(dia);
     is_open = true;
 
     evhan_storage_changed();
@@ -668,7 +668,7 @@ function evhan_storage_changed(ev) {
         var textel = $('<div>', { 'class': 'DiaDisplayText' });
         var nod = document.createTextNode(dat);
         textel.appendChild(nod);
-        bodyel.insert(textel);
+        bodyel.append(textel);
 
         set_caption('Displaying file contents...', true);
         return false;
@@ -723,7 +723,7 @@ function evhan_storage_changed(ev) {
                 el = $('<option>', { name:'f'+ix } );
                 el.disabled = true;
                 insert_text(el, '-- ' + label_for_usage(file.label) + 's --');
-                selel.insert(el);
+                selel.append(el);
                 continue;
             }
 
@@ -734,9 +734,9 @@ function evhan_storage_changed(ev) {
             }
             datestr = format_date(file.modified);
             insert_text(el, file.dirent.filename + ' -- ' + datestr);
-            selel.insert(el);
+            selel.append(el);
         }
-        bodyel.insert(selel);
+        bodyel.append(selel);
 
         selel.onchange = evhan_select_change_editing;
         evhan_select_change_editing();
@@ -770,9 +770,9 @@ function evhan_storage_changed(ev) {
                 el.selected = true;
             datestr = format_date(file.modified);
             insert_text(el, file.dirent.filename + ' -- ' + datestr);
-            selel.insert(el);
+            selel.append(el);
         }
-        bodyel.insert(selel);
+        bodyel.append(selel);
 
         if (will_save)
             selel.onchange = evhan_select_change;

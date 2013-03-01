@@ -423,7 +423,7 @@ function glkote_update(arg) {
             var morex = win.coords.right + 20;
             var morey = win.coords.bottom;
             moreel.setStyle({ bottom:morey+'px', right:morex+'px' });
-            $('#'+windowport_id).insert(moreel);
+            $('#'+windowport_id).append(moreel);
           }
         }
       }
@@ -538,7 +538,7 @@ function accept_one_window(arg) {
     win.coords = { left:null, top:null, right:null, bottom:null };
     win.history = new Array();
     win.historypos = 0;
-    $('#'+windowport_id).insert(frameel);
+    $('#'+windowport_id).append(frameel);
   }
   else {
     frameel = win.frameel;
@@ -555,8 +555,8 @@ function accept_one_window(arg) {
       for (ix=win.gridheight; ix<arg.gridheight; ix++) {
         var el = $('<div>',
           { id: 'win'+win.id+'_ln'+ix, 'class': 'GridLine' });
-        el.insert(NBSP);
-        win.frameel.insert(el);
+        el.append(NBSP);
+        win.frameel.append(el);
       }
     }
     if (arg.gridheight < win.gridheight) {
@@ -578,7 +578,7 @@ function accept_one_window(arg) {
      of the border, but width/height are measured from the inside of the
      border. (Measured by the browser's DOM methods, I mean.) */
   var styledic;
-  if (Prototype.Browser.IE) {
+  if (0 /*###Prototype.Browser.IE*/) {
     /* Actually this method works in Safari also, but in Firefox the buffer
        windows are too narrow by a scrollbar-width. So we don't use it
        generally. */
@@ -709,9 +709,9 @@ function accept_one_content(arg) {
               { 'href': '#' } );
             insert_text(ael, rtext);
             ael.onclick = build_evhan_hyperlink(win.id, rlink);
-            el.insert(ael);
+            el.append(ael);
           }
-          lineel.insert(el);
+          lineel.append(el);
         }
       }
     }
@@ -769,7 +769,7 @@ function accept_one_content(arg) {
         divel = $('<div>', { 'class': 'BufferLine' })
         divel.blankpara = true;
         divel.endswhite = true;
-        win.frameel.insert(divel);
+        win.frameel.append(divel);
       }
       if (!content || !content.length) {
         if (divel.blankpara)
@@ -815,9 +815,9 @@ function accept_one_content(arg) {
             { 'href': '#' } );
           insert_text(ael, rtext);
           ael.onclick = build_evhan_hyperlink(win.id, rlink);
-          el.insert(ael);
+          el.append(ael);
         }
-        divel.insert(el);
+        divel.append(el);
         divel.endswhite = regex_final_whitespace.test(rtext);
       }
     }
@@ -849,7 +849,7 @@ function accept_one_content(arg) {
       cursel = $('<span>',
         { id: 'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
       insert_text(cursel, NBSP);
-      divel.insert(cursel);
+      divel.append(cursel);
 
       if (win.inputel) {
         /* Put back the inputel that we found earlier. */
@@ -865,7 +865,7 @@ function accept_one_content(arg) {
         /* ### opera absolute positioning failure? */
         inputel.setStyle({ position: 'absolute',
           left: '0px', top: '0px', width: width+'px' });
-        cursel.insert(inputel);
+        cursel.append(inputel);
       }
     }
   }
@@ -983,7 +983,7 @@ function accept_inputset(arg) {
         width = maxwidth;
       inputel.setStyle({ position: 'absolute',
         left: xpos+'px', top: pos.top+'px', width: width+'px' });
-      win.frameel.insert(inputel);
+      win.frameel.append(inputel);
     }
 
     if (win.type == 'buffer') {
@@ -992,7 +992,7 @@ function accept_inputset(arg) {
         cursel = $('<span>',
           { id: 'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
         insert_text(cursel, NBSP);
-        win.frameel.insert(cursel);
+        win.frameel.append(cursel);
       }
       var pos = cursel.positionedOffset();
       /* This calculation is antsy. On Firefox, buffermarginx is too high
@@ -1005,7 +1005,7 @@ function accept_inputset(arg) {
       /* ### opera absolute positioning failure? */
       inputel.setStyle({ position: 'absolute',
         left: '0px', top: '0px', width: width+'px' });
-      cursel.insert(inputel);
+      cursel.append(inputel);
     }
   });
 }
@@ -1234,7 +1234,7 @@ function insert_text_detecting(el, val) {
         { 'href': val, 'class': 'External', 'target': '_blank' } );
       var nod = document.createTextNode(val);
       ael.appendChild(nod);
-      el.insert(ael);
+      el.append(ael);
       return;
     }
     /* If not, fall through. */
@@ -1258,7 +1258,7 @@ function insert_text_detecting(el, val) {
         { 'href': match[0], 'class': 'External', 'target': '_blank' } );
       var nod = document.createTextNode(match[0]);
       ael.appendChild(nod);
-      el.insert(ael);
+      el.append(ael);
       /* Continue searching after the URL. */
       val = val.substring(match.index + match[0].length);
     }
