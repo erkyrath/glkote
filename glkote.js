@@ -422,7 +422,7 @@ function glkote_update(arg) {
             /* 20 pixels is a cheap approximation of a scrollbar-width. */
             var morex = win.coords.right + 20;
             var morey = win.coords.bottom;
-            moreel.setStyle({ bottom:morey+'px', right:morex+'px' });
+            moreel.css({ bottom:morey+'px', right:morex+'px' });
             $('#'+windowport_id).append(moreel);
           }
         }
@@ -614,7 +614,7 @@ function accept_one_window(arg) {
     win.coords.right = right;
     win.coords.bottom = bottom;
   }
-  frameel.setStyle(styledic);
+  frameel.css(styledic);
 }
 
 /* Handle closing one window. */
@@ -863,7 +863,7 @@ function accept_one_content(arg) {
         if (width < 1)
           width = 1;
         /* ### opera absolute positioning failure? */
-        inputel.setStyle({ position: 'absolute',
+        inputel.css({ position: 'absolute',
           left: '0px', top: '0px', width: width+'px' });
         cursel.append(inputel);
       }
@@ -981,7 +981,7 @@ function accept_inputset(arg) {
       var maxwidth = win.frameel.getWidth() - (current_metrics.buffermarginx + xpos + 2);
       if (width > maxwidth)
         width = maxwidth;
-      inputel.setStyle({ position: 'absolute',
+      inputel.css({ position: 'absolute',
         left: xpos+'px', top: pos.top+'px', width: width+'px' });
       win.frameel.append(inputel);
     }
@@ -1003,7 +1003,7 @@ function accept_inputset(arg) {
       if (width < 1)
         width = 1;
       /* ### opera absolute positioning failure? */
-      inputel.setStyle({ position: 'absolute',
+      inputel.css({ position: 'absolute',
         left: '0px', top: '0px', width: width+'px' });
       cursel.append(inputel);
     }
