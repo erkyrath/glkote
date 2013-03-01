@@ -119,7 +119,7 @@ function glkote_init(iface) {
   }
 
   var version = $.fn.jquery.split('.');
-  if (version.length < 2 || (version[0] == 1 && version[1] < 9)) {
+  if (version.length < 2 || version[0] < 1 || (version[0] == 1 && version[1] < 9)) {
     glkote_error('This version of the jQuery library is too old. (Version ' + $.fn.jquery + ' found; 1.9.0 required.)');
     return;
   }
@@ -418,7 +418,7 @@ function glkote_update(arg) {
           if (!moreel.length) {
             moreel = $('<div>',
               { id: 'win'+win.id+'_moreprompt', 'class': 'MorePrompt' } );
-            insert_text(moreel, 'More');
+            moreel.append('More');
             /* 20 pixels is a cheap approximation of a scrollbar-width. */
             var morex = win.coords.right + 20;
             var morey = win.coords.bottom;
@@ -848,7 +848,7 @@ function accept_one_content(arg) {
     if (divel) {
       cursel = $('<span>',
         { id: 'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
-      insert_text(cursel, NBSP);
+      cursel.append(NBSP);
       divel.append(cursel);
 
       if (win.inputel) {
@@ -991,7 +991,7 @@ function accept_inputset(arg) {
       if (!cursel.length) {
         cursel = $('<span>',
           { id: 'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
-        insert_text(cursel, NBSP);
+        cursel.append(NBSP);
         win.frameel.append(cursel);
       }
       var pos = cursel.positionedOffset();
@@ -1120,7 +1120,7 @@ function glkote_log(msg) {
 function glkote_error(msg) {
   var el = document.getElementById('errorcontent');
   remove_children(el);
-  insert_text(el, msg);
+  el.appendChild(document.createTextNode(msg));
 
   el = document.getElementById('errorpane');
   el.style.display = '';   /* el.show() */
@@ -1181,18 +1181,7 @@ function show_loading() {
   }
 }
 
-/* Add text to a DOM element.
-
-   Deliberately does not use any jQuery functionality. One reason
-   is that this is called in fatal errors, including the error of
-   failing to find the jQuery library.
-*/
-function insert_text(el, val) {
-  var nod = document.createTextNode(val);
-  el.appendChild(nod);
-}
-
-/* Remove all children from a DOM element.
+/* Remove all children from a DOM element. (Not a jQuery collection!)
 
    Deliberately does not use any jQuery functionality.
 */

@@ -151,13 +151,13 @@ function dialog_open(tosave, usage, gameid, callback) {
 
     row = $('<div>', { 'class': 'DiaButtonsFloat' });
     el = $('<button>', { id: dialog_el_id+'_edit', type: 'button' });
-    insert_text(el, 'Edit');
+    el.append('Edit');
     el.observe('click', evhan_edit_button);
     row.append(el);
     form.append(row);
 
     row = $('<div>', { id: dialog_el_id+'_cap', 'class': 'DiaCaption' });
-    insert_text(row, 'XXX'); // the caption will be replaced momentarily.
+    row.append('XXX'); // the caption will be replaced momentarily.
     form.append(row);
 
     if (will_save) {
@@ -178,24 +178,24 @@ function dialog_open(tosave, usage, gameid, callback) {
     {
         /* Row of buttons */
         el = $('<button>', { id: dialog_el_id+'_cancel', type: 'button' });
-        insert_text(el, 'Cancel');
+        el.append('Cancel');
         el.observe('click', evhan_cancel_button);
         row.append(el);
 
         el = $('<button>', { id: dialog_el_id+'_delete', type: 'button' });
-        insert_text(el, 'Delete');
+        el.append('Delete');
         el.observe('click', evhan_delete_button);
         el.hide();
         row.append(el);
 
         el = $('<button>', { id: dialog_el_id+'_display', type: 'button' });
-        insert_text(el, 'Display');
+        el.append('Display');
         el.observe('click', evhan_display_button);
         el.hide();
         row.append(el);
 
         el = $('<button>', { id: dialog_el_id+'_accept', type: 'submit' });
-        insert_text(el, (will_save ? 'Save' : 'Load'));
+        el.append(will_save ? 'Save' : 'Load');
         el.observe('click', 
             (will_save ? evhan_accept_save_button : evhan_accept_load_button));
         row.append(el);
@@ -265,8 +265,7 @@ function set_caption(msg, isupper) {
         el.hide();
     }
     else {
-        remove_children(el);
-        insert_text(el, msg);
+        el.text(msg);
         el.show();
     }
 }
@@ -296,29 +295,11 @@ function usage_is_textual(val) {
     return (val == 'transcript' || val == 'command');
 }
 
-/* Add text to a DOM element.
+/* Add text to a DOM element. ####
 */
 function insert_text(el, val) {
     var nod = document.createTextNode(val);
     el.appendChild(nod);
-}
-
-/* Remove all children of a DOM element.
-*/
-function remove_children(parent) {
-    var obj, ls;
-    ls = parent.childNodes;
-    while (ls.length > 0) {
-        obj = ls.item(0);
-        parent.removeChild(obj);
-    }
-}
-
-/* Replace the text in a DOM element.
-*/
-function replace_text(el, val) {
-    remove_children(el);
-    insert_text(el, val);
 }
 
 /* Event handler: The user has changed which entry in the selection box is
@@ -434,7 +415,7 @@ function evhan_accept_save_button(ev) {
             + dirent.filename + '". Do you want to replace it?', false);
         fel.disabled = true;
         var butel = $('#'+dialog_el_id+'_accept');
-        replace_text(butel, 'Replace');
+        butel.text('Replace');
         return false;
     }
 
@@ -468,7 +449,7 @@ function evhan_edit_button(ev) {
             fel.disabled = false;
             var butel = $('#'+dialog_el_id+'_accept');
             butel.disabled = false;
-            replace_text(butel, 'Save');
+            butel.text('Save');
         }
 
         var fel = $('#'+dialog_el_id+'_input');
@@ -477,7 +458,7 @@ function evhan_edit_button(ev) {
         }
 
         var butel = $('#'+dialog_el_id+'_edit');
-        replace_text(butel, 'Done');
+        butel.text('Done');
 
         butel = $('#'+dialog_el_id+'_delete');
         butel.show();
@@ -499,7 +480,7 @@ function evhan_edit_button(ev) {
         }
 
         var butel = $('#'+dialog_el_id+'_edit');
-        replace_text(butel, 'Edit');
+        butel.text('Edit');
 
         butel = $('#'+dialog_el_id+'_delete');
         butel.hide();
@@ -519,7 +500,7 @@ function evhan_edit_button(ev) {
         $('#'+dialog_el_id+'_buttonrow').show();
 
         var butel = $('#'+dialog_el_id+'_edit');
-        replace_text(butel, 'Done');
+        butel.text('Done');
 
         evhan_storage_changed();
         return false;
@@ -576,7 +557,7 @@ function evhan_display_button(ev) {
     $('#'+dialog_el_id+'_buttonrow').hide();
 
     var butel = $('#'+dialog_el_id+'_edit');
-    replace_text(butel, 'Close');
+    butel.text('Close');
 
     editing_dirent = file.dirent;
     /* Force reload of display */
@@ -602,7 +583,7 @@ function evhan_cancel_button(ev) {
         fel.disabled = false;
         var butel = $('#'+dialog_el_id+'_accept');
         butel.disabled = false;
-        replace_text(butel, 'Save');
+        butel.text('Save');
         return false;
     }
 
@@ -648,7 +629,7 @@ function evhan_storage_changed(ev) {
             editing_dirent = null;
             $('#'+dialog_el_id+'_buttonrow').show();
             var butel = $('#'+dialog_el_id+'_edit');
-            replace_text(butel, 'Done');
+            butel.text('Done');
         }
     }
 
@@ -657,7 +638,7 @@ function evhan_storage_changed(ev) {
 
     if (editing && editing_dirent) {
         /* We want to display the selected file's contents. */
-        remove_children(bodyel);
+        bodyel.empty();
 
         /* This is an array of character values (as ints) */
         var dat = file_read(editing_dirent);
@@ -691,7 +672,7 @@ function evhan_storage_changed(ev) {
             });
 
         if (ls.length == 0) {
-            remove_children(bodyel);
+            bodyel.empty();
             butel = $('#'+dialog_el_id+'_delete');
             butel.disabled = true;
             butel = $('#'+dialog_el_id+'_display');
@@ -712,7 +693,7 @@ function evhan_storage_changed(ev) {
         }
         ls = cur_filelist;
 
-        remove_children(bodyel);
+        bodyel.empty();
         
         var selel = $('<select>', { id: dialog_el_id+'_select', name:'files', size:'5' });
         var ix, file, datestr;
@@ -756,10 +737,10 @@ function evhan_storage_changed(ev) {
     /* Adjust the contents of the selection box. */
     
     if (ls.length == 0) {
-        remove_children(bodyel);
+        bodyel.empty();
     }
     else {
-        remove_children(bodyel);
+        bodyel.empty();
         
         var selel = $('<select>', { id: dialog_el_id+'_select', name:'files', size:'5' });
         var ix, file, datestr;
