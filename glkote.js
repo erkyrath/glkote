@@ -640,7 +640,8 @@ function func_long_whitespace(match) {
   if (len == 1)
     return ' ';
   /* Evil trick I picked up from Prototype. Gives len-1 copies of NBSP. */
-  return new Array(len).join(NBSP);
+  var res = new Array(len).join(NBSP);
+  return res + ' ';
 }
 
 /* Handle all of the window content changes. */
