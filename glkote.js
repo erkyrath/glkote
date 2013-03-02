@@ -391,7 +391,7 @@ function glkote_update(arg) {
           /* Scroll the unseen content to the top. */
           frameel.scrollTop = win.topunseen - current_metrics.buffercharheight;
           /* Compute the new topunseen value. */
-          var frameheight = frameel.getHeight();
+          var frameheight = frameel.height();
           var realbottom = last_line_top_offset(frameel);
           var newtopunseen = frameel.scrollTop + frameheight;
           if (newtopunseen > realbottom)
@@ -771,6 +771,10 @@ function accept_one_content(arg) {
         divel.endswhite = true;
         win.frameel.append(divel);
       }
+      else {
+        /* jquery-wrap the element. */
+        divel = $(divel);
+      }
       if (!content || !content.length) {
         if (divel.blankpara)
           divel.text(NBSP);
@@ -826,18 +830,16 @@ function accept_one_content(arg) {
        paragraphs, delete some. (It would be better to limit by
        character count, rather than paragraph count. But this is
        easier.) */
-    var parals = win.frameel.childNodes;
-    if (parals) {
+    var parals = win.frameel.children();
+    if (parals.length) {
       var totrim = parals.length - max_buffer_length;
       if (totrim > 0) {
         var ix, obj;
-        win.topunseen -= parals[totrim].offsetTop;
+        win.topunseen -= $(parals.get(totrim)).position().top;
         if (win.topunseen < 0)
           win.topunseen = 0;
         for (ix=0; ix<totrim; ix++) {
-          obj = parals.item(0);
-          if (obj)
-            win.frameel.removeChild(obj);
+          $(parals.get(ix)).remove();
         }
       }
     }
@@ -849,17 +851,18 @@ function accept_one_content(arg) {
       cursel = $('<span>',
         { id: 'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
       cursel.append(NBSP);
-      divel.append(cursel);
+      $(divel).append(cursel);
 
       if (win.inputel) {
         /* Put back the inputel that we found earlier. */
         var inputel = win.inputel;
-        var pos = cursel.positionedOffset();
-        /* This calculation is antsy. On Firefox, buffermarginx is too high
-           (or getWidth() is too low) by the width of a scrollbar. On MSIE,
+        var pos = cursel.position();
+        /* This calculation is antsy. (Was on Prototype, anyhow, I haven't
+           retested in jquery...) On Firefox, buffermarginx is too high (or
+           getWidth() is too low) by the width of a scrollbar. On MSIE,
            buffermarginx is one pixel too low. We fudge for that, giving a
            result which errs on the low side. */
-        var width = win.frameel.getWidth() - (current_metrics.buffermarginx + pos.left + 2);
+        var width = win.frameel.width() - (current_metrics.buffermarginx + pos.left + 2);
         if (width < 1)
           width = 1;
         /* ### opera absolute positioning failure? */
@@ -940,7 +943,7 @@ function accept_inputset(arg) {
       inputel = $('<input>',
         { id: 'win'+win.id+'_input',
           'class': classes, type: 'text', maxlength: maxlen });
-      if (Prototype.Browser.MobileSafari)
+      if (0 /*### Prototype.Browser.MobileSafari*/)
         inputel.writeAttribute('autocapitalize', 'off');
       if (argi.type == 'line') {
         inputel.onkeypress = evhan_input_keypress;
@@ -973,12 +976,12 @@ function accept_inputset(arg) {
         glkote_error('Window ' + win.id + ' has requested input at unknown line ' + argi.ypos + '.');
         return;
       }
-      var pos = lineel.positionedOffset();
+      var pos = lineel.position();
       var xpos = pos.left + Math.round(argi.xpos * current_metrics.gridcharwidth);
       var width = Math.round(maxlen * current_metrics.gridcharwidth);
       /* This calculation is antsy. See below. (But grid window line input
          is rare in IF.) */
-      var maxwidth = win.frameel.getWidth() - (current_metrics.buffermarginx + xpos + 2);
+      var maxwidth = win.frameel.width() - (current_metrics.buffermarginx + xpos + 2);
       if (width > maxwidth)
         width = maxwidth;
       inputel.css({ position: 'absolute',
@@ -994,12 +997,13 @@ function accept_inputset(arg) {
         cursel.append(NBSP);
         win.frameel.append(cursel);
       }
-      var pos = cursel.positionedOffset();
-      /* This calculation is antsy. On Firefox, buffermarginx is too high
-         (or getWidth() is too low) by the width of a scrollbar. On MSIE,
-         buffermarginx is one pixel too low. We fudge for that, giving a
-         result which errs on the low side. */
-      var width = win.frameel.getWidth() - (current_metrics.buffermarginx + pos.left + 2);
+      var pos = cursel.position();
+      /* This calculation is antsy. (Was on Prototype, anyhow, I haven't
+           retested in jquery...) On Firefox, buffermarginx is too high (or
+           getWidth() is too low) by the width of a scrollbar. On MSIE,
+           buffermarginx is one pixel too low. We fudge for that, giving a
+           result which errs on the low side. */
+      var width = win.frameel.width() - (current_metrics.buffermarginx + pos.left + 2);
       if (width < 1)
         width = 1;
       /* ### opera absolute positioning failure? */
@@ -1035,10 +1039,10 @@ function accept_specialinput(arg) {
    last child of the parent.
 */
 function last_line_top_offset(el) {
-  var ls = el.childElements();
-  if (ls.length == 0)
+  var ls = el.children();
+  if (!ls || !ls.length)
     return 0;
-  return ls[ls.length-1].offsetTop;
+  return $(ls.get(ls.length-1)).position().top;
 }
 
 /* Set windows_paging_count to the number of windows that need paging.
@@ -1196,13 +1200,14 @@ function remove_children(parent) {
 
 /* Return the last child element of a DOM element. (Ignoring text nodes.)
    If the element has no element children, this returns null.
-####
+   This returns a raw DOM element! Remember to $() it if you want to pass
+   it to jquery.
 */
 function last_child_of(obj) {
-  var ls = obj.childElements();
+  var ls = obj.children();
   if (!ls || !ls.length)
     return null;
-  return ls[ls.length-1];
+  return ls.get(ls.length-1);
 }
 
 /* Add text to a DOM element. If GlkOte is configured to detect URLs,
@@ -1449,7 +1454,7 @@ function evhan_doc_keypress(ev) {
       /* Scroll the unseen content to the top. */
       frameel.scrollTop = win.topunseen - current_metrics.buffercharheight;
       /* Compute the new topunseen value. */
-      var frameheight = frameel.getHeight();
+      var frameheight = frameel.height();
       var realbottom = last_line_top_offset(frameel);
       var newtopunseen = frameel.scrollTop + frameheight;
       if (newtopunseen > realbottom)
@@ -1543,7 +1548,7 @@ function evhan_window_mousedown(ev) {
 
   if (win.inputel) {
     last_known_focus = win.id;
-    if (Prototype.Browser.MobileSafari) {
+    if (0 /*###Prototype.Browser.MobileSafari*/) {
       ev.stop();
       //glkote_log("### focus to " + win.id);
       //### This doesn't always work, blah
@@ -1776,7 +1781,7 @@ function evhan_window_scroll(frameel) {
   if (!win.needspaging)
     return;
 
-  var frameheight = frameel.getHeight();
+  var frameheight = frameel.height();
   var realbottom = last_line_top_offset(frameel);
   var newtopunseen = frameel.scrollTop + frameheight;
   if (newtopunseen > realbottom)
