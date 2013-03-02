@@ -707,7 +707,7 @@ function accept_one_content(arg) {
           else {
             var ael = $('<a>',
               { 'href': '#' } );
-            insert_text(ael, rtext);
+            ael.text(rtext);
             ael.onclick = build_evhan_hyperlink(win.id, rlink);
             el.append(ael);
           }
@@ -813,7 +813,7 @@ function accept_one_content(arg) {
         else {
           var ael = $('<a>',
             { 'href': '#' } );
-          insert_text(ael, rtext);
+          ael.text(rtext);
           ael.onclick = build_evhan_hyperlink(win.id, rlink);
           el.append(ael);
         }
@@ -1196,6 +1196,7 @@ function remove_children(parent) {
 
 /* Return the last child element of a DOM element. (Ignoring text nodes.)
    If the element has no element children, this returns null.
+####
 */
 function last_child_of(obj) {
   var ls = obj.childElements();
@@ -1207,11 +1208,13 @@ function last_child_of(obj) {
 /* Add text to a DOM element. If GlkOte is configured to detect URLs,
    this does that, converting them into 
    <a href='...' class='External' target='_blank'> tags.
+   
+   This requires calls to document.createTextNode, because jQuery doesn't
+   have a notion of appending literal text. I swear...
 */
 function insert_text_detecting(el, val) {
   if (!detect_external_links) {
-    var nod = document.createTextNode(val);
-    el.appendChild(nod);
+    el.append(document.createTextNode(val));
     return;
   }
 
@@ -1221,8 +1224,7 @@ function insert_text_detecting(el, val) {
     if (regex_external_links.test(val)) {
       var ael = $('<a>',
         { 'href': val, 'class': 'External', 'target': '_blank' } );
-      var nod = document.createTextNode(val);
-      ael.appendChild(nod);
+      ael.text(val);
       el.append(ael);
       return;
     }
@@ -1239,14 +1241,12 @@ function insert_text_detecting(el, val) {
       /* Add the characters before the URL, if any. */
       if (match.index > 0) {
         var prefix = val.substring(0, match.index);
-        var nod = document.createTextNode(prefix);
-        el.appendChild(nod);
+        el.append(document.createTextNode(prefix));
       }
       /* Add the URL. */
       var ael = $('<a>',
         { 'href': match[0], 'class': 'External', 'target': '_blank' } );
-      var nod = document.createTextNode(match[0]);
-      ael.appendChild(nod);
+      ael.text(match[0]);
       el.append(ael);
       /* Continue searching after the URL. */
       val = val.substring(match.index + match[0].length);
@@ -1257,8 +1257,7 @@ function insert_text_detecting(el, val) {
   }
 
   /* Fall-through case. Just add the text. */
-  var nod = document.createTextNode(val);
-  el.appendChild(nod);
+  el.append(document.createTextNode(val));
 }
 
 /* Debugging utility: return a string displaying all of an object's
