@@ -315,7 +315,7 @@ function glkote_update(arg) {
     if (!retry_timer) {
       glkote_log('Event has timed out; will retry...');
       show_loading();
-      retry_timer = retry_update.delay(2);
+      retry_timer = retry_update.delay(2); /*#### delay*/
     }
     else {
       glkote_log('Event has timed out, but a retry is already queued!');
@@ -382,6 +382,7 @@ function glkote_update(arg) {
       if (!win.needspaging) {
         var frameel = win.frameel;
 
+        /*#### scrolling!*/
         if (!perform_paging) {
           /* Scroll all the way down. */
           frameel.scrollTop = frameel.scrollHeight;
@@ -472,7 +473,7 @@ function glkote_update(arg) {
         win.inputel.focus();
       }
     };
-    focusfunc.defer();
+    focusfunc.defer(); /*#### defer*/
   }
 
   /* Done with the update. Exit and wait for the next input event. */
@@ -521,10 +522,10 @@ function accept_one_window(arg) {
     frameel = $('<div>',
       { id: 'window'+arg.id,
         'class': 'WindowFrame ' + typeclass + ' ' + rockclass });
-    frameel.winid = arg.id;
-    frameel.on('mousedown', frameel, evhan_window_mousedown);
+    frameel.data('winid', arg.id);
+    frameel.on('mousedown', arg.id, evhan_window_mousedown);
     if (perform_paging && win.type == 'buffer')
-      frameel.onscroll = function() { evhan_window_scroll(frameel); };
+      frameel.on('scroll', arg.id, evhan_window_scroll);
     win.frameel = frameel;
     win.gridheight = 0;
     win.gridwidth = 0;
@@ -708,7 +709,7 @@ function accept_one_content(arg) {
             var ael = $('<a>',
               { 'href': '#' } );
             ael.text(rtext);
-            ael.onclick = build_evhan_hyperlink(win.id, rlink);
+            ael.on('click', build_evhan_hyperlink(win.id, rlink));
             el.append(ael);
           }
           lineel.append(el);
@@ -767,7 +768,7 @@ function accept_one_content(arg) {
       if (divel == null) {
         /* Create a new paragraph div */
         divel = $('<div>', { 'class': 'BufferLine' })
-        divel.blankpara = true;
+        divel.blankpara = true; /*#### data: blankpara endswhite */
         divel.endswhite = true;
         win.frameel.append(divel);
       }
@@ -818,7 +819,7 @@ function accept_one_content(arg) {
           var ael = $('<a>',
             { 'href': '#' } );
           ael.text(rtext);
-          ael.onclick = build_evhan_hyperlink(win.id, rlink);
+          ael.on('click', build_evhan_hyperlink(win.id, rlink));
           el.append(ael);
         }
         divel.append(el);
@@ -946,8 +947,8 @@ function accept_inputset(arg) {
       if (0 /*### Prototype.Browser.MobileSafari*/)
         inputel.writeAttribute('autocapitalize', 'off');
       if (argi.type == 'line') {
-        inputel.onkeypress = evhan_input_keypress;
-        inputel.onkeydown = evhan_input_keydown;
+        inputel.on('keypress', evhan_input_keypress);
+        inputel.on('keydown', evhan_input_keydown);
         if (argi.initial)
           inputel.value = argi.initial;
         win.terminators = {};
@@ -957,14 +958,15 @@ function accept_inputset(arg) {
         }
       }
       else if (argi.type == 'char') {
-        inputel.onkeypress = evhan_input_char_keypress;
-        inputel.onkeydown = evhan_input_char_keydown;
+        inputel.on('keypress', evhan_input_char_keypress);
+        inputel.on('keydown', evhan_input_char_keydown);
       }
       /* Subtle point: the winid variable here is a function argument.
          Therefore, winid is safe to use in a closure. */
-      inputel.onfocus = function() { evhan_input_focus(winid); };
-      inputel.onblur = function() { evhan_input_blur(winid); };
-      inputel.winid = winid;
+      /*#### just use ev.data*/
+      inputel.on('focus', function() { evhan_input_focus(winid); });
+      inputel.on('blur', function() { evhan_input_blur(winid); });
+      inputel.data('winid', winid);
       win.inputel = inputel;
       win.historypos = win.history.length;
       win.needscroll = true;
@@ -1027,7 +1029,7 @@ function accept_specialinput(arg) {
       GlkOte.log('Unable to open file dialog: ' + ex);
       /* Return a failure. But we don't want to call send_response before
          glkote_update has finished, so we defer the reply slightly. */
-      replyfunc.defer(null);
+      replyfunc.defer(null); /*#### defer*/
     }
   }
   else {
@@ -1288,10 +1290,13 @@ function inspect_deep(res) {
 */
 function submit_line_input(win, inputel, termkey) {
   var val = inputel.value;
+  var historylast = null;
+  if (win.history.length)
+    historylast = win.history[win.history.length-1];
 
   /* Store this input in the command history for this window, unless
      the input is blank or a duplicate. */
-  if (val && val != win.history.last()) {
+  if (val && val != historylast) {
     win.history.push(val);
     if (win.history.length > 20) {
       /* Don't keep more than twenty entries. */
@@ -1383,7 +1388,7 @@ function evhan_doc_resize(ev) {
     resize_timer = null;
   }
 
-  resize_timer = doc_resize_real.delay(0.5);
+  resize_timer = doc_resize_real.delay(0.5); /*#### delay*/
 }
 
 /* This executes when no new resize events have come along in the past
@@ -1396,7 +1401,7 @@ function doc_resize_real() {
   resize_timer = null;
 
   if (disabled) {
-    resize_timer = doc_resize_real.delay(0.5);
+    resize_timer = doc_resize_real.delay(0.5); /*#### delay*/
     return;
   }
 
@@ -1452,6 +1457,7 @@ function evhan_doc_keypress(ev) {
       ev.preventDefault();
       var frameel = win.frameel;
       /* Scroll the unseen content to the top. */
+      /*#### fix scrolling */
       frameel.scrollTop = win.topunseen - current_metrics.buffercharheight;
       /* Compute the new topunseen value. */
       var frameheight = frameel.height();
@@ -1539,10 +1545,8 @@ function evhan_doc_keypress(ev) {
    the focus. (Input focus and paging focus are tracked separately.)
 */
 function evhan_window_mousedown(ev) {
-  var frameel = ev.data;
-  if (!frameel.winid)
-    return;
-  var win = windowdic[frameel.winid];
+  var winid = ev.data;
+  var win = windowdic[winid];
   if (!win)
     return;
 
@@ -1630,9 +1634,8 @@ function evhan_input_char_keydown(ev) {
   }
 
   if (res) {
-    if (!this.winid)
-      return true;
-    var win = windowdic[this.winid];
+    var winid = $(this).data('winid');
+    var win = windowdic[winid];
     if (!win || !win.input)
       return true;
 
@@ -1660,9 +1663,8 @@ function evhan_input_char_keypress(ev) {
   else
     res = String.fromCharCode(keycode);
 
-  if (!this.winid)
-    return true;
-  var win = windowdic[this.winid];
+  var winid = $(this).data('winid');
+  var win = windowdic[winid];
   if (!win || !win.input)
     return true;
 
@@ -1680,9 +1682,8 @@ function evhan_input_keydown(ev) {
   if (!keycode) return true;
 
   if (keycode == key_codes.KEY_UP || keycode == key_codes.KEY_DOWN) {
-    if (!this.winid)
-      return true;
-    var win = windowdic[this.winid];
+    var winid = $(this).data('winid');
+    var win = windowdic[winid];
     if (!win || !win.input)
       return true;
 
@@ -1705,9 +1706,8 @@ function evhan_input_keydown(ev) {
     return false;
   }
   else if (terminator_key_values[keycode]) {
-    if (!this.winid)
-      return true;
-    var win = windowdic[this.winid];
+    var winid = $(this).data('winid');
+    var win = windowdic[winid];
     if (!win || !win.input)
       return true;
 
@@ -1732,9 +1732,8 @@ function evhan_input_keypress(ev) {
   if (!keycode) return true;
 
   if (keycode == 13) {
-    if (!this.winid)
-      return true;
-    var win = windowdic[this.winid];
+    var winid = $(this).data('winid');
+    var win = windowdic[winid];
     if (!win || !win.input)
       return true;
 
@@ -1771,16 +1770,17 @@ function evhan_input_blur(winid) {
   currently_focussed = false;
 }
 
-function evhan_window_scroll(frameel) {
-  if (!frameel.winid)
-    return;
-  var win = windowdic[frameel.winid];
+function evhan_window_scroll(ev) {
+  var winid = ev.data;
+  var win = windowdic[winid];
   if (!win)
     return;
 
   if (!win.needspaging)
     return;
 
+  /*#### fix scrolling */
+  var frameel = win.frameel;
   var frameheight = frameel.height();
   var realbottom = last_line_top_offset(frameel);
   var newtopunseen = frameel.scrollTop + frameheight;

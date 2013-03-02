@@ -422,13 +422,13 @@ function game_submit_line_input(winid, val) {
     game_print_left = false;
   }
 
-  if (!val.strip()) {
+  if (!jQuery.trim(val)) {
     return;
   }
 
   game_print({ newline:false, style:'input', text:val });
 
-  val = val.strip().toLowerCase();
+  val = jQuery.trim(val).toLowerCase();
   game_parse(val);
   game_moves = game_moves+1;
 }
