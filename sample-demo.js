@@ -60,11 +60,11 @@ function game_generate_long_text(count, label) {
 
 function game_clear_window(val) {
   if (game_print_left) {
-    game_streamout_left.clear();
+    game_streamout_left.length = 0;
     game_streamclear_left = true;
   }
   else {
-    game_streamout_right.clear();
+    game_streamout_right.length = 0;
     game_streamclear_right = true;
   }
 }
@@ -326,8 +326,8 @@ function game_select() {
 
   GlkOte.update(arg);
 
-  game_streamout_left.clear();
-  game_streamout_right.clear();
+  game_streamout_left.length = 0;
+  game_streamout_right.length = 0;
   game_streamclear_left = false;
   game_streamclear_right = false;
 }
@@ -629,7 +629,7 @@ function game_parse(val) {
       game_inputgen_right = 0;
       game_inputline_right = true;
       game_inputinitial_right = null;
-      game_streamout_right.clear();
+      game_streamout_right.length = 0;
     }
     return;
   }
