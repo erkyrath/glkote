@@ -89,3 +89,13 @@ el.update
 el.positionedOffset
 el.scroll*
 el.show, el.hide
+
+### Things to test
+
+scrolling
+scrolling on ipad
+scroll-buffer-trimming
+attempt to open dialog throws exception
+hyperlinks
+URL match
+URL search

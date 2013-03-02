@@ -315,7 +315,7 @@ function glkote_update(arg) {
     if (!retry_timer) {
       glkote_log('Event has timed out; will retry...');
       show_loading();
-      retry_timer = retry_update.delay(2); /*#### delay*/
+      retry_timer = delay_func(2, retry_update);
     }
     else {
       glkote_log('Event has timed out, but a retry is already queued!');
@@ -473,7 +473,7 @@ function glkote_update(arg) {
         win.inputel.focus();
       }
     };
-    focusfunc.defer(); /*#### defer*/
+    defer_func(focusfunc);
   }
 
   /* Done with the update. Exit and wait for the next input event. */
@@ -1029,7 +1029,10 @@ function accept_specialinput(arg) {
       GlkOte.log('Unable to open file dialog: ' + ex);
       /* Return a failure. But we don't want to call send_response before
          glkote_update has finished, so we defer the reply slightly. */
-      replyfunc.defer(null); /*#### defer*/
+      replyfunc = function(ref) {
+        send_response('specialresponse', null, 'fileref_prompt', null);
+      };
+      defer_func(replyfunc);
     }
   }
   else {
@@ -1267,6 +1270,18 @@ function insert_text_detecting(el, val) {
   el.append(document.createTextNode(val));
 }
 
+/* Run a function (no arguments) in timeout seconds. */
+function delay_func(timeout, func)
+{
+  return window.setTimeout(func, timeout*1000);
+}
+
+/* Run a function (no arguments) "soon". */
+function defer_func(func)
+{
+  return window.setTimeout(func, 0.01*1000);
+}
+
 /* Debugging utility: return a string displaying all of an object's
    properties, recursively. (Do not call this on an object which references
    anything big!) */
@@ -1388,7 +1403,7 @@ function evhan_doc_resize(ev) {
     resize_timer = null;
   }
 
-  resize_timer = doc_resize_real.delay(0.5); /*#### delay*/
+  resize_timer = delay_func(0.5, doc_resize_real);
 }
 
 /* This executes when no new resize events have come along in the past
@@ -1401,7 +1416,7 @@ function doc_resize_real() {
   resize_timer = null;
 
   if (disabled) {
-    resize_timer = doc_resize_real.delay(0.5); /*#### delay*/
+    resize_timer = delay_func(0.5, doc_resize_real);
     return;
   }
 
