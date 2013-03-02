@@ -765,7 +765,7 @@ function game_parse(val) {
       game_timed_timer = null;
       GlkOte.extevent('timer');
     };
-    game_timed_timer = delayfunc.delay(2);
+    game_timed_timer = window.setTimeout(delayfunc, 2*1000);
     return;
   }
 
