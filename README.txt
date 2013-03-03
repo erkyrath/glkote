@@ -102,3 +102,7 @@ URL search
 focus and focus-preferences going to various windows
 iOS: autocapitalization off
 initial value for an input field
+make sure input fields are disabled when in dialog mode
+
+remove "prototype" from README and docs! and bump version number
+
