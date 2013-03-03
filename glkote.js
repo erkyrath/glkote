@@ -916,7 +916,7 @@ function accept_inputset(arg) {
       hashyperlink[argi.id] = true;
   });
 
-  $.each(windowdic, function(winid, win) {
+  $.each(windowdic, function(tmpid, win) {
     win.reqhyperlink = hashyperlink[win.id];
 
     var argi = hasinput[win.id];
@@ -961,12 +961,9 @@ function accept_inputset(arg) {
         inputel.on('keypress', evhan_input_char_keypress);
         inputel.on('keydown', evhan_input_char_keydown);
       }
-      /* Subtle point: the winid variable here is a function argument.
-         Therefore, winid is safe to use in a closure. */
-      /*#### just use ev.data*/
-      inputel.on('focus', function() { evhan_input_focus(winid); });
-      inputel.on('blur', function() { evhan_input_blur(winid); });
-      inputel.data('winid', winid);
+      inputel.on('focus', win.id, evhan_input_focus);
+      inputel.on('blur', win.id, evhan_input_blur);
+      inputel.data('winid', win.id);
       win.inputel = inputel;
       win.historypos = win.history.length;
       win.needscroll = true;
@@ -1063,7 +1060,7 @@ function readjust_paging_focus(canfocus) {
   var pageable_win = 0;
 
   if (perform_paging) {
-    $.each(windowdic, function(winid, win) {
+    $.each(windowdic, function(tmpid, win) {
         if (win.needspaging) {
           windows_paging_count += 1;
           if (!pageable_win || win.id == last_known_paging)
@@ -1084,7 +1081,7 @@ function readjust_paging_focus(canfocus) {
 
     var newinputwin = 0;
     if (!disabled && !windows_paging_count) {
-      $.each(windowdic, function(winid, win) {
+      $.each(windowdic, function(tmpid, win) {
           if (win.input) {
             if (!newinputwin || win.id == last_known_focus)
               newinputwin = win.id;
@@ -1775,7 +1772,8 @@ function evhan_input_keypress(ev) {
 
    Notice that the focus has switched to a line/char input field.
 */
-function evhan_input_focus(winid) {
+function evhan_input_focus(ev) {
+  var winid = ev.data;
   var win = windowdic[winid];
   if (!win)
     return;
@@ -1789,7 +1787,8 @@ function evhan_input_focus(winid) {
 
    Notice that the focus has switched away from a line/char input field.
 */
-function evhan_input_blur(winid) {
+function evhan_input_blur(ev) {
+  var winid = ev.data;
   var win = windowdic[winid];
   if (!win)
     return;
