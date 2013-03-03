@@ -768,8 +768,8 @@ function accept_one_content(arg) {
       if (divel == null) {
         /* Create a new paragraph div */
         divel = $('<div>', { 'class': 'BufferLine' })
-        divel.blankpara = true; /*#### data: blankpara endswhite */
-        divel.endswhite = true;
+        divel.data('blankpara', true);
+        divel.data('endswhite', true);
         win.frameel.append(divel);
       }
       else {
@@ -777,12 +777,12 @@ function accept_one_content(arg) {
         divel = $(divel);
       }
       if (!content || !content.length) {
-        if (divel.blankpara)
+        if (divel.data('blankpara'))
           divel.text(NBSP);
         continue;
       }
-      if (divel.blankpara) {
-        divel.blankpara = false;
+      if (divel.data('blankpara')) {
+        divel.data('blankpara', false);
         divel.empty();
       }
       /* We must munge long strings of whitespace to make sure they aren't
@@ -809,7 +809,7 @@ function accept_one_content(arg) {
         var el = $('<span>',
           { 'class': 'Style_' + rstyle } );
         rtext = rtext.replace(regex_long_whitespace, func_long_whitespace);
-        if (divel.endswhite) {
+        if (divel.data('endswhite')) {
           rtext = rtext.replace(regex_initial_whitespace, NBSP);
         }
         if (rlink == undefined) {
@@ -823,7 +823,7 @@ function accept_one_content(arg) {
           el.append(ael);
         }
         divel.append(el);
-        divel.endswhite = regex_final_whitespace.test(rtext);
+        divel.data('endswhite', regex_final_whitespace.test(rtext));
       }
     }
 

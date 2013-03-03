@@ -99,3 +99,4 @@ attempt to open dialog throws exception
 hyperlinks
 URL match
 URL search
+focus and focus-preferences going to various windows
