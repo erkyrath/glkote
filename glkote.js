@@ -945,12 +945,12 @@ function accept_inputset(arg) {
         { id: 'win'+win.id+'_input',
           'class': classes, type: 'text', maxlength: maxlen });
       if (0 /*### Prototype.Browser.MobileSafari*/)
-        inputel.writeAttribute('autocapitalize', 'off');
+        inputel.attr('autocapitalize', 'off');
       if (argi.type == 'line') {
         inputel.on('keypress', evhan_input_keypress);
         inputel.on('keydown', evhan_input_keydown);
         if (argi.initial)
-          inputel.value = argi.initial;
+          inputel.val(argi.initial);
         win.terminators = {};
         if (argi.terminators) {
           for (var ix=0; ix<argi.terminators.length; ix++) 
@@ -1299,12 +1299,24 @@ function inspect_deep(res) {
   return '{' + els.join(', ') + '}';
 }
 
+/* Debugging utility: same as above, but only one level deep. */
+function inspect_shallow(res) {
+  var keys = $.map(res, function(val, key) { return key; });
+  keys.sort();
+  var els = $.map(keys, function(key) {
+      var val = res[key];
+      if (jQuery.type(val) === 'string')
+        val = "'" + val + "'";
+      return key + ':' + val;
+    });
+  return '{' + els.join(', ') + '}';
+}
+
 /* Add a line to the window's command history, and then submit it to
    the game. (This is a utility function used by various keyboard input
    handlers.)
 */
-function submit_line_input(win, inputel, termkey) {
-  var val = inputel.value;
+function submit_line_input(win, val, termkey) {
   var historylast = null;
   if (win.history.length)
     historylast = win.history[win.history.length-1];
@@ -1371,13 +1383,13 @@ function send_response(type, win, val, val2) {
       var savepartial = (type != 'line' && type != 'char') 
                         || (win.id != winid);
       if (savepartial && win.input && win.input.type == 'line'
-        && win.inputel && win.inputel.value) {
+        && win.inputel && win.inputel.val()) {
         var partial = res.partial;
         if (!partial) {
           partial = {};
           res.partial = partial;
         };
-        partial[win.id] = win.inputel.value;
+        partial[win.id] = win.inputel.val();
       }
     });
   }
@@ -1510,7 +1522,7 @@ function evhan_doc_keypress(ev) {
     if (keycode == 13) {
       /* Grab the Return/Enter key here. This is the same thing we'd do if
          the input field handler caught it. */
-      submit_line_input(win, win.inputel, null);
+      submit_line_input(win, win.inputel.val(), null);
       /* Safari drops an extra newline into the input field unless we call
          preventDefault() here. I don't know why. */
       ev.preventDefault();
@@ -1526,7 +1538,7 @@ function evhan_doc_keypress(ev) {
          keyboard), but that's beyond my depth. */
       if (keycode >= 32) {
         var val = String.fromCharCode(keycode);
-        win.inputel.value = win.inputel.value + val;
+        win.inputel.val(win.inputel.val() + val);
       }
       ev.preventDefault();
       return;
@@ -1729,7 +1741,7 @@ function evhan_input_keydown(ev) {
     if (win.terminators[terminator_key_values[keycode]]) {
       /* This key is listed as a current terminator for this window,
          so we'll submit the line of input. */
-      submit_line_input(win, win.inputel, terminator_key_values[keycode]);
+      submit_line_input(win, win.inputel.val(), terminator_key_values[keycode]);
       return false;
     }
   }
@@ -1752,7 +1764,7 @@ function evhan_input_keypress(ev) {
     if (!win || !win.input)
       return true;
 
-    submit_line_input(win, this, null);
+    submit_line_input(win, this.value, null);
     return false;
   }
 

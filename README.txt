@@ -100,3 +100,5 @@ hyperlinks
 URL match
 URL search
 focus and focus-preferences going to various windows
+iOS: autocapitalization off
+initial value for an input field
