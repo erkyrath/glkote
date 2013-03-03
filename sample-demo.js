@@ -544,6 +544,7 @@ function game_parse(val) {
 
     helpopt('help',    'this list');
     helpopt('long',    'a long paragraph of text');
+    helpopt('page',    'a couple of pages of short lines');
     helpopt('clear',   'clear the story window');
     helpopt('unicode', 'some accented and non-English characters');
     helpopt('map',     'a diagram in a fixed-width font');
@@ -602,6 +603,15 @@ function game_parse(val) {
 
   if (val == 'long') {
     var msg = game_generate_long_text(150, 'long line of text');
+    game_print(msg);
+    return;
+  }
+
+  if (val == 'page') {
+    var arr = [];
+    for (var ix=0; ix<150; ix++)
+      arr.push('Line ' + ix + '...');
+    var msg = arr.join('\n') + '\nThat is all.';
     game_print(msg);
     return;
   }
