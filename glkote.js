@@ -344,7 +344,7 @@ function glkote_update(arg) {
   if (disabled) {
     $.each(windowdic, function(winid, win) {
       if (win.inputel) {
-        win.inputel.disabled = false;
+        win.inputel.prop('disabled', false);
       }
     });
     disabled = false;
@@ -442,7 +442,7 @@ function glkote_update(arg) {
     disabled = true;
     $.each(windowdic, function(winid, win) {
       if (win.inputel) {
-        win.inputel.disabled = true;
+        win.inputel.prop('disabled', true);
       }
     });
   }

@@ -325,7 +325,7 @@ function evhan_select_change() {
     var fel = $('#'+dialog_el_id+'_infield');
     if (!fel.length)
         return false;
-    fel.value = file.dirent.filename;
+    fel.val(file.dirent.filename);
     return false;
 }
 
@@ -351,7 +351,7 @@ function evhan_select_change_editing() {
         return false;
 
     butel = $('#'+dialog_el_id+'_delete');
-    butel.disabled = false;
+    butel.prop('disabled', false);
     butel = $('#'+dialog_el_id+'_display');
     butel.disabled = !usage_is_textual(file.dirent.usage);
     //### use binary flag?
@@ -399,8 +399,8 @@ function evhan_accept_save_button(ev) {
     var fel = $('#'+dialog_el_id+'_infield');
     if (!fel.length)
         return false;
-    var filename = fel.value;
-    filename = filename.strip(); // prototype-ism
+    var filename = fel.val();
+    filename = filename.strip(); // ####prototype-ism
     if (!filename)
         return false;
     var dirent = file_construct_ref(filename, cur_usage, cur_gameid);
@@ -413,7 +413,7 @@ function evhan_accept_save_button(ev) {
         confirming = true;
         set_caption('You already have a ' + cur_usage_name + ' "' 
             + dirent.filename + '". Do you want to replace it?', false);
-        fel.disabled = true;
+        fel.prop('disabled', true);
         var butel = $('#'+dialog_el_id+'_accept');
         butel.text('Replace');
         return false;
@@ -446,9 +446,9 @@ function evhan_edit_button(ev) {
             confirming = false;
             set_caption(null, false);
             var fel = $('#'+dialog_el_id+'_infield');
-            fel.disabled = false;
+            fel.prop('disabled', false);
             var butel = $('#'+dialog_el_id+'_accept');
-            butel.disabled = false;
+            butel.prop('disabled', false);
             butel.text('Save');
         }
 
@@ -580,9 +580,9 @@ function evhan_cancel_button(ev) {
         confirming = false;
         set_caption(null, false);
         var fel = $('#'+dialog_el_id+'_infield');
-        fel.disabled = false;
+        fel.prop('disabled', false);
         var butel = $('#'+dialog_el_id+'_accept');
-        butel.disabled = false;
+        butel.prop('disabled', false);
         butel.text('Save');
         return false;
     }
@@ -674,9 +674,9 @@ function evhan_storage_changed(ev) {
         if (ls.length == 0) {
             bodyel.empty();
             butel = $('#'+dialog_el_id+'_delete');
-            butel.disabled = true;
+            butel.prop('disabled', true);
             butel = $('#'+dialog_el_id+'_display');
-            butel.disabled = true;
+            butel.prop('disabled', true);
             set_caption('You have no stored files. Press Done to continue.', true);
             return false;
         }
@@ -702,7 +702,7 @@ function evhan_storage_changed(ev) {
             file = ls[ix];
             if (!file.dirent) {
                 el = $('<option>', { name:'f'+ix } );
-                el.disabled = true;
+                el.prop('disabled', true);
                 insert_text(el, '-- ' + label_for_usage(file.label) + 's --');
                 selel.append(el);
                 continue;
@@ -762,18 +762,18 @@ function evhan_storage_changed(ev) {
     if (will_save) {
         set_caption('Name this ' + cur_usage_name + '.', true);
         el = $('#'+dialog_el_id+'_accept');
-        el.disabled = false;
+        el.prop('disabled', false);
     }
     else {
         if (ls.length == 0) {
             set_caption('You have no ' + cur_usage_name + 's for this game.', true);
             el = $('#'+dialog_el_id+'_accept');
-            el.disabled = true;
+            el.prop('disabled', true);
         }
         else {
             set_caption('Select a ' + cur_usage_name + ' to load.', true);
             el = $('#'+dialog_el_id+'_accept');
-            el.disabled = false;
+            el.prop('disabled', false);
         }
     }
 }
