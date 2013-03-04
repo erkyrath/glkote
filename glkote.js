@@ -836,7 +836,7 @@ function accept_one_content(arg) {
       var totrim = parals.length - max_buffer_length;
       if (totrim > 0) {
         var ix, obj;
-        win.topunseen -= $(parals.get(totrim)).position().top;
+        win.topunseen -= parals.get(totrim).offsetTop;
         if (win.topunseen < 0)
           win.topunseen = 0;
         for (ix=0; ix<totrim; ix++) {
