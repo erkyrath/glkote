@@ -96,10 +96,6 @@ scrolling
 scrolling on ipad
 scroll-buffer-trimming
 attempt to open dialog throws exception
-hyperlinks
-URL match
-URL search
-focus and focus-preferences going to various windows
 iOS: autocapitalization off
 initial value for an input field
 make sure input fields are disabled when in dialog mode
