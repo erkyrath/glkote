@@ -707,7 +707,7 @@ function accept_one_content(arg) {
           }
           else {
             var ael = $('<a>',
-              { 'href': '#' } );
+              { 'href': '#', 'class': 'Internal' } );
             ael.text(rtext);
             ael.on('click', build_evhan_hyperlink(win.id, rlink));
             el.append(ael);
@@ -817,7 +817,7 @@ function accept_one_content(arg) {
         }
         else {
           var ael = $('<a>',
-            { 'href': '#' } );
+            { 'href': '#', 'class': 'Internal' } );
           ael.text(rtext);
           ael.on('click', build_evhan_hyperlink(win.id, rlink));
           el.append(ael);
