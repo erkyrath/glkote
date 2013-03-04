@@ -382,26 +382,26 @@ function glkote_update(arg) {
       if (!win.needspaging) {
         var frameel = win.frameel;
 
-        /*#### scrolling!*/
         if (!perform_paging) {
-          /* Scroll all the way down. */
-          frameel.scrollTop = frameel.scrollHeight;
+          /* Scroll all the way down. Note that scrollHeight is not a jQuery
+             property; we have to go to the raw DOM to get it. */
+          frameel.scrollTop(frameel.get(0).scrollHeight);
           win.needspaging = false;
         }
         else {
           /* Scroll the unseen content to the top. */
-          frameel.scrollTop = win.topunseen - current_metrics.buffercharheight;
+          frameel.scrollTop(win.topunseen - current_metrics.buffercharheight);
           /* Compute the new topunseen value. */
-          var frameheight = frameel.height();
+          var frameheight = frameel.outerHeight();
           var realbottom = last_line_top_offset(frameel);
-          var newtopunseen = frameel.scrollTop + frameheight;
+          var newtopunseen = frameel.scrollTop() + frameheight;
           if (newtopunseen > realbottom)
             newtopunseen = realbottom;
           if (win.topunseen < newtopunseen)
             win.topunseen = newtopunseen;
           /* The scroll-down has not touched needspaging, because it is
              currently false. Let's see if it should be true. */
-          if (frameel.scrollTop + frameheight >= frameel.scrollHeight) {
+          if (frameel.scrollTop() + frameheight >= frameel.get(0).scrollHeight) {
             win.needspaging = false;
           }
           else {
@@ -1038,13 +1038,15 @@ function accept_specialinput(arg) {
 }
 
 /* Return the vertical offset (relative to the parent) of the top of the 
-   last child of the parent.
+   last child of the parent. We use the raw DOM "offsetTop" property;
+   jQuery doesn't have an accessor for it.
+   (Possibly broken in MSIE7? It worked in the old version, though.)
 */
 function last_line_top_offset(el) {
   var ls = el.children();
   if (!ls || !ls.length)
     return 0;
-  return $(ls.get(ls.length-1)).position().top;
+  return ls.get(ls.length-1).offsetTop;
 }
 
 /* Set windows_paging_count to the number of windows that need paging.
@@ -1481,12 +1483,11 @@ function evhan_doc_keypress(ev) {
       ev.preventDefault();
       var frameel = win.frameel;
       /* Scroll the unseen content to the top. */
-      /*#### fix scrolling */
-      frameel.scrollTop = win.topunseen - current_metrics.buffercharheight;
+      frameel.scrollTop(win.topunseen - current_metrics.buffercharheight);
       /* Compute the new topunseen value. */
-      var frameheight = frameel.height();
+      var frameheight = frameel.outerHeight();
       var realbottom = last_line_top_offset(frameel);
-      var newtopunseen = frameel.scrollTop + frameheight;
+      var newtopunseen = frameel.scrollTop() + frameheight;
       if (newtopunseen > realbottom)
         newtopunseen = realbottom;
       if (win.topunseen < newtopunseen)
@@ -1494,7 +1495,7 @@ function evhan_doc_keypress(ev) {
       if (win.needspaging) {
         /* The scroll-down might have cleared needspaging already. But 
            if not... */
-        if (frameel.scrollTop + frameheight >= frameel.scrollHeight) {
+        if (frameel.scrollTop() + frameheight >= frameel.get(0).scrollHeight) {
           win.needspaging = false;
           var moreel = $('#win'+win.id+'_moreprompt');
           if (moreel.length)
@@ -1805,17 +1806,16 @@ function evhan_window_scroll(ev) {
   if (!win.needspaging)
     return;
 
-  /*#### fix scrolling */
   var frameel = win.frameel;
-  var frameheight = frameel.height();
+  var frameheight = frameel.outerHeight();
   var realbottom = last_line_top_offset(frameel);
-  var newtopunseen = frameel.scrollTop + frameheight;
+  var newtopunseen = frameel.scrollTop() + frameheight;
   if (newtopunseen > realbottom)
     newtopunseen = realbottom;
   if (win.topunseen < newtopunseen)
     win.topunseen = newtopunseen;
 
-  if (frameel.scrollTop + frameheight >= frameel.scrollHeight) {
+  if (frameel.scrollTop() + frameheight >= frameel.get(0).scrollHeight) {
     win.needspaging = false;
     var moreel = $('#win'+win.id+'_moreprompt');
     if (moreel.length)
