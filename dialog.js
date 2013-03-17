@@ -145,14 +145,14 @@ function dialog_open(tosave, usage, gameid, callback) {
     var form, el, row;
 
     form = $('<form>');
-    form.observe('submit', 
+    form.on('submit', 
         (will_save ? evhan_accept_save_button : evhan_accept_load_button));
     dia.append(form);
 
     row = $('<div>', { 'class': 'DiaButtonsFloat' });
     el = $('<button>', { id: dialog_el_id+'_edit', type: 'button' });
     el.append('Edit');
-    el.observe('click', evhan_edit_button);
+    el.on('click', evhan_edit_button);
     row.append(el);
     form.append(row);
 
@@ -179,24 +179,24 @@ function dialog_open(tosave, usage, gameid, callback) {
         /* Row of buttons */
         el = $('<button>', { id: dialog_el_id+'_cancel', type: 'button' });
         el.append('Cancel');
-        el.observe('click', evhan_cancel_button);
+        el.on('click', evhan_cancel_button);
         row.append(el);
 
         el = $('<button>', { id: dialog_el_id+'_delete', type: 'button' });
         el.append('Delete');
-        el.observe('click', evhan_delete_button);
+        el.on('click', evhan_delete_button);
         el.hide();
         row.append(el);
 
         el = $('<button>', { id: dialog_el_id+'_display', type: 'button' });
         el.append('Display');
-        el.observe('click', evhan_display_button);
+        el.on('click', evhan_display_button);
         el.hide();
         row.append(el);
 
         el = $('<button>', { id: dialog_el_id+'_accept', type: 'submit' });
         el.append(will_save ? 'Save' : 'Load');
-        el.observe('click', 
+        el.on('click', 
             (will_save ? evhan_accept_save_button : evhan_accept_load_button));
         row.append(el);
     }
@@ -229,7 +229,7 @@ function dialog_open(tosave, usage, gameid, callback) {
                 el.focus();
         };
     }
-    focusfunc.defer();
+    defer_func(focusfunc);
 }
 
 /* Close the dialog and remove the grey-out screen.
@@ -293,6 +293,12 @@ function label_for_usage(val) {
 */
 function usage_is_textual(val) {
     return (val == 'transcript' || val == 'command');
+}
+
+/* Run a function (no arguments) "soon". */
+function defer_func(func)
+{
+  return window.setTimeout(func, 0.01*1000);
 }
 
 /* Add text to a DOM element. ####
@@ -400,8 +406,8 @@ function evhan_accept_save_button(ev) {
     if (!fel.length)
         return false;
     var filename = fel.val();
-    filename = filename.strip(); // ####prototype-ism
-    if (!filename)
+    filename = jQuery.trim(filename);
+    if (!filename.length)
         return false;
     var dirent = file_construct_ref(filename, cur_usage, cur_gameid);
 
@@ -802,7 +808,7 @@ function file_construct_ref(filename, usage, gameid) {
    this returns null.
 */
 function file_decode_ref(dirkey) {
-    if (!dirkey.startsWith('dirent:'))
+    if (dirkey.slice(0,7) != 'dirent:')
         return null;
 
     var oldpos = 7;

@@ -102,3 +102,4 @@ make sure input fields are disabled when in dialog mode
 
 remove "prototype" from README and docs! and bump version number
 
+and maybe it's time to bump up the font size, huh
