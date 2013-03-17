@@ -1522,7 +1522,7 @@ function evhan_doc_keypress(ev) {
          the input field handler caught it. */
       submit_line_input(win, win.inputel.val(), null);
       /* Safari drops an extra newline into the input field unless we call
-         preventDefault() here. I don't know why. */
+         preventDefault() here. */
       ev.preventDefault();
       return;
     }

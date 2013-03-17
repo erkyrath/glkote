@@ -595,13 +595,13 @@ function game_parse(val) {
     return;
   }
 
-  if (val == 'long') {
+  if (val == 'long' || val == 'wide') {
     var msg = game_generate_long_text(150, 'long line of text');
     game_print(msg);
     return;
   }
 
-  if (val == 'page') {
+  if (val == 'page' || val == 'tall') {
     var arr = [];
     for (var ix=0; ix<150; ix++)
       arr.push('Line ' + ix + '...');
