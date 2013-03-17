@@ -944,7 +944,7 @@ function accept_inputset(arg) {
       inputel = $('<input>',
         { id: 'win'+win.id+'_input',
           'class': classes, type: 'text', maxlength: maxlen });
-      if (0 /*### Prototype.Browser.MobileSafari*/)
+      if (true) /* should be mobile-webkit-only? */
         inputel.attr('autocapitalize', 'off');
       if (argi.type == 'line') {
         inputel.on('keypress', evhan_input_keypress);

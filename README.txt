@@ -100,6 +100,3 @@ scroll-buffer-trimming
 attempt to open dialog throws exception
 iOS: autocapitalization off
 initial value for an input field
-make sure input fields are disabled when in dialog mode
-
-and maybe it's time to bump up the font size, huh
