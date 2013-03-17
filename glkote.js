@@ -728,7 +728,7 @@ function accept_one_content(arg) {
          would make this content update illegal -- but we already checked
          that.) The inputel is inside the cursel, which we're about to
          rip out. We remove it, so that we can put it back later. */
-        win.inputel.remove();
+        win.inputel.detach();
     }
 
     var cursel = $('#win'+win.id+'_cursor');
@@ -1431,7 +1431,19 @@ function doc_resize_real() {
     return;
   }
 
-  current_metrics = measure_window();
+  var new_metrics = measure_window();
+  if (new_metrics.width == current_metrics.width
+    && new_metrics.height == current_metrics.height) {
+    /* If the metrics haven't changed, skip the arrange event. Necessary on
+       mobile webkit, where the keyboard popping up and down causes a same-size
+       resize event.
+
+       This is not ideal; it means we'll miss metrics changes caused by
+       font-size changes. (Admittedly, we don't have any code to detect those
+       anyhow, so small loss.) */
+    return;
+  }
+  current_metrics = new_metrics;
   send_response('arrange', null, current_metrics);
 }
 
