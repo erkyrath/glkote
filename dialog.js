@@ -346,7 +346,7 @@ function evhan_select_change_editing() {
     if (!cur_filelist || pos < 0 || pos >= cur_filelist.length)
         return false;
     var file = cur_filelist[pos];
-    if (!file.dirent || !file_ref_exists(file.dirent))
+    if (!file || !file.dirent || !file_ref_exists(file.dirent))
         return false;
 
     butel = $('#'+dialog_el_id+'_delete');
@@ -373,7 +373,7 @@ function evhan_accept_load_button(ev) {
     if (!cur_filelist || pos < 0 || pos >= cur_filelist.length)
         return false;
     var file = cur_filelist[pos];
-    if (!file.dirent || !file_ref_exists(file.dirent))
+    if (!file || !file.dirent || !file_ref_exists(file.dirent))
         return false;
 
     var callback = dialog_callback;
@@ -523,7 +523,7 @@ function evhan_delete_button(ev) {
     if (!cur_filelist || pos < 0 || pos >= cur_filelist.length)
         return false;
     var file = cur_filelist[pos];
-    if (!file.dirent)
+    if (!file || !file.dirent)
         return false;
 
     file_remove_ref(file.dirent);
@@ -550,7 +550,7 @@ function evhan_display_button(ev) {
     if (!cur_filelist || pos < 0 || pos >= cur_filelist.length)
         return false;
     var file = cur_filelist[pos];
-    if (!file.dirent || !file_ref_exists(file.dirent))
+    if (!file || !file.dirent || !file_ref_exists(file.dirent))
         return false;
 
     $('#'+dialog_el_id+'_buttonrow').hide();
