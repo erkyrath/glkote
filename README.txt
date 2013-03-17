@@ -18,27 +18,29 @@ and up, Opera 9.5, and Chrome 5.
 
 Documentation:
 
-- README.txt   -- this file
-- docs.html    -- how to use GlkOte in your game (or other application)
+- README.txt      -- this file
+- docs.html       -- how to use GlkOte in your game (or other application)
 
 What you need:
 
-- glkote.js    -- the GlkOte library
-- glkapi.js    -- a Glk API layer
-- dialog.js    -- a library for loading and saving game data
-- prototype-1.6.1.js -- the Prototype library
-- glkote.css   -- the GlkOte default stylesheet
-- dialog.css   -- the stylesheet for the dialog library
-- waiting.gif  -- an animated "loading" image
+- glkote.js       -- the GlkOte library
+- glkapi.js       -- a Glk API layer
+- dialog.js       -- a library for loading and saving game data
+- jquery-1.9.1.js -- the jQuery library
+- jquery-1.9.1.min.js -- the jQuery library, compressed
+- glkote.css      -- the GlkOte default stylesheet
+- dialog.css      -- the stylesheet for the dialog library
+- waiting.gif     -- an animated "loading" image
 
 Example pages:
 
-- sample-demo.html    -- a "fake game" that demonstrates library features
-- sample-demo.js      -- source code for the fake game
-- sample-demo2.html   -- same fake game with a different stylesheet
-- glkote-demo2.css    -- the different stylesheet
-- sample-help.html    -- pop-up help page for the fake game
-- sample-minimal.html -- minimal, no-window use of the library
+- sample-demo.html     -- a "fake game" that demonstrates library features
+- sample-demo.js       -- source code for the fake game
+- sample-demo2.html    -- same fake game with a different stylesheet
+- glkote-demo2.css     -- the different stylesheet
+- sample-help.html     -- pop-up help page for the fake game
+- sample-demobase.html -- a simpler, one-window use of the library
+- sample-minimal.html  -- minimal, no-window use of the library
 
 
 * Permissions
@@ -56,10 +58,10 @@ The GlkOte documentation is licensed under a Creative Commons
 Attribution-Noncommercial-Share Alike 3.0 Unported License.
 See <http://creativecommons.org/licenses/by-nc-sa/3.0>
 
-This package includes the Prototype JavaScript framework, version 1.6.1
-(c) 2005-2009 Sam Stephenson
-Prototype is freely distributable under the terms of an MIT-style license.
-For details, see the Prototype web site: <http://www.prototypejs.org/>
+This package includes the jQuery JavaScript framework, version 1.9.1
+Copyright 2005, 2012 jQuery Foundation, Inc. and other contributors
+Released under the MIT license <http://jquery.org/license>
+For details, see the jQuery web site: <http://jquery.com/>
 
 ####
 
@@ -99,7 +101,5 @@ attempt to open dialog throws exception
 iOS: autocapitalization off
 initial value for an input field
 make sure input fields are disabled when in dialog mode
-
-remove "prototype" from README and docs! and bump version number
 
 and maybe it's time to bump up the font size, huh
