@@ -339,6 +339,11 @@ function evhan_select_change_editing() {
     if (!editing || editing_dirent)
         return false;
 
+    var butel = $('#'+dialog_el_id+'_delete');
+    butel.prop('disabled', true);
+    butel = $('#'+dialog_el_id+'_display');
+    butel.prop('disabled', true);
+
     var selel = $('#'+dialog_el_id+'_select');
     if (!selel.length)
         return false;
@@ -352,7 +357,7 @@ function evhan_select_change_editing() {
     butel = $('#'+dialog_el_id+'_delete');
     butel.prop('disabled', false);
     butel = $('#'+dialog_el_id+'_display');
-    butel.disabled = !usage_is_textual(file.dirent.usage);
+    butel.prop('disabled', !usage_is_textual(file.dirent.usage));
     //### use binary flag?
 }
 
@@ -608,7 +613,7 @@ function evhan_storage_changed(ev) {
     if (!is_open)
         return false;
 
-    var el, bodyel, ls, lastusage;
+    var el, bodyel, butel, ls, lastusage;
 
     var changedkey = null;
     if (ev)
@@ -627,7 +632,7 @@ function evhan_storage_changed(ev) {
         if (!file_ref_exists(editing_dirent)) {
             editing_dirent = null;
             $('#'+dialog_el_id+'_buttonrow').show();
-            var butel = $('#'+dialog_el_id+'_edit');
+            butel = $('#'+dialog_el_id+'_edit');
             butel.text('Done');
         }
     }
