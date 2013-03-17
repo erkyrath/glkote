@@ -359,7 +359,7 @@ function evhan_select_change_editing() {
 /* Event handler: The "Load" button.
 */
 function evhan_accept_load_button(ev) {
-    ev.stop();
+    ev.preventDefault();
     if (!is_open)
         return false;
     if (editing)
@@ -388,7 +388,7 @@ function evhan_accept_load_button(ev) {
 /* Event handler: The "Save" or "Replace" button.
 */
 function evhan_accept_save_button(ev) {
-    ev.stop();
+    ev.preventDefault();
     if (!is_open)
         return false;
     if (editing)
@@ -432,7 +432,7 @@ function evhan_accept_save_button(ev) {
    This toggles edit mode.
 */
 function evhan_edit_button(ev) {
-    ev.stop();
+    ev.preventDefault();
     if (!is_open)
         return false;
 
@@ -509,7 +509,7 @@ function evhan_edit_button(ev) {
 /* Event handler: The "Delete" button (for edit mode).
 */
 function evhan_delete_button(ev) {
-    ev.stop();
+    ev.preventDefault();
     if (!is_open)
         return false;
     if (!editing || editing_dirent)
@@ -536,7 +536,7 @@ function evhan_delete_button(ev) {
 /* Event handler: The "Display" button (for edit mode).
 */
 function evhan_display_button(ev) {
-    ev.stop();
+    ev.preventDefault();
     if (!is_open)
         return false;
     if (!editing || editing_dirent)
@@ -571,7 +571,7 @@ function evhan_display_button(ev) {
    "do you want to replace that?" query.
 */
 function evhan_cancel_button(ev) {
-    ev.stop();
+    ev.preventDefault();
     if (!is_open)
         return false;
 

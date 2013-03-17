@@ -1578,7 +1578,7 @@ function evhan_window_mousedown(ev) {
   if (win.inputel) {
     last_known_focus = win.id;
     if (0 /*###Prototype.Browser.MobileSafari*/) {
-      ev.stop();
+      ev.preventDefault();
       //glkote_log("### focus to " + win.id);
       //### This doesn't always work, blah
       win.inputel.focus();
