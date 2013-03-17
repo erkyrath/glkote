@@ -53,8 +53,8 @@
   overflow: scroll;   /* vertical scrollbar is mandatory */
   overflow-x: hidden; /* but horizontal scrollbar is forbidden */
   font-family: Palatino, Georgia, serif;
-  font-size: 12px;
-  line-height: 15px;
+  font-size: 14px;
+  line-height: 18px;
   padding: 8px 12px;
 }
 
@@ -64,7 +64,7 @@
 .GridWindow {
   overflow: hidden;
   font-family: monospace; /* necessary! */
-  font-size: 12px;
+  font-size: 14px;
   padding: 8px 12px;
   border: 1px solid #202060;
   border-radius: 10px;
@@ -123,12 +123,12 @@
 
 .BufferWindow .Input {
   font-family: Palatino, Georgia, serif;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .GridWindow .Input {
   font-family: monospace; /* necessary! */
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .GridWindow a {
@@ -164,7 +164,7 @@
 }
 
 .BufferWindow .Style_header {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .Style_subheader {
