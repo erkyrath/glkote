@@ -301,13 +301,6 @@ function defer_func(func)
   return window.setTimeout(func, 0.01*1000);
 }
 
-/* Add text to a DOM element. ####
-*/
-function insert_text(el, val) {
-    var nod = document.createTextNode(val);
-    el.appendChild(nod);
-}
-
 /* Event handler: The user has changed which entry in the selection box is
    highlighted. 
 
@@ -709,7 +702,7 @@ function evhan_storage_changed(ev) {
             if (!file.dirent) {
                 el = $('<option>', { name:'f'+ix } );
                 el.prop('disabled', true);
-                insert_text(el, '-- ' + label_for_usage(file.label) + 's --');
+                el.text('-- ' + label_for_usage(file.label) + 's --');
                 selel.append(el);
                 continue;
             }
@@ -720,7 +713,7 @@ function evhan_storage_changed(ev) {
                 el.selected = true;
             }
             datestr = format_date(file.modified);
-            insert_text(el, file.dirent.filename + ' -- ' + datestr);
+            el.text(file.dirent.filename + ' -- ' + datestr);
             selel.append(el);
         }
         bodyel.append(selel);
@@ -756,7 +749,7 @@ function evhan_storage_changed(ev) {
             if (ix == 0)
                 el.selected = true;
             datestr = format_date(file.modified);
-            insert_text(el, file.dirent.filename + ' -- ' + datestr);
+            el.text(file.dirent.filename + ' -- ' + datestr);
             selel.append(el);
         }
         bodyel.append(selel);
