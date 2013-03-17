@@ -694,7 +694,8 @@ function evhan_storage_changed(ev) {
 
         bodyel.empty();
         
-        var selel = $('<select>', { id: dialog_el_id+'_select', name:'files', size:'5' });
+        var selel = $('<select>', { id: dialog_el_id+'_select', name:'files' });
+        selel.prop('size', '5'); /* firefox doesn't like this being set in the constructor */
         var ix, file, datestr;
         var anyselected = false;
         for (ix=0; ix<ls.length; ix++) {
@@ -718,7 +719,7 @@ function evhan_storage_changed(ev) {
         }
         bodyel.append(selel);
 
-        selel.onchange = evhan_select_change_editing;
+        selel.on('change', evhan_select_change_editing);
         evhan_select_change_editing();
 
         set_caption('All stored files are now visible. You may delete them, and display files containing text. Press Done when finished.', true);
@@ -741,7 +742,8 @@ function evhan_storage_changed(ev) {
     else {
         bodyel.empty();
         
-        var selel = $('<select>', { id: dialog_el_id+'_select', name:'files', size:'5' });
+        var selel = $('<select>', { id: dialog_el_id+'_select', name:'files' });
+        selel.prop('size', '5'); /* firefox doesn't like this being set in the constructor */
         var ix, file, datestr;
         for (ix=0; ix<ls.length; ix++) {
             file = ls[ix];
@@ -755,7 +757,7 @@ function evhan_storage_changed(ev) {
         bodyel.append(selel);
 
         if (will_save)
-            selel.onchange = evhan_select_change;
+            selel.on('change', evhan_select_change);
     }
 
     if (will_save) {
