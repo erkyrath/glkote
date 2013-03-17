@@ -317,7 +317,7 @@ function evhan_select_change() {
     var selel = $('#'+dialog_el_id+'_select');
     if (!selel.length)
         return false;
-    var pos = selel.selectedIndex;
+    var pos = selel.prop('selectedIndex');
     if (!cur_filelist || pos < 0 || pos >= cur_filelist.length)
         return false;
     var file = cur_filelist[pos];
@@ -342,7 +342,7 @@ function evhan_select_change_editing() {
     var selel = $('#'+dialog_el_id+'_select');
     if (!selel.length)
         return false;
-    var pos = selel.selectedIndex;
+    var pos = selel.prop('selectedIndex');
     if (!cur_filelist || pos < 0 || pos >= cur_filelist.length)
         return false;
     var file = cur_filelist[pos];
@@ -369,7 +369,7 @@ function evhan_accept_load_button(ev) {
     var selel = $('#'+dialog_el_id+'_select');
     if (!selel.length)
         return false;
-    var pos = selel.selectedIndex;
+    var pos = selel.prop('selectedIndex');
     if (!cur_filelist || pos < 0 || pos >= cur_filelist.length)
         return false;
     var file = cur_filelist[pos];
@@ -519,7 +519,7 @@ function evhan_delete_button(ev) {
     var selel = $('#'+dialog_el_id+'_select');
     if (!selel.length)
         return false;
-    var pos = selel.selectedIndex;
+    var pos = selel.prop('selectedIndex');
     if (!cur_filelist || pos < 0 || pos >= cur_filelist.length)
         return false;
     var file = cur_filelist[pos];
@@ -546,7 +546,7 @@ function evhan_display_button(ev) {
     var selel = $('#'+dialog_el_id+'_select');
     if (!selel.length)
         return false;
-    var pos = selel.selectedIndex;
+    var pos = selel.prop('selectedIndex');
     if (!cur_filelist || pos < 0 || pos >= cur_filelist.length)
         return false;
     var file = cur_filelist[pos];
@@ -646,8 +646,7 @@ function evhan_storage_changed(ev) {
         dat = String.fromCharCode.apply(this, dat);
 
         var textel = $('<div>', { 'class': 'DiaDisplayText' });
-        var nod = document.createTextNode(dat);
-        textel.appendChild(nod);
+        textel.text(dat);
         bodyel.append(textel);
 
         set_caption('Displaying file contents...', true);
