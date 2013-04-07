@@ -767,7 +767,7 @@ function accept_one_content(arg) {
       }
       if (divel == null) {
         /* Create a new paragraph div */
-        divel = $('<div>', { 'class': 'BufferLine' })
+        divel = $('<div>', { 'class': 'BufferLine' });
         divel.data('blankpara', true);
         divel.data('endswhite', true);
         win.frameel.append(divel);
