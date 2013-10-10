@@ -706,6 +706,10 @@ function accept_one_content(arg) {
       win.topunseen = 0;
     }
 
+    /* Accept a missing text field as doing nothing. */
+    if (text === undefined)
+      text = [];
+
     /* Each line we receive has a flag indicating whether it *starts*
        a new paragraph. (If the flag is false, the line gets appended
        to the previous paragraph.)

@@ -941,7 +941,7 @@ Then, each element in the <code>text</code> array represents one line (or paragr
 The <code>content</code> array has the same format defined above. (Except that there is no right-padding.)
 <p>
 
-The <code>clear</code> and <code>append</code> values may be omitted; they default to false. The <code>content</code> may also be omitted if there is no data for the line. Therefore, an empty object <code>{}</code> is a valid entry for the <code>text</code> array; it indicates a blank line.
+The <code>clear</code> and <code>append</code> values may be omitted; they default to false. Omitting <code>text</code> is equivalent to an empty array. Within the <code>text</code> array, the <code>content</code> may be omitted if there is no data for the line. Therefore, an empty object <code>{}</code> is a valid array entry; it indicates a blank line.
 <p>
 
 (For efficiency, only the first element of the <code>text</code> array should have <code>append</code>. Condense elements into complete paragraphs where possible.)
