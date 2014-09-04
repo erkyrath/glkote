@@ -325,6 +325,9 @@ function update() {
                 obj.gridwidth = win.gridwidth;
                 obj.gridheight = win.gridheight;
                 break;
+            case Const.wintype_Graphics:
+                obj.type = 'graphics';
+                break;
             }
 
             obj.left = win.bbox.left;
@@ -390,6 +393,13 @@ function update() {
                 obj.lines.push({ line:ix, content:ls });
             }
             useobj = obj.lines.length;
+            break;
+
+        case Const.wintype_Graphics:
+            obj.bgcolor = decode_color(win.bgcolor);
+            obj.drawstack = win.drawstack;
+            useobj = obj.drawstack.length;
+            win.drawstack = [];
             break;
         }
 
@@ -2364,17 +2374,25 @@ function gli_window_rearrange(win, box) {
         }
         else if (win.pair_division == Const.winmethod_Fixed) {
             split = 0;
-            if (win.pair_key && win.pair_key.type == Const.wintype_TextBuffer) {
+            if (!win.pair_key) {
+            }
+            else if (win.pair_key.type == Const.wintype_TextBuffer) {
                 if (!win.pair_vertical) 
                     split = (win.pair_size * content_metrics.buffercharheight + content_metrics.buffermarginy);
                 else
                     split = (win.pair_size * content_metrics.buffercharwidth + content_metrics.buffermarginx);
             }
-            if (win.pair_key && win.pair_key.type == Const.wintype_TextGrid) {
+            else if (win.pair_key.type == Const.wintype_TextGrid) {
                 if (!win.pair_vertical) 
                     split = (win.pair_size * content_metrics.gridcharheight + content_metrics.gridmarginy);
                 else
                     split = (win.pair_size * content_metrics.gridcharwidth + content_metrics.gridmarginx);
+            }
+            else if (win.pair_key.type == Const.wintype_Graphics) {
+                split = win.pair_size;
+            }
+            else {
+                throw('gli_window_rearrange: unsupported window type for fixed sizing');
             }
             split = Math.ceil(split);
         }
@@ -3071,10 +3089,10 @@ function glk_gestalt_ext(sel, val, arr) {
         return 1;
 
     case 6: // gestalt_Graphics
-        return 0;
+        return 1;
 
     case 7: // gestalt_DrawImage
-        return 0;
+        return 1;
 
     case 8: // gestalt_Sound
         return 0;
@@ -3098,7 +3116,7 @@ function glk_gestalt_ext(sel, val, arr) {
         return 0;
 
     case 14: // gestalt_GraphicsTransparency
-        return 0;
+        return 1;
 
     case 15: // gestalt_Unicode
         return 1;
@@ -3225,6 +3243,10 @@ function glk_window_open(splitwin, method, size, wintype, rock) {
         newwin.lines = [];
         newwin.cursorx = 0;
         newwin.cursory = 0;
+        break;
+    case Const.wintype_Graphics:
+        newwin.bgcolor = 0xffffff;
+        newwin.drawstack = [];
         break;
     case Const.wintype_Blank:
         break;
@@ -3379,6 +3401,10 @@ function glk_window_get_size(win, widthref, heightref) {
         hgt = Math.max(0, Math.floor((boxheight-content_metrics.buffermarginy) / content_metrics.buffercharheight));        
         break;
 
+    case Const.wintype_Graphics:
+        wid = win.bbox.right - win.bbox.left;
+        hgt = win.bbox.bottom - win.bbox.top;
+        break;
     }
 
     if (widthref)
@@ -4204,26 +4230,45 @@ function glk_request_timer_events(msec) {
     }
 }
 
-/* Graphics functions are not currently supported. */
-
 function glk_image_get_info(imgid, widthref, heightref) {
+    var el = GiLoad.find_data_chunk(imgid);
+    if (!el)
+        return 0;
+
+    var img = el.data;
     if (widthref)
-        widthref.set_value(0);
+        widthref.set_value(img.width);
     if (heightref)
-        heightref.set_value(0);
-    return 0;
+        heightref.set_value(img.height);
+
+    return 1;
 }
 
 function glk_image_draw(win, imgid, val1, val2) {
-    if (!win)
-        throw('glk_image_draw: invalid window');
-    return 0;
+    return glk_image_draw_scaled(win, imgid, val1, val2, null, null);
 }
 
 function glk_image_draw_scaled(win, imgid, val1, val2, width, height) {
     if (!win)
-        throw('glk_image_draw_scaled: invalid window');
-    return 0;
+        throw('glk_image_draw: invalid window');
+
+    var el = GiLoad.find_data_chunk(imgid);
+    if (!el)
+        return 0;
+
+    var img = el.data;
+
+    if (win.type == Const.wintype_Graphics) {
+        win.drawstack.push({image: img, x: val1, y: val2, width: width, height: height});
+    }
+    else if (win.type == Const.wintype_TextBuffer) {
+        // TODO
+    }
+    else {
+        throw('glk_image_draw: invalid window type');
+    }
+
+    return 1;
 }
 
 function glk_window_flow_break(win) {
@@ -4232,18 +4277,35 @@ function glk_window_flow_break(win) {
 }
 
 function glk_window_erase_rect(win, left, top, width, height) {
-    if (!win)
-        throw('glk_window_erase_rect: invalid window');
+    glk_window_fill_rect(win, win.bgcolor, left, top, width, height);
+}
+
+function decode_color(color) {
+    var a = (color & 0xff000000) >> 24;
+    if (a)
+        throw('invalid color');
+
+    return "#" + ("000000" + color.toString(16)).slice(-6);
 }
 
 function glk_window_fill_rect(win, color, left, top, width, height) {
     if (!win)
         throw('glk_window_fill_rect: invalid window');
+    if (win.type != Const.wintype_Graphics)
+        throw('glk_window_fill_rect: invalid window type');
+
+    // TODO can optimize this to just clearing the whole window if the bounds
+    // are bigger
+    win.drawstack.push({color: decode_color(color), x: left, y: top, width: width, height: height});
 }
 
 function glk_window_set_background_color(win, color) {
     if (!win)
         throw('glk_window_set_background_color: invalid window');
+    if (win.type != Const.wintype_Graphics)
+        throw('glk_window_fill_rect: invalid window type');
+
+    win.bgcolor = color;
 }
 
 

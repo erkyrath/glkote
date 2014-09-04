@@ -486,6 +486,8 @@ function accept_one_window(arg) {
       typeclass = 'GridWindow';
     if (win.type == 'buffer')
       typeclass = 'BufferWindow';
+    if (win.type == 'graphics')
+      typeclass = 'GraphicsWindow';
     var rockclass = 'WindowRock_' + arg.rock;
     frameel = new Element('div',
       { id: 'window'+arg.id,
@@ -542,6 +544,20 @@ function accept_one_window(arg) {
 
   if (win.type == 'buffer') {
     /* Don't need anything? */
+  }
+
+  if (win.type == 'graphics') {
+    win.frameel.style.background = arg.bgcolor;
+    // TODO The spec says that on resize, existing content remains and is
+    // merely cropped at the lower right; any newly-revealed space is filled
+    // with the background color.  But we have a stack of elements, not a
+    // single canvas, so preserving those precise constraints is kind of hard.
+    // Luckily, the spec ALSO says that games should/must redraw everything on
+    // resize.  So for now, we'll optimistically empty the element and hope we
+    // get redrawn.
+    while (frameel.firstChild) {
+        frameel.removeChild(frameel.firstChild);
+    }
   }
 
   /* The trick is that left/right/top/bottom are measured to the outside
@@ -842,6 +858,40 @@ function accept_one_content(arg) {
         }
       }
     }
+  }
+
+  if (win.type == 'graphics') {
+    win.needscroll = false;
+    win.frameel.style.background = arg.bgcolor;
+
+    for (var i = 0, l = arg.drawstack.length; i < l; i++) {
+      var drawcmd = arg.drawstack[i];
+
+      if (drawcmd.image) {
+        var imageel = drawcmd.image.cloneNode();
+        imageel.style.position = 'absolute';
+        imageel.style.left = drawcmd.x + "px";
+        imageel.style.top = drawcmd.y + "px";
+        if (drawcmd.width) {
+          imageel.style.width = drawcmd.width + "px";
+          imageel.style.height = drawcmd.height + "px";
+        }
+        win.frameel.appendChild(imageel);
+      }
+      else if (drawcmd.color) {
+        var container = document.createElement('div');
+        container.style.background = drawcmd.color;
+        container.style.position = 'absolute';
+        container.style.left = drawcmd.x + "px";
+        container.style.top = drawcmd.y + "px";
+        container.style.width = drawcmd.width + "px";
+        container.style.height = drawcmd.height + "px";
+        win.frameel.appendChild(container);
+      }
+    }
+    // Sometimes the browser inexplicably scrolls the new element into view
+    win.frameel.scrollTop = 0;
+    win.frameel.scrollLeft = 0;
   }
 }
 
