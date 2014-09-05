@@ -555,9 +555,7 @@ function accept_one_window(arg) {
     // Luckily, the spec ALSO says that games should/must redraw everything on
     // resize.  So for now, we'll optimistically empty the element and hope we
     // get redrawn.
-    while (frameel.firstChild) {
-        frameel.removeChild(frameel.firstChild);
-    }
+    frameel.update();
   }
 
   /* The trick is that left/right/top/bottom are measured to the outside
@@ -771,6 +769,27 @@ function accept_one_content(arg) {
          into a NBSP. */
       for (sx=0; sx<content.length; sx++) {
         var rdesc = content[sx];
+        // Special non-text tokens
+        if (rdesc.image) {
+          var el = rdesc.image.cloneNode();
+          if (rdesc.width) {
+            el.style.width = rdesc.width + "px";
+            el.style.height = rdesc.height + "px";
+          }
+          if (rdesc.floated) {
+            el.addClassName("image-floated-" + rdesc.floated);
+          }
+          if (rdesc.align) {
+            el.addClassName("image-inline-" + rdesc.align);
+          }
+          divel.insert(el);
+          continue;
+        }
+        if (rdesc.clear) {
+          var el = new Element('span', { 'class': 'float-clear' });
+          divel.insert(el);
+          continue;
+        }
         var rstyle, rtext, rlink;
         if (rdesc.length === undefined) {
           rstyle = rdesc.style;

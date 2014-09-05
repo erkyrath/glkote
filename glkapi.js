@@ -628,7 +628,13 @@ var Const = {
       stylehint_just_LeftFlush : 0,
       stylehint_just_LeftRight : 1,
       stylehint_just_Centered : 2,
-      stylehint_just_RightFlush : 3
+      stylehint_just_RightFlush : 3,
+
+    imagealign_InlineUp : 1,
+    imagealign_InlineDown : 2,
+    imagealign_InlineCenter : 3,
+    imagealign_MarginLeft : 4,
+    imagealign_MarginRight : 5
 };
 
 var KeystrokeNameMap = {
@@ -3524,6 +3530,9 @@ function glk_window_clear(win) {
             }
         }
         break;
+    case Const.wintype_TextBuffer:
+        win.drawstack = [{clear: true}];
+        break;
     }
 }
 
@@ -4248,6 +4257,18 @@ function glk_image_draw(win, imgid, val1, val2) {
     return glk_image_draw_scaled(win, imgid, val1, val2, null, null);
 }
 
+function _append_to_window_content(win, item) {
+    if (!win.content || !win.content.length) {
+        win.content = [{}];
+    }
+    var last_row = win.content[win.content.length - 1];
+    if (!last_row.content) {
+        last_row.content = [];
+    }
+
+    last_row.content.push(item);
+}
+
 function glk_image_draw_scaled(win, imgid, val1, val2, width, height) {
     if (!win)
         throw('glk_image_draw: invalid window');
@@ -4262,7 +4283,26 @@ function glk_image_draw_scaled(win, imgid, val1, val2, width, height) {
         win.drawstack.push({image: img, x: val1, y: val2, width: width, height: height});
     }
     else if (win.type == Const.wintype_TextBuffer) {
-        // TODO
+        gli_window_buffer_deaccumulate(win);
+        // TODO this is a no-op if we're not at the start of a paragraph and val1 is a float
+        var special_token = {image: img, width: width, height: height};
+        if (val1 == Const.imagealign_InlineUp) {
+            special_token.align = "top";
+        }
+        else if (val1 == Const.imagealign_InlineDown) {
+            special_token.align = "bottom";
+        }
+        else if (val1 == Const.imagealign_InlineCenter) {
+            special_token.align = "middle";
+        }
+        else if (val1 == Const.imagealign_MarginLeft) {
+            special_token.floated = "left";
+        }
+        else if (val1 == Const.imagealign_MarginRight) {
+            special_token.floated = "right";
+        }
+
+        _append_to_window_content(win, special_token);
     }
     else {
         throw('glk_image_draw: invalid window type');
@@ -4274,6 +4314,11 @@ function glk_image_draw_scaled(win, imgid, val1, val2, width, height) {
 function glk_window_flow_break(win) {
     if (!win)
         throw('glk_window_flow_break: invalid window');
+
+    if (win.type == Const.wintype_TextBuffer) {
+        gli_window_buffer_deaccumulate(win);
+        _append_to_window_content(win, { clear: true });
+    }
 }
 
 function glk_window_erase_rect(win, left, top, width, height) {
