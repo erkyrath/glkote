@@ -2038,8 +2038,8 @@ var content_metrics = null;
 var gli_streamlist = null;
 /* Beginning of linked list of filerefs. */
 var gli_filereflist = null;
-/* Beginning of linked list of schannels. */
-var gli_schannellist = null;
+/* List of schannels. */
+var gli_schannellist = [];
 
 /* The current output stream. */
 var gli_currentstr = null;
@@ -3101,10 +3101,10 @@ function glk_gestalt_ext(sel, val, arr) {
         return 1;
 
     case 8: // gestalt_Sound
-        return 0;
+        return 1;
 
     case 9: // gestalt_SoundVolume
-        return 0;
+        return 1;
 
     case 10: // gestalt_SoundNotify
         return 0;
@@ -4240,15 +4240,14 @@ function glk_request_timer_events(msec) {
 }
 
 function glk_image_get_info(imgid, widthref, heightref) {
-    var el = GiLoad.find_data_chunk(imgid);
-    if (!el)
+    var chunk = GiLoad.find_picture_chunk(imgid);
+    if (!chunk)
         return 0;
 
-    var img = el.data;
     if (widthref)
-        widthref.set_value(img.width);
+        widthref.set_value(chunk.width);
     if (heightref)
-        heightref.set_value(img.height);
+        heightref.set_value(chunk.height);
 
     return 1;
 }
@@ -4273,19 +4272,17 @@ function glk_image_draw_scaled(win, imgid, val1, val2, width, height) {
     if (!win)
         throw('glk_image_draw: invalid window');
 
-    var el = GiLoad.find_data_chunk(imgid);
-    if (!el)
+    var chunk = GiLoad.find_picture_chunk(imgid);
+    if (!chunk)
         return 0;
 
-    var img = el.data;
-
     if (win.type == Const.wintype_Graphics) {
-        win.drawstack.push({image: img, x: val1, y: val2, width: width, height: height});
+        win.drawstack.push({image: chunk.image, x: val1, y: val2, width: width, height: height});
     }
     else if (win.type == Const.wintype_TextBuffer) {
         gli_window_buffer_deaccumulate(win);
         // TODO this is a no-op if we're not at the start of a paragraph and val1 is a float
-        var special_token = {image: img, width: width, height: height};
+        var special_token = {image: chunk.image, width: width, height: height};
         if (val1 == Const.imagealign_InlineUp) {
             special_token.align = "top";
         }
@@ -4355,10 +4352,13 @@ function glk_window_set_background_color(win, color) {
 
 
 function glk_schannel_iterate(schan, rockref) {
-    if (!schan)
-        schan = gli_schannellist;
-    else
-        schan = schan.next;
+    var index = schan ? schan.index + 1 : 0;
+    while (! gli_schannellist[index] && index < gli_schannellist.length) {
+        index++;
+    }
+    schan = gli_schannellist[index];
+    if (! schan)
+        return null;
 
     if (schan) {
         if (rockref)
@@ -4378,33 +4378,66 @@ function glk_schannel_get_rock(schan) {
 }
 
 function glk_schannel_create(rock) {
-    return null;
-}
-
-function glk_schannel_destroy(schan) {
-    throw('glk_schannel_destroy: invalid schannel');
-}
-
-function glk_schannel_play(schan, sndid) {
-    throw('glk_schannel_play: invalid schannel');
-}
-
-function glk_schannel_play_ext(schan, sndid, repeats, notify) {
-    throw('glk_schannel_play_ext: invalid schannel');
-}
-
-function glk_schannel_stop(schan) {
-    throw('glk_schannel_stop: invalid schannel');
-}
-
-function glk_schannel_set_volume(schan, vol) {
-    throw('glk_schannel_set_volume: invalid schannel');
-}
-
-function glk_sound_load_hint(sndid, flag) {
+    return glk_schannel_create_ext(rock, 0x10000);
 }
 
 function glk_schannel_create_ext(rock, vol) {
+    var schan = new GiLoad.AudioChannel();
+    schan.set_volume(vol / 0x10000);
+    schan.rock = rock;
+    schan.index = gli_schannellist.length;
+    gli_schannellist.push(schan);
+    if (window.GiDispa)
+        GiDispa.class_register('schannel', schan);
+    else
+        schan.disprock = gli_api_display_rocks++;
+    return schan;
+}
+
+function glk_schannel_destroy(schan) {
+    if (! gli_schannellist[schan.index])
+        throw('glk_schannel_destroy: invalid schannel');
+
+    gli_schannellist[schan.index].stop();
+    gli_schannellist[schan.index] = null;
+    return null;
+}
+
+function glk_schannel_play(schan, sndid) {
+    return glk_schannel_play_ext(schan, sndid, 1, 0);
+}
+
+function glk_schannel_play_ext(schan, sndid, repeats, notify) {
+    if (! schan || ! gli_schannellist[schan.index])
+        throw('glk_schannel_play_ext: invalid schannel');
+
+    var chunk = GiLoad.find_sound_chunk(sndid);
+    if (! chunk)
+        return 0;
+
+    if (repeats == 0xffffffff) {
+        repeats = -1;
+    }
+    schan.play(chunk.track, repeats);
+    // TODO notify
+    return 1;
+}
+
+function glk_schannel_stop(schan) {
+    if (! schan || ! gli_schannellist[schan.index])
+        throw('glk_schannel_stop: invalid schannel');
+
+    schan.stop();
+}
+
+function glk_schannel_set_volume(schan, vol) {
+    if (! schan || ! gli_schannellist[schan.index])
+        throw('glk_schannel_pause: invalid schannel');
+
+    schan.set_volume(vol / 0x10000);
+}
+
+function glk_sound_load_hint(sndid, flag) {
     return null;
 }
 
@@ -4413,11 +4446,19 @@ function glk_schannel_play_multi(schans, sndids, notify) {
 }
 
 function glk_schannel_pause(schan) {
-    throw('glk_schannel_pause: invalid schannel');
+    if (! schan || ! gli_schannellist[schan.index])
+        throw('glk_schannel_pause: invalid schannel');
+
+    schan.pause();
+    return null;
 }
 
 function glk_schannel_unpause(schan) {
-    throw('glk_schannel_unpause: invalid schannel');
+    if (! schan || ! gli_schannellist[schan.index])
+        throw('glk_schannel_unpause: invalid schannel');
+
+    schan.unpause();
+    return null;
 }
 
 function glk_schannel_set_volume_ext(schan, vol, duration, notify) {
