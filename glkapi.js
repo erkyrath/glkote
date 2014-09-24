@@ -3530,7 +3530,7 @@ function glk_window_clear(win) {
             }
         }
         break;
-    case Const.wintype_TextBuffer:
+    case Const.wintype_Graphics:
         win.drawstack = [{clear: true}];
         break;
     }
@@ -4336,8 +4336,6 @@ function glk_window_fill_rect(win, color, left, top, width, height) {
     if (win.type != Const.wintype_Graphics)
         throw('glk_window_fill_rect: invalid window type');
 
-    // TODO can optimize this to just clearing the whole window if the bounds
-    // are bigger
     win.drawstack.push({color: decode_color(color), x: left, y: top, width: width, height: height});
 }
 

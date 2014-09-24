@@ -547,15 +547,25 @@ function accept_one_window(arg) {
   }
 
   if (win.type == 'graphics') {
-    win.frameel.style.background = arg.bgcolor;
-    // TODO The spec says that on resize, existing content remains and is
-    // merely cropped at the lower right; any newly-revealed space is filled
-    // with the background color.  But we have a stack of elements, not a
-    // single canvas, so preserving those precise constraints is kind of hard.
-    // Luckily, the spec ALSO says that games should/must redraw everything on
-    // resize.  So for now, we'll optimistically empty the element and hope we
-    // get redrawn.
-    frameel.update();
+    win.frameel.backgroundColor = arg.bgcolor;
+
+    /* Size changes clear the canvas, so we need to create a new one from
+       scratch either way. */
+    var canvas = win.canvas;
+    if (!canvas || canvas.width !== arg.width || canvas.height !== arg.height) {
+      var newcanvas = win.canvas = new Element('canvas');
+      newcanvas.width = arg.width;
+      newcanvas.height = arg.height;
+      var ctx = newcanvas.getContext("2d");
+      ctx.fillStyle = arg.bgcolor;
+      ctx.fillRect(0, 0, newcanvas.width, newcanvas.height);
+
+      if (canvas) {
+          ctx.drawImage(canvas, 0, 0);
+      }
+
+      win.frameel.update(newcanvas);
+    }
   }
 
   /* The trick is that left/right/top/bottom are measured to the outside
@@ -881,36 +891,33 @@ function accept_one_content(arg) {
 
   if (win.type == 'graphics') {
     win.needscroll = false;
-    win.frameel.style.background = arg.bgcolor;
+    var ctx = win.canvas.getContext("2d");
+    ctx.fillStyle = arg.bgcolor;
+    // Keep the background updated so any new space is filled by it between a
+    // resize and a redraw
+    win.frameel.style.backgroundColor = arg.bgcolor;
 
     for (var i = 0, l = arg.drawstack.length; i < l; i++) {
       var drawcmd = arg.drawstack[i];
 
       if (drawcmd.image) {
-        var imageel = drawcmd.image.cloneNode();
-        imageel.style.position = 'absolute';
-        imageel.style.left = drawcmd.x + "px";
-        imageel.style.top = drawcmd.y + "px";
         if (drawcmd.width) {
-          imageel.style.width = drawcmd.width + "px";
-          imageel.style.height = drawcmd.height + "px";
+          ctx.drawImage(drawcmd.image, drawcmd.x, drawcmd.y,
+            draw_cmd.width, draw_cmd.height);
         }
-        win.frameel.appendChild(imageel);
+        else {
+          ctx.drawImage(drawcmd.image, drawcmd.x, drawcmd.y);
+        }
       }
       else if (drawcmd.color) {
-        var container = document.createElement('div');
-        container.style.background = drawcmd.color;
-        container.style.position = 'absolute';
-        container.style.left = drawcmd.x + "px";
-        container.style.top = drawcmd.y + "px";
-        container.style.width = drawcmd.width + "px";
-        container.style.height = drawcmd.height + "px";
-        win.frameel.appendChild(container);
+        ctx.fillStyle = drawcmd.color;
+        ctx.fillRect(drawcmd.x, drawcmd.y, drawcmd.width, drawcmd.height);
+      }
+      else if (drawcmd.clear) {
+        ctx.fillStyle = arg.bgcolor;
+        ctx.fillRect(0, 0, win.canvas.width, win.canvas.height);
       }
     }
-    // Sometimes the browser inexplicably scrolls the new element into view
-    win.frameel.scrollTop = 0;
-    win.frameel.scrollLeft = 0;
   }
 }
 
