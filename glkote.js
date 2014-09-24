@@ -812,8 +812,14 @@ function accept_one_content(arg) {
           rtext = content[sx];
           rlink = undefined;
         }
-        var el = new Element('span',
-          { 'class': 'Style_' + rstyle } );
+        var el = new Element('span');
+        if (rstyle === 'blockquote') {
+          /* Blockquote only makes sense applied to a whole paragraph */
+          divel.addClassName('Style_' + rstyle);
+        }
+        else {
+          el.addClassName('Style_' + rstyle);
+        }
         rtext = rtext.replace(regex_long_whitespace, func_long_whitespace);
         if (divel.endswhite) {
           rtext = rtext.replace(regex_initial_whitespace, NBSP);
