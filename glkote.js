@@ -174,6 +174,7 @@ function glkote_init(iface) {
   capabilities = {};
   var extra = { capabilities: capabilities };
   capabilities.canvas = !!window.CanvasRenderingContext2D;
+  capabilities.audio = !!(window.AudioContext || window.webkitAudioContext);
 
   send_response('init', null, current_metrics, extra);
 }

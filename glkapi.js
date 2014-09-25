@@ -3115,10 +3115,10 @@ function glk_gestalt_ext(sel, val, arr) {
             return 0;
 
     case 8: // gestalt_Sound
-        return 1;
+        return client_capabilities.audio ? 1 : 0;
 
     case 9: // gestalt_SoundVolume
-        return 1;
+        return client_capabilities.audio ? 1 : 0;
 
     case 10: // gestalt_SoundNotify
         return 0;
@@ -3133,6 +3133,7 @@ function glk_gestalt_ext(sel, val, arr) {
             return 0;
 
     case 13: // gestalt_SoundMusic
+        /* No MOD support.  Yet? */
         return 0;
 
     case 14: // gestalt_GraphicsTransparency
@@ -3164,6 +3165,7 @@ function glk_gestalt_ext(sel, val, arr) {
         return 1;
 
     case 21: // gestalt_Sound2
+        /* Returning 1 guarantees ALL sound support, which we don't have. */
         return 0;
 
     case 22: // gestalt_ResourceStream
