@@ -59,6 +59,7 @@ var is_ie7 = false;
 var perform_paging = true;
 var detect_external_links = false;
 var regex_external_links = null;
+var capabilities = null;
 
 /* Some handy constants */
 /* A non-breaking space character. */
@@ -168,7 +169,13 @@ function glkote_init(iface) {
     }
   }
 
-  send_response('init', null, current_metrics);
+  /* Detect capabilities that depend on the client.  The Glk API might not
+     actually be in this browser, so it can't do this. */
+  capabilities = {};
+  var extra = { capabilities: capabilities };
+  capabilities.canvas = !!window.CanvasRenderingContext2D;
+
+  send_response('init', null, current_metrics, extra);
 }
 
 /* Work out various pixel measurements used to compute window sizes:
@@ -546,7 +553,7 @@ function accept_one_window(arg) {
     /* Don't need anything? */
   }
 
-  if (win.type == 'graphics') {
+  if (win.type == 'graphics' && capabilities.canvas) {
     win.frameel.backgroundColor = arg.bgcolor;
 
     /* Size changes clear the canvas, so we need to create a new one from
@@ -895,7 +902,7 @@ function accept_one_content(arg) {
     }
   }
 
-  if (win.type == 'graphics') {
+  if (win.type == 'graphics' && capabilities.canvas) {
     win.needscroll = false;
     var ctx = win.canvas.getContext("2d");
     ctx.fillStyle = arg.bgcolor;
@@ -1433,6 +1440,7 @@ function send_response(type, win, val, val2) {
   }
   else if (type == 'init' || type == 'arrange') {
     res.metrics = val;
+    res.extra = val2;
   }
 
   if (!(type == 'init' || type == 'refresh' || type == 'specialresponse')) {

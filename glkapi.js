@@ -57,6 +57,9 @@ var ui_specialcallback = null;
 var event_generation = 0;
 var current_partial_inputs = null;
 var current_partial_outputs = null;
+/* What the DOM side claims to be able to do.
+   Current known keys: canvas */
+var client_capabilities = null;
 
 /* Initialize the library, initialize the VM, and set it running. (It will 
    run until the first glk_select() or glk_exit() call.)
@@ -106,6 +109,10 @@ function accept_ui_event(obj) {
     switch (obj.type) {
     case 'init':
         content_metrics = obj.metrics;
+        if (obj.extra)
+            client_capabilities = obj.extra.capabilities;
+        else
+            client_capabilities = {};
         VM.init();
         break;
 
@@ -3098,7 +3105,14 @@ function glk_gestalt_ext(sel, val, arr) {
         return 1;
 
     case 7: // gestalt_DrawImage
-        return 1;
+        /* We can draw images in text windows anytime (that's just <img>), but
+           graphics windows require canvas support */
+        if (val === Const.wintype_Graphics)
+            return client_capabilities.canvas ? 1 : 0;
+        else if (val === Const.wintype_TextBuffer)
+            return 1;
+        else
+            return 0;
 
     case 8: // gestalt_Sound
         return 1;
@@ -4271,6 +4285,9 @@ function _append_to_window_content(win, item) {
 function glk_image_draw_scaled(win, imgid, val1, val2, width, height) {
     if (!win)
         throw('glk_image_draw: invalid window');
+
+    if (win.type == Const.wintype_Graphics && ! client_capabilities.canvas)
+        return 0;
 
     var chunk = GiLoad.find_picture_chunk(imgid);
     if (!chunk)
