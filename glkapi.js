@@ -465,9 +465,20 @@ function update() {
             inputarray.push(obj);
     }
 
+    var soundarray = [];
+    for (var i = 0, l = gli_schannellist.length; i < l; i++) {
+        var schan = gli_schannellist[i];
+        if (schan.destroyed)
+            continue;
+
+        soundarray = soundarray.concat(schan.pending_updates);
+        schan.pending_updates = [];
+    }
+
     dataobj.windows = winarray;
     dataobj.content = contentarray;
     dataobj.input = inputarray;
+    dataobj.sound = soundarray;
 
     if (ui_specialinput) {
         //qlog("### special input: " + ui_specialinput.type);
@@ -4367,14 +4378,45 @@ function glk_window_set_background_color(win, color) {
     win.bgcolor = color;
 }
 
+/*** Glk sound functions ***/
+
+function SoundChannel(rock) {
+    this.rock = rock;
+    this.index = gli_schannellist.length;
+    this.destroyed = false;
+    this.pending_updates = [];
+
+    gli_schannellist.push(this);
+    if (window.GiDispa)
+        GiDispa.class_register('schannel', this);
+    else
+        this.disprock = gli_api_display_rocks++;
+
+    this.queue(['create', this.disprock]);
+}
+
+SoundChannel.prototype.destroy = function() {
+    this.queue(['stop']);
+    this.queue(['destroy']);
+    this.destroyed = true;
+};
+
+/* Queue a command to be passed to glkote.  Commands are just arrays of
+   [channel_ident, method, arguments...], where the identifier is opaque and
+   the method is called on a glkote AudioChannel. */
+SoundChannel.prototype.queue = function(method_and_arguments) {
+    if (this.destroyed)
+        throw('invalid schannel');
+    this.pending_updates.push([this.disprock].concat(method_and_arguments));
+};
 
 function glk_schannel_iterate(schan, rockref) {
     var index = schan ? schan.index + 1 : 0;
-    while (! gli_schannellist[index] && index < gli_schannellist.length) {
+    while (index < gli_schannellist.length && gli_schannellist[index].destroyed) {
         index++;
     }
     schan = gli_schannellist[index];
-    if (! schan)
+    if (! schan || schan.destroyed)
         return null;
 
     if (schan) {
@@ -4389,7 +4431,7 @@ function glk_schannel_iterate(schan, rockref) {
 }
 
 function glk_schannel_get_rock(schan) {
-    if (!schan)
+    if (!schan || schan.destroyed)
         throw('glk_schannel_get_rock: invalid schannel');
     return schan.rock;
 }
@@ -4399,24 +4441,16 @@ function glk_schannel_create(rock) {
 }
 
 function glk_schannel_create_ext(rock, vol) {
-    var schan = new GiLoad.AudioChannel();
-    schan.set_volume(vol / 0x10000);
-    schan.rock = rock;
-    schan.index = gli_schannellist.length;
-    gli_schannellist.push(schan);
-    if (window.GiDispa)
-        GiDispa.class_register('schannel', schan);
-    else
-        schan.disprock = gli_api_display_rocks++;
+    var schan = new SoundChannel(rock);
+    schan.queue(['set_volume', vol / 0x10000]);
     return schan;
 }
 
 function glk_schannel_destroy(schan) {
-    if (! gli_schannellist[schan.index])
+    if (! schan || schan.destroyed)
         throw('glk_schannel_destroy: invalid schannel');
 
-    gli_schannellist[schan.index].stop();
-    gli_schannellist[schan.index] = null;
+    schan.destroy();
     return null;
 }
 
@@ -4425,7 +4459,7 @@ function glk_schannel_play(schan, sndid) {
 }
 
 function glk_schannel_play_ext(schan, sndid, repeats, notify) {
-    if (! schan || ! gli_schannellist[schan.index])
+    if (! schan || schan.destroyed)
         throw('glk_schannel_play_ext: invalid schannel');
 
     var chunk = GiLoad.find_sound_chunk(sndid);
@@ -4435,23 +4469,29 @@ function glk_schannel_play_ext(schan, sndid, repeats, notify) {
     if (repeats == 0xffffffff) {
         repeats = -1;
     }
-    schan.play(chunk.track, repeats);
+    // TODO ideally the api would know as little as possible about resources
+    // early on -- only whether they exist, and sizes of images -- and would
+    // just pass ids out to glkote
+    schan.queue(['play', chunk.track, repeats]);
     // TODO notify
+    // TODO there's no way to know for sure here whether playing the sound
+    // actually succeeded -- e.g. not all browsers support vorbis, or the sound
+    // might be corrupt -- but the api isn't supposed to know about the browser
     return 1;
 }
 
 function glk_schannel_stop(schan) {
-    if (! schan || ! gli_schannellist[schan.index])
+    if (! schan || schan.destroyed)
         throw('glk_schannel_stop: invalid schannel');
 
-    schan.stop();
+    schan.queue(['stop']);
 }
 
 function glk_schannel_set_volume(schan, vol) {
-    if (! schan || ! gli_schannellist[schan.index])
+    if (! schan || schan.destroyed)
         throw('glk_schannel_pause: invalid schannel');
 
-    schan.set_volume(vol / 0x10000);
+    schan.queue(['set_volume', vol / 0x10000]);
 }
 
 function glk_sound_load_hint(sndid, flag) {
@@ -4466,7 +4506,7 @@ function glk_schannel_pause(schan) {
     if (! schan || ! gli_schannellist[schan.index])
         throw('glk_schannel_pause: invalid schannel');
 
-    schan.pause();
+    schan.queue(['pause']);
     return null;
 }
 
@@ -4474,7 +4514,7 @@ function glk_schannel_unpause(schan) {
     if (! schan || ! gli_schannellist[schan.index])
         throw('glk_schannel_unpause: invalid schannel');
 
-    schan.unpause();
+    schan.queue(['unpause']);
     return null;
 }
 
