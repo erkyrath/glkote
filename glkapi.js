@@ -4499,7 +4499,23 @@ function glk_sound_load_hint(sndid, flag) {
 }
 
 function glk_schannel_play_multi(schans, sndids, notify) {
-    throw('glk_schannel_play_multi: invalid schannel');
+    var retval = 0;
+    for (var i = 0, l = schans.length; i < l; i++) {
+        var schan = schans[i];
+        var sndid = sndids[i];
+
+        if (! schan || schan.destroyed)
+            throw('glk_schannel_play_multi: invalid schannel');
+
+        var chunk = GiLoad.find_sound_chunk(sndid);
+        if (! chunk)
+            continue;
+
+        schan.queue(['play', chunk.track, 1]);
+        retval += 1;
+    }
+
+    return retval;
 }
 
 function glk_schannel_pause(schan) {
@@ -4519,7 +4535,12 @@ function glk_schannel_unpause(schan) {
 }
 
 function glk_schannel_set_volume_ext(schan, vol, duration, notify) {
-    throw('glk_schannel_set_volume_ext: invalid schannel');
+    if (! schan || ! gli_schannellist[schan.index])
+        throw('glk_schannel_set_volume_ext: invalid schannel');
+
+    schan.queue(['set_volume', vol / 0x10000, duration / 1000]);
+    // TODO notify
+    return null;
 }
 
 function glk_set_hyperlink(val) {
