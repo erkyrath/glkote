@@ -1272,7 +1272,7 @@ AudioChannel.prototype._stop_in = function(time) {
 
 AudioChannel.prototype.set_volume = function(volume, duration) {
     /* Thankfully, ramping the volume isn't affected by pause or stop. */
-    this.gain_node.gain.cancelScheduledValues(audio_context.currenTime);
+    this.gain_node.gain.cancelScheduledValues(audio_context.currentTime);
     this.gain_node.gain.linearRampToValueAtTime(volume, duration || 0);
 };
 
