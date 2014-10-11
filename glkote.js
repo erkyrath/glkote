@@ -920,7 +920,7 @@ function accept_one_content(arg) {
       if (drawcmd.image) {
         if (drawcmd.width) {
           ctx.drawImage(drawcmd.image, drawcmd.x, drawcmd.y,
-            draw_cmd.width, draw_cmd.height);
+            drawcmd.width, drawcmd.height);
         }
         else {
           ctx.drawImage(drawcmd.image, drawcmd.x, drawcmd.y);
