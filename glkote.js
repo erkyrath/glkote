@@ -44,6 +44,8 @@ GlkOte = function() {
 var game_interface = null;
 var windowport_id = 'windowport';
 var gameport_id = 'gameport';
+var windowport_el = null;
+var gameport_el = null;
 var generation = 0;
 var disabled = false;
 var loading_visible = null;
@@ -144,12 +146,18 @@ function glkote_init(iface) {
   if (iface.gameport)
       gameport_id = iface.gameport;
 
-  var el = $('#'+windowport_id);
-  if (!el.length) {
-    glkote_error('Cannot find windowport element #'+windowport_id+' in this document.');
+  gameport_el = $('#'+gameport_id);
+  if (!gameport_el.length) {
+      glkote_error('Cannot find gameport element #'+gameport_id+' in this document.');
+      return;
+  }
+
+  windowport_el = $('#'+windowport_id, gameport_el);
+  if (!windowport_el.length) {
+    glkote_error('Cannot find windowport element #'+windowport_id+' in the gameport.');
     return;
   }
-  el.empty();
+  windowport_el.empty();
   if (perform_paging)
     $(document).on('keypress', evhan_doc_keypress);
   $(window).on('resize', evhan_doc_resize);
@@ -208,30 +216,27 @@ function measure_window() {
      is true on all browsers but IE7. Fortunately, on IE7 it's
      the windowport size that's wrong -- gameport is the size
      we're interested in. */
-  el = $('#'+gameport_id);
-  if (!el.length)
-    return 'Cannot find gameport element #'+gameport_id+' in this document.';
 
   /* Exclude padding and border. */
-  metrics.width  = el.width();
-  metrics.height = el.height();
+  metrics.width = gameport_el.width();
+  metrics.height = gameport_el.height();
 
-  el = $('#layouttest_grid');
+  el = $('#layouttest_grid', gameport_el);
   if (!el.length)
     return 'Cannot find layouttest_grid element for window measurement.';
 
   /* Here we will include padding and border. */
   winsize = { width:el.outerWidth(), height:el.outerHeight() };
-  el = $('#layouttest_gridspan');
+  el = $('#layouttest_gridspan', gameport_el);
   spansize = { width:el.outerWidth(), height:el.outerHeight() };
-  el = $('#layouttest_gridline');
+  el = $('#layouttest_gridline', gameport_el);
   line1size = { width:el.outerWidth(), height:el.outerHeight() };
-  el = $('#layouttest_gridline2');
+  el = $('#layouttest_gridline2', gameport_el);
   line2size = { width:el.outerWidth(), height:el.outerHeight() };
 
-  metrics.gridcharheight = ($('#layouttest_gridline2').position().top
-    - $('#layouttest_gridline').position().top);
-  metrics.gridcharwidth = ($('#layouttest_gridspan').width() / 8);
+  metrics.gridcharheight = ($('#layouttest_gridline2', gameport_el).position().top
+    - $('#layouttest_gridline', gameport_el).position().top);
+  metrics.gridcharwidth = ($('#layouttest_gridspan', gameport_el).width() / 8);
   /* Yes, we can wind up with a non-integer charwidth value. */
 
   /* Find the total margin around the character grid (out to the window's
@@ -240,22 +245,22 @@ function measure_window() {
   metrics.gridmarginx = winsize.width - spansize.width;
   metrics.gridmarginy = winsize.height - (line1size.height + line2size.height);
 
-  el = $('#layouttest_buffer');
+  el = $('#layouttest_buffer', gameport_el);
   if (!el.length)
     return 'Cannot find layouttest_buffer element for window measurement.';
 
   /* Here we will include padding and border. */
   winsize = { width:el.outerWidth(), height:el.outerHeight() };
-  el = $('#layouttest_bufferspan');
+  el = $('#layouttest_bufferspan', gameport_el);
   spansize = { width:el.outerWidth(), height:el.outerHeight() };
-  el = $('#layouttest_bufferline');
+  el = $('#layouttest_bufferline', gameport_el);
   line1size = { width:el.outerWidth(), height:el.outerHeight() };
-  el = $('#layouttest_bufferline2');
+  el = $('#layouttest_bufferline2', gameport_el);
   line2size = { width:el.outerWidth(), height:el.outerHeight() };
 
-  metrics.buffercharheight = ($('#layouttest_bufferline2').position().top
-    - $('#layouttest_bufferline').position().top);
-  metrics.buffercharwidth = ($('#layouttest_bufferspan').width() / 8);
+  metrics.buffercharheight = ($('#layouttest_bufferline2', gameport_el).position().top
+    - $('#layouttest_bufferline', gameport_el).position().top);
+  metrics.buffercharwidth = ($('#layouttest_bufferspan', gameport_el).width() / 8);
   /* Yes, we can wind up with a non-integer charwidth value. */
 
   /* Again, these values include both sides (left+right, top+bottom). */
@@ -410,7 +415,7 @@ function glkote_update(arg) {
         }
 
         /* Add or remove the more prompt, based on the new needspaging flag. */
-        var moreel = $('#win'+win.id+'_moreprompt');
+        var moreel = $('#win'+win.id+'_moreprompt', gameport_el);
         if (!win.needspaging) {
           if (moreel.length)
             moreel.remove();
@@ -424,7 +429,7 @@ function glkote_update(arg) {
             var morex = win.coords.right + 20;
             var morey = win.coords.bottom;
             moreel.css({ bottom:morey+'px', right:morex+'px' });
-            $('#'+windowport_id).append(moreel);
+            windowport_el.append(moreel);
           }
         }
       }
@@ -539,7 +544,7 @@ function accept_one_window(arg) {
     win.coords = { left:null, top:null, right:null, bottom:null };
     win.history = new Array();
     win.historypos = 0;
-    $('#'+windowport_id).append(frameel);
+    windowport_el.append(frameel);
   }
   else {
     frameel = win.frameel;
@@ -562,7 +567,7 @@ function accept_one_window(arg) {
     }
     if (arg.gridheight < win.gridheight) {
       for (ix=arg.gridheight; ix<win.gridheight; ix++) {
-        var el = $('#win'+win.id+'_ln'+ix);
+        var el = $('#win'+win.id+'_ln'+ix, gameport_el);
         if (el.length)
           el.remove();
       }
@@ -624,7 +629,7 @@ function close_one_window(win) {
   delete windowdic[win.id];
   win.frameel = null;
 
-  var moreel = $('#win'+win.id+'_moreprompt');
+  var moreel = $('#win'+win.id+'_moreprompt', gameport_el);
   if (moreel.length)
     moreel.remove();
 }
@@ -676,7 +681,7 @@ function accept_one_content(arg) {
       var linearg = lines[ix];
       var linenum = linearg.line;
       var content = linearg.content;
-      var lineel = $('#win'+win.id+'_ln'+linenum);
+      var lineel = $('#win'+win.id+'_ln'+linenum, gameport_el);
       if (!lineel.length) {
         glkote_error('Got content for nonexistent line ' + linenum + ' of window ' + arg.id + '.');
         continue;
@@ -731,7 +736,7 @@ function accept_one_content(arg) {
         win.inputel.detach();
     }
 
-    var cursel = $('#win'+win.id+'_cursor');
+    var cursel = $('#win'+win.id+'_cursor', gameport_el);
     if (cursel.length)
       cursel.remove();
     cursel = null;
@@ -970,7 +975,7 @@ function accept_inputset(arg) {
     }
 
     if (win.type == 'grid') {
-      var lineel = $('#win'+win.id+'_ln'+argi.ypos);
+      var lineel = $('#win'+win.id+'_ln'+argi.ypos, gameport_el);
       if (!lineel.length) {
         glkote_error('Window ' + win.id + ' has requested input at unknown line ' + argi.ypos + '.');
         return;
@@ -989,7 +994,7 @@ function accept_inputset(arg) {
     }
 
     if (win.type == 'buffer') {
-      var cursel = $('#win'+win.id+'_cursor');
+      var cursel = $('#win'+win.id+'_cursor', gameport_el);
       if (!cursel.length) {
         cursel = $('<span>',
           { id: 'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
@@ -1155,7 +1160,7 @@ function retry_update() {
 
 /* Hide the error pane. */
 function clear_error() {
-  $('#errorpane').hide();
+  $('#errorpane', gameport_el).hide();
 }
 
 /* Hide the loading pane (the spinny compass), if it hasn't already been
@@ -1509,7 +1514,7 @@ function evhan_doc_keypress(ev) {
            if not... */
         if (frameel.scrollTop() + frameheight >= frameel.get(0).scrollHeight) {
           win.needspaging = false;
-          var moreel = $('#win'+win.id+'_moreprompt');
+          var moreel = $('#win'+win.id+'_moreprompt', gameport_el);
           if (moreel.length)
             moreel.remove();
           readjust_paging_focus(true);
@@ -1829,7 +1834,7 @@ function evhan_window_scroll(ev) {
 
   if (frameel.scrollTop() + frameheight >= frameel.get(0).scrollHeight) {
     win.needspaging = false;
-    var moreel = $('#win'+win.id+'_moreprompt');
+    var moreel = $('#win'+win.id+'_moreprompt', gameport_el);
     if (moreel.length)
       moreel.remove();
     readjust_paging_focus(true);
