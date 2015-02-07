@@ -521,11 +521,12 @@ function game_file_load_selected(ref) {
   }
   else {
     game_print('Loading data from file "' + ref.filename + '":');
-    var savedat = Dialog.file_read(ref, true);
-    if (savedat == null) {
+    var arr = Dialog.file_read(ref);
+    if (arr == null) {
       game_print('...but it failed to load?');
     }
     else {
+      var savedat = String.fromCharCode.apply(this, arr);
       game_print('"' + savedat + '"');
     }
   }
@@ -540,7 +541,10 @@ function game_file_save_selected(ref) {
   else {
     game_print('Saving data to file "' + ref.filename + '".');
     var savedat = 'Data saved at ' + Date();
-    Dialog.file_write(ref, savedat, true);
+    var arr = [];
+    for (var ix=0; ix<savedat.length; ix++)
+      arr[ix] = savedat.charCodeAt(ix);
+    Dialog.file_write(ref, arr);
   }
   game_simulate_dialog = false;
   game_select();
