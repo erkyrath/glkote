@@ -515,7 +515,18 @@ function game_submit_timer_input() {
   game_print('The timer has gone off. Ding!');
 }
 
-function game_file_selected(ref) {
+function game_file_load_selected(ref) {
+  if (!ref) {
+    game_print('Selection cancelled.');
+  }
+  else {
+    game_print('You selected the file "' + ref.filename + '".');
+  }
+  game_simulate_dialog = false;
+  game_select();
+}
+
+function game_file_save_selected(ref) {
   if (!ref) {
     game_print('Selection cancelled.');
   }
@@ -552,7 +563,7 @@ function game_parse(val) {
     helpopt('both',    'print output in both story windows');
     helpopt('bothlong','print long output in both story windows');
     helpopt('timer',   'set a timed event to fire in two seconds');
-    helpopt('save',    'open a file dialog');
+    helpopt('save, load',    'open a file dialog');
     helpopt('crash',   'react as if the game had crashed');
     helpopt('slow',    'react as if the game were taking a long time to compute its output');
     helpopt('todo',    'what do I still need to fix in this interface?');
@@ -779,13 +790,30 @@ function game_parse(val) {
     return;
   }
 
+  if (val == 'load') {
+    if (!window.Dialog) {
+      game_print('The "dialog.js" script was not loaded by this page, so you cannot test the file-selection dialog.');
+      return;
+    }
+    try {
+      Dialog.open(false, 'save', 'sample-demo', game_file_load_selected);
+    }
+    catch (ex) {
+      game_print('Your browser does not support game-loading.');
+      return;
+    }
+    game_simulate_dialog = true;
+    GlkOte.update({ type:'update', disable:true });
+    return;
+  }
+
   if (val == 'save') {
     if (!window.Dialog) {
       game_print('The "dialog.js" script was not loaded by this page, so you cannot test the file-selection dialog.');
       return;
     }
     try {
-      Dialog.open(true, 'save', 'sample-demo', game_file_selected);
+      Dialog.open(true, 'save', 'sample-demo', game_file_save_selected);
     }
     catch (ex) {
       game_print('Your browser does not support game-saving.');
