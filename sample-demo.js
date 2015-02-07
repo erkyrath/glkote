@@ -520,7 +520,14 @@ function game_file_load_selected(ref) {
     game_print('Selection cancelled.');
   }
   else {
-    game_print('You selected the file "' + ref.filename + '".');
+    game_print('Loading data from file "' + ref.filename + '":');
+    var savedat = Dialog.file_read(ref, true);
+    if (savedat == null) {
+      game_print('...but it failed to load?');
+    }
+    else {
+      game_print('"' + savedat + '"');
+    }
   }
   game_simulate_dialog = false;
   game_select();
@@ -531,7 +538,9 @@ function game_file_save_selected(ref) {
     game_print('Selection cancelled.');
   }
   else {
-    game_print('You selected the file "' + ref.filename + '" (although nothing was actually saved).');
+    game_print('Saving data to file "' + ref.filename + '".');
+    var savedat = 'Data saved at ' + Date();
+    Dialog.file_write(ref, savedat, true);
   }
   game_simulate_dialog = false;
   game_select();
@@ -563,7 +572,8 @@ function game_parse(val) {
     helpopt('both',    'print output in both story windows');
     helpopt('bothlong','print long output in both story windows');
     helpopt('timer',   'set a timed event to fire in two seconds');
-    helpopt('save, load',    'open a file dialog');
+    helpopt('save, load',  'open a file dialog');
+    helpopt('script',  'write a fake transcript file');
     helpopt('crash',   'react as if the game had crashed');
     helpopt('slow',    'react as if the game were taking a long time to compute its output');
     helpopt('todo',    'what do I still need to fix in this interface?');
@@ -821,6 +831,18 @@ function game_parse(val) {
     }
     game_simulate_dialog = true;
     GlkOte.update({ type:'update', disable:true });
+    return;
+  }
+
+  if (val == 'script') {
+    var ref = Dialog.file_construct_ref('test-script', 'transcript', 'sample-demo');
+    if (Dialog.file_ref_exists(ref)) {
+      game_print('File already exists; deleting...');
+      Dialog.file_remove_ref(ref);
+    }
+    var scriptdat = 'This is a fake transcript.\nIt was written out at ' + Date() + '.\n';
+    Dialog.file_write(ref, scriptdat, true);
+    game_print('Wrote a transcript file named "test-script".');
     return;
   }
 
