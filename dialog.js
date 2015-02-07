@@ -357,8 +357,7 @@ function evhan_select_change_editing() {
     butel = $('#'+dialog_el_id+'_delete');
     butel.prop('disabled', false);
     butel = $('#'+dialog_el_id+'_display');
-    butel.prop('disabled', !usage_is_textual(file.dirent.usage));
-    //### use binary flag?
+    butel.prop('disabled', false);
 }
 
 /* Event handler: The "Load" button.
@@ -650,12 +649,24 @@ function evhan_storage_changed(ev) {
         /* ### This doesn't correctly handle Unicode characters outside the
            16-bit range. */
         dat = String.fromCharCode.apply(this, dat);
+          
+        //### use binary flag?
+        if (usage_is_textual(editing_dirent.usage)) {
+          var textel = $('<div>', { 'class': 'DiaDisplayText' });
+          textel.text(dat);
+          bodyel.append(textel);
+          set_caption('Displaying file contents...', true);
+        }
+        else {
+          var b64dat = window.btoa(dat);
+          /*### the download link should really be the filename, escaped
+            for attribute safety, with the proper file suffix attached. */
+          var linkel = $('<a>', { 'href': 'data:application/octet-stream;base64,'+b64dat, 'target': '_blank', 'download': 'data' });
+          linkel.text(editing_dirent.filename);
+          bodyel.append(linkel);
+          set_caption('Use "Save As" option in your browser to download this link.', true);
+        }
 
-        var textel = $('<div>', { 'class': 'DiaDisplayText' });
-        textel.text(dat);
-        bodyel.append(textel);
-
-        set_caption('Displaying file contents...', true);
         return false;
     }
 
