@@ -644,7 +644,8 @@ function evhan_storage_changed(ev) {
         /* We want to display the selected file's contents. */
         bodyel.empty();
 
-        /* This is an array of character values (as ints) */
+        /* ### Make the unjustified assumption that this is an array of
+           character values (as ints). */
         var dat = file_read(editing_dirent);
         /* ### This doesn't correctly handle Unicode characters outside the
            16-bit range. */
@@ -1027,8 +1028,11 @@ function format_date(date) {
    JSON.stringify() and JSON.parse(), except not all browsers support those.
 */
 
+var encode_array = null;
+var decode_array = null;
+
 if (window.JSON) {
-    function encode_array(arr) {
+    encode_array = function(arr) {
         var res = JSON.stringify(arr);
         var len = res.length;
         /* Safari's JSON quotes arrays for some reason; we need to strip
@@ -1037,12 +1041,12 @@ if (window.JSON) {
             res = res.slice(1, len-1);
         return res;
     }
-    function decode_array(val) { return JSON.parse(val); }
+    decode_array = function(val) { return JSON.parse(val); }
 }
 else {
     /* Not-very-safe substitutes for JSON in old browsers. */
-    function encode_array(arr) { return '[' + arr + ']'; }
-    function decode_array(val) { return eval(val); }
+    encode_array = function(arr) { return '[' + arr + ']'; }
+    decode_array = function(val) { return eval(val); }
 }
 
 /* Locate the storage object, and set up the storage event handler, at load
