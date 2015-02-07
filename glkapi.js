@@ -4,13 +4,8 @@
  * Designed by Andrew Plotkin <erkyrath@eblong.com>
  * <http://eblong.com/zarf/glk/glkote.html>
  * 
- * This Javascript library is copyright 2010-13 by Andrew Plotkin. You may
- * copy and distribute it freely, by any means and under any conditions,
- * as long as the code and documentation is not changed. You may also
- * incorporate this code into your own program and distribute that, or
- * modify this code and use and distribute the modified version, as long
- * as you retain a notice in your program or documentation which mentions
- * my name and the URL shown above.
+ * This Javascript library is copyright 2010-15 by Andrew Plotkin.
+ * It is distributed under the MIT license; see the "LICENSE" file.
  *
  * This file is a Glk API compatibility layer for glkote.js. It offers a 
  * set of Javascript calls which closely match the original C Glk API;
