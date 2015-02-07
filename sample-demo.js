@@ -841,7 +841,10 @@ function game_parse(val) {
       Dialog.file_remove_ref(ref);
     }
     var scriptdat = 'This is a fake transcript.\nIt was written out at ' + Date() + '.\n';
-    Dialog.file_write(ref, scriptdat, true);
+    var arr = [];
+    for (var ix=0; ix<scriptdat.length; ix++)
+      arr[ix] = scriptdat.charCodeAt(ix);
+    Dialog.file_write(ref, arr);
     game_print('Wrote a transcript file named "test-script".');
     return;
   }
