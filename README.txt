@@ -94,9 +94,5 @@ el.show, el.hide
 
 ### Things to test
 
-scrolling
 scrolling on ipad
-scroll-buffer-trimming
-attempt to open dialog throws exception
 iOS: autocapitalization off
-initial value for an input field
