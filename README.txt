@@ -57,38 +57,3 @@ This package includes the jQuery JavaScript framework, version 1.11.2
 Copyright 2005, 2014 jQuery Foundation, Inc. and other contributors
 Released under the MIT license <http://jquery.org/license>
 For details, see the jQuery web site: <http://jquery.com/>
-
-####
-
-Prototype idioms to beware:
-.map() -> $.map?
-$ (anything)
-.on...?
-new Element
-Hash (each, get, index, keys, values, set) -> $.each?
-Event.extend
-Event.observe
-Object.keys
-Object.is (isNumber, isString)
-func.defer
-func.delay
-str.startsWith
-str.strip  -> trim
-str.times
-(str.indexOf is safe)
-el.childElements
-el.getDimensions
-el.getWidth
-el.getHeight
-el.insert
-el.writeAttribute
-el.remove
-el.update
-el.positionedOffset
-el.scroll*
-el.show, el.hide
-
-### Things to test
-
-scrolling on ipad
-iOS: autocapitalization off
