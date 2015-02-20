@@ -26,7 +26,11 @@
  * and use GlkOte directly.
  *
  * Alternatively, GlkOte could be used with a Glk library which acts as a
- * web service. The RemGlk library (not included) demonstrates this.
+ * web service. The RemGlk library (not included) can be used this way.
+ * In this mode, GlkOte collects user input and sends it to the web service
+ * as a AJAX request. The service decodes the (JSON-format) input data,
+ * executes a game turn, and returns the game response as a (JSON-format)
+ * reply to the request.
  *
  * For full documentation, see the docs.html file in this package.
  */
