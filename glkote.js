@@ -30,7 +30,8 @@
  * In this mode, GlkOte collects user input and sends it to the web service
  * as a AJAX request. The service decodes the (JSON-format) input data,
  * executes a game turn, and returns the game response as a (JSON-format)
- * reply to the request.
+ * reply to the request. A proof-of-concept can be found at:
+ *     https://github.com/erkyrath/remote-if-demo
  *
  * For full documentation, see the docs.html file in this package.
  */
