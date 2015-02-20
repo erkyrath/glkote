@@ -96,6 +96,12 @@ var terminator_key_names = {
    init time. */
 var terminator_key_values = {};
 
+/* The transcript-recording feature. If enabled, this sends session
+   information to an external recording service. */
+var recording = false;
+var recording_last_input = { input:null, timestamp:0 };
+var recording_handler = null;
+
 /* This function becomes GlkOte.init(). The document calls this to begin
    the game. The simplest way to do this is to give the <body> tag an
    onLoad="GlkOte.init();" attribute.
@@ -301,6 +307,9 @@ function measure_window() {
 */
 function glkote_update(arg) {
   hide_loading();
+
+  if (recording)
+    recording_send(arg);
 
   if (arg.type == 'error') {
     glkote_error(arg.message);
@@ -1398,7 +1407,15 @@ function send_response(type, win, val, val2) {
     });
   }
 
+  if (recording)
+    recording_last_input = { input:res, timestamp:new Date().getTime() };
   game_interface.accept(res);
+}
+
+/* ---------------------------------------------- */
+
+function recording_send(arg) {
+  glkote_log('### recording_send: ' + recording_last_input + ' ' + arg);
 }
 
 /* ---------------------------------------------- */
