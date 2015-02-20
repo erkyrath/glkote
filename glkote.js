@@ -26,7 +26,7 @@
  * and use GlkOte directly.
  *
  * Alternatively, GlkOte could be used with a Glk library which acts as a
- * web service. However, this has not yet been implemented.
+ * web service. The RemGlk library (not included) demonstrates this.
  *
  * For full documentation, see the docs.html file in this package.
  */
