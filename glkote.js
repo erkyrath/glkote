@@ -220,9 +220,11 @@ function glkote_init(iface) {
       recording_state = {
         sessionId: (new Date().getTime())+""+( Math.ceil( Math.random() * 10000 ) ),
         input: null, output: null,
-        timestamp: 0, outtimestamp: 0 
+        timestamp: 0, outtimestamp: 0
       }
-      glkote_log('Transcript recording active with destination ' + recording_handler_url);
+      if (iface.recording_label)
+        recording_state.label = iface.recording_label;
+      glkote_log('Transcript recording active: session ' + recording_state.sessionId + ' "' + recording_state.label + '", destination ' + recording_handler_url);
     }
   }
 
