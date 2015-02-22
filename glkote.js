@@ -1500,11 +1500,18 @@ function recording_send(arg) {
     var input = recording_state.input;
     var output = recording_state.output;
 
-    if (input && (input.type == 'line' || input.type == 'char')) {
+    var inputtype = null;
+    if (input)
+      inputtype = input.type;
+
+    if (inputtype == 'line' || inputtype == 'char') {
       recording_state.input = input.value;
     }
+    else if (inputtype == 'init' || inputtype == 'external' || inputtype == 'specialresponse' || !inputtype) {
+      recording_state.input = '';
+    }
     else {
-      /* Do not send 'init' or 'arrange' events. */
+      /* Do not send 'arrange' events. */
       send = false;
     }
 
