@@ -102,6 +102,7 @@ var recording = false;
 var recording_state = null;
 var recording_handler = null;
 var recording_handler_url = null;
+var recording_context = {};
 
 /* This function becomes GlkOte.init(). The document calls this to begin
    the game. The simplest way to do this is to give the <body> tag an
@@ -224,7 +225,10 @@ function glkote_init(iface) {
       }
       if (iface.recording_label)
         recording_state.label = iface.recording_label;
-      recording_state.format = 'glkote';
+      if (iface.recording_format == 'simple')
+        recording_state.format = 'simple';
+      else
+        recording_state.format = 'glkote';
       glkote_log('Transcript recording active: session ' + recording_state.sessionId + ' "' + recording_state.label + '", destination ' + recording_handler_url);
     }
   }
@@ -1489,6 +1493,66 @@ function recording_send(arg) {
   recording_state.outtimestamp = (new Date().getTime());
 
   var send = true;
+
+  /* If the format is not "glkote", we should massage state.input and
+     state.output. (Or set send=false to skip this update entirely.) */
+  if (recording_state.format == 'simple') {
+    var input = recording_state.input;
+    var output = recording_state.output;
+
+    if (input && (input.type == 'line' || input.type == 'char')) {
+      recording_state.input = input.value;
+    }
+    else {
+      /* Do not send 'init' or 'arrange' events. */
+      send = false;
+    }
+
+    /* We keep track of which windows are buffer windows. */
+    if (output.windows) {
+      recording_context.bufferwins = {};
+      for (var ix=0; ix<output.windows.length; ix++) {
+        if (output.windows[ix].type == 'buffer')
+          recording_context.bufferwins[output.windows[ix].id] = true;
+      }
+    }
+
+    /* Accumulate all the text that's sent to buffer windows. */
+    var buffer = '';
+
+    if (output.content) {
+      for (var ix=0; ix<output.content.length; ix++) {
+        var content = output.content[ix];
+        if (recording_context.bufferwins && recording_context.bufferwins[content.id]) {
+          if (content.text) {
+            for (var jx=0; jx<content.text.length; jx++) {
+              var text = content.text[jx];
+              if (!text.append)
+                buffer = buffer + '\n';
+              if (text.content) {
+                for (var kx=0; kx<text.content.length; kx++) {
+                  var el = text.content[kx];
+                  /* Why did I allow the LINE_DATA_ARRAY to have two
+                     possible formats? Sigh */
+                  if (jQuery.type(el) == 'string') {
+                    kx++;
+                    buffer = buffer + text.content[kx];
+                  }
+                  else {
+                    if (el.text)
+                      buffer = buffer + el.text;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }      
+    }
+
+    recording_state.output = buffer;
+  }
+
 
   if (send)
     recording_handler(recording_state);
