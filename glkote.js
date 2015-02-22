@@ -99,8 +99,9 @@ var terminator_key_values = {};
 /* The transcript-recording feature. If enabled, this sends session
    information to an external recording service. */
 var recording = false;
-var recording_last_input = { input:null, timestamp:0 };
+var recording_state = { input:null, output:null, timestamp:0, outtimestamp:0 };
 var recording_handler = null;
+var recording_handler_url = null;
 
 /* This function becomes GlkOte.init(). The document calls this to begin
    the game. The simplest way to do this is to give the <body> tag an
@@ -167,6 +168,8 @@ function glkote_init(iface) {
   }
   current_metrics = res;
 
+  /* Check the options that control whether URL-like strings in the output
+     are displayed as hyperlinks. */
   detect_external_links = iface.detect_external_links;
   if (detect_external_links) {
     regex_external_links = iface.regex_external_links;
@@ -189,6 +192,31 @@ function glkote_init(iface) {
            beginning with "http" or "https". */
         regex_external_links = RegExp('^https?:', 'i');
       }
+    }
+  }
+
+  /* Check the options that control transcript recording. */
+  if (iface.recording_url) {
+    recording = true;
+    recording_handler = recording_standard_handler;
+    recording_handler_url = iface.recording_url;
+  }
+  if (iface.recording_handler) {
+    recording = true;
+    recording_handler = iface.recording_handler;
+    recording_handler_url = '(custom handler)';
+  }
+  if (recording) {
+    /* But also check whether the user has opted out by putting "feedback=0"
+       in the URL query. */
+    var qparams = get_query_params();
+    var flag = qparams['feedback'];
+    if (jQuery.type(flag) != 'undefined' && flag != '1') {
+      recording = false;
+      glkote_log('User has opted out of transcript recording.');
+    }
+    else {
+      glkote_log('Transcript recording active with destination ' + recording_handler_url);
     }
   }
 
@@ -1407,15 +1435,77 @@ function send_response(type, win, val, val2) {
     });
   }
 
-  if (recording)
-    recording_last_input = { input:res, timestamp:new Date().getTime() };
+  if (recording) {
+    recording_state.input = res;
+    recording_state.timestamp = (new Date().getTime());
+  }
   game_interface.accept(res);
 }
 
 /* ---------------------------------------------- */
 
+/* Take apart the query string of the current URL, and turn it into
+   an object map.
+   (Adapted from querystring.js by Adam Vandenberg.)
+*/
+function get_query_params() {
+    var map = {};
+
+    var qs = location.search.substring(1, location.search.length);
+    if (qs.length) {
+        var args = qs.split('&');
+
+        qs = qs.replace(/\+/g, ' ');
+        for (var ix = 0; ix < args.length; ix++) {
+            var pair = args[ix].split('=');
+            var name = decodeURIComponent(pair[0]);
+            
+            var value = (pair.length==2)
+                ? decodeURIComponent(pair[1])
+                : name;
+            
+            map[name] = value;
+        }
+    }
+
+    return map;
+}
+
+/* This is called every time the game updates the screen state. It
+   wraps up the update with the most recent input event and sends them
+   off to whatever is handling transcript recordings.
+*/
 function recording_send(arg) {
-  glkote_log('### recording_send: ' + recording_last_input + ' ' + arg);
+  glkote_log('### recording_send: ' + recording_state + ' ' + arg);
+  recording_state.output = arg;
+  recording_state.outtimestamp = (new Date().getTime());
+
+  recording_handler(recording_state);
+
+  recording_state.input = null;
+  recording_state.output = null;
+  recording_state.timestamp = 0;
+  recording_state.outtimestamp = 0;
+}
+
+/* Send a wrapped-up state off to an AJAX handler. The state is a JSONable
+   object containing input, output, and timestamps. The format of the input
+   and output depends on the recording parameters.
+
+   (The timestamp field refers to the input time, which is what you generally
+   care about. The outtimestamp will nearly always follow very closely. If
+   there's a long gap, you know your game has spent a long time computing.)
+*/
+function recording_standard_handler(state) {
+  jQuery.ajax(recording_handler_url, {
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(state),
+        error: function(jqxhr, textstatus, errorthrown) {
+          glkote_log('Transcript recording failed; deactivating. Error ' + textstatus + ': ' + errorthrown);
+          recording = false;
+        }
+      } );
 }
 
 /* ---------------------------------------------- */
