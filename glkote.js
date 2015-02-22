@@ -1494,6 +1494,9 @@ function recording_send(arg) {
    (The timestamp field refers to the input time, which is what you generally
    care about. The outtimestamp will nearly always follow very closely. If
    there's a long gap, you know your game has spent a long time computing.)
+
+   If the AJAX request returns an error, this shuts off recording (rather
+   than trying again for future commands).
 */
 function recording_standard_handler(state) {
   jQuery.ajax(recording_handler_url, {
