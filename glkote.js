@@ -1476,7 +1476,6 @@ function get_query_params() {
    off to whatever is handling transcript recordings.
 */
 function recording_send(arg) {
-  glkote_log('### recording_send: ' + recording_state + ' ' + arg);
   recording_state.output = arg;
   recording_state.outtimestamp = (new Date().getTime());
 
