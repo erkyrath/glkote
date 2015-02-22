@@ -224,6 +224,7 @@ function glkote_init(iface) {
       }
       if (iface.recording_label)
         recording_state.label = iface.recording_label;
+      recording_state.format = 'glkote';
       glkote_log('Transcript recording active: session ' + recording_state.sessionId + ' "' + recording_state.label + '", destination ' + recording_handler_url);
     }
   }
