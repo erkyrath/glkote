@@ -99,7 +99,7 @@ var terminator_key_values = {};
 /* The transcript-recording feature. If enabled, this sends session
    information to an external recording service. */
 var recording = false;
-var recording_state = { input:null, output:null, timestamp:0, outtimestamp:0 };
+var recording_state = null;
 var recording_handler = null;
 var recording_handler_url = null;
 
@@ -216,6 +216,12 @@ function glkote_init(iface) {
       glkote_log('User has opted out of transcript recording.');
     }
     else {
+      /* Set up the recording-state object. */
+      recording_state = {
+        sessionId: (new Date().getTime())+""+( Math.ceil( Math.random() * 10000 ) ),
+        input: null, output: null,
+        timestamp: 0, outtimestamp: 0 
+      }
       glkote_log('Transcript recording active with destination ' + recording_handler_url);
     }
   }
@@ -1479,7 +1485,10 @@ function recording_send(arg) {
   recording_state.output = arg;
   recording_state.outtimestamp = (new Date().getTime());
 
-  recording_handler(recording_state);
+  var send = true;
+
+  if (send)
+    recording_handler(recording_state);
 
   recording_state.input = null;
   recording_state.output = null;
