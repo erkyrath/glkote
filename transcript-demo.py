@@ -50,6 +50,7 @@ for key in [ 'debug' ]:
     if val is not None:
         appoptions[key] = val
 
+
 class MainHandler(tornado.web.RequestHandler):
     def check_xsrf_cookie(self):
         # All the form input on this page is GlkOte AJAX requests,
@@ -62,7 +63,10 @@ class MainHandler(tornado.web.RequestHandler):
         
     @tornado.gen.coroutine
     def post(self):
-        print(self.request.body.decode())
+        state = json.loads(self.request.body.decode())
+        # We use json.dumps as an easy way to pretty-print the object
+        # we just parsed.
+        print(json.dumps(state, indent=1, sort_keys=True))
         self.write('Ok')
 
 # Core handlers.
