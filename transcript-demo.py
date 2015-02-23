@@ -30,10 +30,6 @@ tornado.options.define(
     'debug', type=bool,
     help='application debugging (see Tornado docs)')
 
-tornado.options.define(
-    'command', type=str,
-    help='shell command to run a RemGlk game')
-
 # Parse 'em up.
 tornado.options.parse_command_line()
 opts = tornado.options.options
