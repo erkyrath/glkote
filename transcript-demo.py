@@ -81,6 +81,11 @@ class RecordHandler(tornado.web.RequestHandler):
             game.launched = state['timestamp']
             self.application.games[sid] = game
 
+class RepeatHandler(tornado.web.RequestHandler):
+    @tornado.gen.coroutine
+    def get(self, sid):
+        self.render('sample-repeater.html')
+
 class Game:
     def __init__(self, sid, label):
         self.id = sid
@@ -92,6 +97,7 @@ class Game:
 handlers = [
     (r'/', MainHandler),
     (r'/record', RecordHandler),
+    (r'/repeat/([0-9]+)', RepeatHandler),
 ]
 
 class MyApplication(tornado.web.Application):
