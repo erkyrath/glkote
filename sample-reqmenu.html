@@ -1,0 +1,21 @@
+<html>
+<head>
+<title>Transcript Repeater Demo</title>
+</head>
+
+<body>
+
+<h1>Transcript Repeater Demo</h1>
+
+<p>
+Welcome to the Transcript Repeater Demo.
+</p>
+
+<ul>
+{% for game in games %}
+<li> {{ game.label }} ({{ game.id }})
+{% end %}
+</ul>
+
+</body>
+</html>

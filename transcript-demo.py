@@ -51,7 +51,9 @@ for key in [ 'debug' ]:
 class MainHandler(tornado.web.RequestHandler):
     @tornado.gen.coroutine
     def get(self):
-        self.render('sample-repeater.html')
+        ls = list(self.application.games.values())
+        ls.sort(key=lambda val:val.launched)
+        self.render('sample-reqmenu.html', games=ls)
 
 class RecordHandler(tornado.web.RequestHandler):
     def check_xsrf_cookie(self):
@@ -66,11 +68,26 @@ class RecordHandler(tornado.web.RequestHandler):
     @tornado.gen.coroutine
     def post(self):
         state = json.loads(self.request.body.decode())
+        
         # We use json.dumps as an easy way to pretty-print the object
         # we just parsed.
         print(json.dumps(state, indent=1, sort_keys=True))
         self.write('Ok')
 
+        sid = state['sessionId']
+        game = self.application.games.get(sid);
+        if not game:
+            game = Game(sid, state['label'])
+            game.launched = state['timestamp']
+            self.application.games[sid] = game
+
+class Game:
+    def __init__(self, sid, label):
+        self.id = sid
+        self.label = label
+        self.windows = []
+        self.gridcontent = {}
+        
 # Core handlers.
 handlers = [
     (r'/', MainHandler),
@@ -84,6 +101,9 @@ class MyApplication(tornado.web.Application):
     def init_app(self):
         # Grab the same logger that tornado uses.
         self.log = logging.getLogger("tornado.general")
+
+        # Game repository; maps session ID to game objects.
+        self.games = {}
 
 application = MyApplication(
     handlers,
