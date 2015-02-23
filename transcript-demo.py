@@ -50,8 +50,12 @@ for key in [ 'debug' ]:
     if val is not None:
         appoptions[key] = val
 
-
 class MainHandler(tornado.web.RequestHandler):
+    @tornado.gen.coroutine
+    def get(self):
+        self.write('This is transcript-demo.py.')
+
+class RecordHandler(tornado.web.RequestHandler):
     def check_xsrf_cookie(self):
         # All the form input on this page is GlkOte AJAX requests,
         # so we'll skip XSRF checking.
@@ -72,6 +76,7 @@ class MainHandler(tornado.web.RequestHandler):
 # Core handlers.
 handlers = [
     (r'/', MainHandler),
+    (r'/record', RecordHandler),
 ]
 
 class MyApplication(tornado.web.Application):
