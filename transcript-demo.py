@@ -37,6 +37,8 @@ opts = tornado.options.options
 # Define application options which are always set.
 appoptions = {
     'xsrf_cookies': True,
+    'template_path': '.',
+    'static_path': '.',
     'cookie_secret': '__FILL_IN_RANDOM_DATA_HERE__',
     }
 
@@ -49,7 +51,7 @@ for key in [ 'debug' ]:
 class MainHandler(tornado.web.RequestHandler):
     @tornado.gen.coroutine
     def get(self):
-        self.write('This is transcript-demo.py.')
+        self.render('sample-repeater.html')
 
 class RecordHandler(tornado.web.RequestHandler):
     def check_xsrf_cookie(self):
