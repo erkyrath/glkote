@@ -1076,6 +1076,35 @@ If <code>detect_external_links</code> is set, GlkOte will detect URLs in the dis
 See "<a href="#extlinks">External hyperlinks</a>".
 <p>
 
+<pre class="Def">
+Game.recording_url, Game.recording_handler
+Game.recording_format, Game.recording_label
+</pre>
+<p>
+
+If <code>recording_url</code> is set, GlkOte will forward every command (input and output) to that URL as an AJAX JSON POST request. To do something else with the command, you can instead set <code>recording_handler</code> to an arbitrary Javascript function.
+<p>
+
+By default, the sent object looks like:
+<p>
+
+<pre class="Sample">
+{ "format": "glkote",
+  "input": {<em>input event object; <a href="#input">see above</a></em>},
+  "output": {<em>output update object; <a href="#input">see above</a></em>},
+  "sessionId": "<em>string of digits; identifies game session</em>",
+  "label": "<em>the recording_label parameter, or the game title or URL</em>",
+  "timestamp": <em>Unix timestamp when input received</em>,
+  "outtimestamp": <em>Unix timestamp when output generated</em> }
+</pre>
+<p>
+
+If <code>recording_format</code> is set to <code>"simple"</code>, the <code>"input"</code> and <code>"output"</code> fields will be replaced with plain strings (<code>"output"</code> will contain newlines). In this format, style information is lost, as is the distinction between line and character input, etc.
+<p>
+
+(Regardless of configuration, the player can disable transcript recording by adding <code>?feedback=0</code> to the URL.)
+<p>
+
 <h2><a name="layout">Laying Out Windows</a></h2>
 
 The most painful task your game faces -- well, aside from creating a superior world model and IF English parser -- is placing your windows on the screen. When you define a <code>windows</code> property for <code>GlkOte.update</code>, you must give the position (left and top coordinates) and the size (width and height). But how do you know what they should be?
