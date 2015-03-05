@@ -3080,9 +3080,11 @@ function glk_gestalt_ext(sel, val, arr) {
         return 1;
 
     case 6: // gestalt_Graphics
-        return 0;
+        return 1;
 
     case 7: // gestalt_DrawImage
+        if (val == Const.wintype_TextBuffer)
+            return 1;
         return 0;
 
     case 8: // gestalt_Sound
@@ -3107,7 +3109,7 @@ function glk_gestalt_ext(sel, val, arr) {
         return 0;
 
     case 14: // gestalt_GraphicsTransparency
-        return 0;
+        return 1;
 
     case 15: // gestalt_Unicode
         return 1;
