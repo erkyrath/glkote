@@ -148,6 +148,7 @@ Commons Attribution-Noncommercial-Share Alike 3.0 Unported License</a>.
   <ul>
     <li><a href="#gridupdate">Grid Window Updates</a>
     <li><a href="#bufferupdate">Buffer Window Updates</a>
+    <li><a href="#linedata">The Line Data Array</a>
   </ul>
 </ul>
 <li><a href="#specialrequests">Special Input Requests</a>
@@ -903,29 +904,7 @@ Each element in the <code>lines</code> array represents one line of the grid to 
 (To clear a line completely, you may use an empty <code>content</code> array, or omit the <code>content</code> field entirely.)
 <p>
 
-The LINE_DATA_ARRAY describes the line in terms of runs of characters which have the same style. Each run in the array has the form
-<p>
-
-<pre class="Sample">
-{ style: STYLE, hyperlink: VALUE, text: STRING }
-</pre>
-<p>
-
-This gives the name of a style, and a string of characters in that style. If the (optional) <code>hyperlink</code> property is defined, the run is a hyperlink with that target value.
-<p>
-
-All these runs are concatenated to make the line. If this is short of the grid width, it is padded (on the right) with whitespace in the "normal" style.
-<p>
-
-You can also describe a run in the LINE_DATA_ARRAY by giving two separate strings (the style and text values). This is a simpler format for a run; note that it cannot specify a hyperlink. You can even mix the two run formats:
-<p>
-
-<pre class="Sample">
-[ STYLE1, STRING1, 
-  { style: STYLE2, text: STRING2 }, 
-  STYLE3, STRING3, ... ]
-</pre>
-<p>
+The <code>content</code> describes the line in terms of runs of characters which have the same style. The format is described <a href="#linedata">below</a>.
 
 <h4><a name="bufferupdate">Buffer Window Updates</a></h4>
 
@@ -943,7 +922,7 @@ If the <code>clear</code> property is true, the buffer window is first cleared.
 Then, each element in the <code>text</code> array represents one line (or paragraph) to add to the buffer. If the element's <code>append</code> property is true, the text is appended to the last line that currently exists in the buffer. If false, the text forms a new line. (If the buffer is empty, <code>append</code> is ignored and the text becomes the buffer's first line.)
 <p>
 
-The <code>content</code> array has the same format defined above. (Except that there is no right-padding.)
+The <code>content</code> describes the line in terms of runs of characters which have the same style. The format is described <a href="#linedata">below</a>.
 <p>
 
 The <code>clear</code> and <code>append</code> values may be omitted; they default to false. Omitting <code>text</code> is equivalent to an empty array. Within the <code>text</code> array, the <code>content</code> may be omitted if there is no data for the line. Therefore, an empty object <code>{}</code> is a valid array entry; it indicates a blank line.
@@ -951,6 +930,34 @@ The <code>clear</code> and <code>append</code> values may be omitted; they defau
 
 (For efficiency, only the first element of the <code>text</code> array should have <code>append</code>. Condense elements into complete paragraphs where possible.)
 <p>
+
+<h4><a name="linedata">The Line Data Array</a></h4>
+
+Both grid and buffer windows use a <code>content</code> field, which contains an array of runs of characters. Each run in the array has the form
+<p>
+
+<pre class="Sample">
+{ style: STYLE, hyperlink: VALUE, text: STRING }
+</pre>
+<p>
+
+This gives the name of a style, and a string of characters in that style. If the (optional) <code>hyperlink</code> property is defined, the run is a hyperlink with that target value.
+<p>
+
+All these runs are concatenated to make the line. For grid windows, if this is short of the grid width, it is padded (on the right) with whitespace in the "normal" style. For buffer windows, no padding is needed.
+<p>
+
+You can also describe a run in the LINE_DATA_ARRAY by giving two separate strings (the style and text values). This is a simpler format for a run; note that it cannot specify a hyperlink. You can even mix the two run formats:
+<p>
+
+<pre class="Sample">
+[ STYLE1, STRING1, 
+  { style: STYLE2, text: STRING2 }, 
+  STYLE3, STRING3, ... ]
+</pre>
+<p>
+
+Yes, parsing this is a bit of a nuisance. You have to examine the type of each entry to decide whether it's an object or (the first of) a pair of strings. Sorry; the format has evolved over time.
 
 <h2><a name="disabling">Disabling the UI</a></h2>
 
