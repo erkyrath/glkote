@@ -4215,9 +4215,17 @@ function glk_request_timer_events(msec) {
     }
 }
 
-/* Graphics functions are not currently supported. */
+/* Graphics functions. */
 
 function glk_image_get_info(imgid, widthref, heightref) {
+    var info = GlkOte.getimageinfo(imgid);
+    if (info !== null) {
+        if (widthref)
+            widthref.set_value(info.width);
+        if (heightref)
+            heightref.set_value(info.height);
+        return 1;
+    }
     if (widthref)
         widthref.set_value(0);
     if (heightref)
