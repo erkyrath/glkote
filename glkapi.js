@@ -4222,7 +4222,10 @@ function glk_request_timer_events(msec) {
 /* Graphics functions. */
 
 function glk_image_get_info(imgid, widthref, heightref) {
-    var info = GlkOte.getimageinfo(imgid);
+    if (!window.GiLoad || !GiLoad.get_image_info)
+        return null;
+
+    var info = GiLoad.get_image_info(imgid);
     if (info !== null) {
         if (widthref)
             widthref.set_value(info.width);
