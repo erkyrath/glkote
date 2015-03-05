@@ -947,7 +947,21 @@ This gives the name of a style, and a string of characters in that style. If the
 All these runs are concatenated to make the line. For grid windows, if this is short of the grid width, it is padded (on the right) with whitespace in the "normal" style. For buffer windows, no padding is needed.
 <p>
 
-You can also describe a run in the LINE_DATA_ARRAY by giving two separate strings (the style and text values). This is a simpler format for a run; note that it cannot specify a hyperlink. You can even mix the two run formats:
+A buffer window can contain inline images. These are described by a "run" containing no text, just an image number and an alignment string ("inlineup", "inlinedown", "inlinecenter", "marginleft", "marginright").
+<p>
+
+<pre class="Sample">
+{ special: "image", image: NUMBER, alignment: ALIGNMENT }
+</pre>
+<p>
+
+### flow break -- special or line flag?
+<p>
+
+(Future extensions will use different <code>special</code> field values.)
+<p>
+
+You can also describe a text run in the array by giving two separate strings (the style and text values). This is a simpler format for a run; note that it cannot specify a hyperlink. You can even mix the two run formats:
 <p>
 
 <pre class="Sample">
@@ -957,7 +971,7 @@ You can also describe a run in the LINE_DATA_ARRAY by giving two separate string
 </pre>
 <p>
 
-Yes, parsing this is a bit of a nuisance. You have to examine the type of each entry to decide whether it's an object or (the first of) a pair of strings. Sorry; the format has evolved over time.
+Yes, parsing this is a bit of a nuisance. You have to examine the type of each entry to decide whether it's an object or (the first of) a pair of strings. Then, if it's an object, you have to look for a <code>special</code> field. Sorry; the format has evolved over time.
 
 <h2><a name="disabling">Disabling the UI</a></h2>
 
