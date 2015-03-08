@@ -94,6 +94,11 @@ function game_print(val) {
     return;
   }
 
+  if (val.special !== undefined) {
+    stream.push({ content: [ val ] });
+    return;
+  }
+
   var style = val.style;
   if (!style)
     style = 'normal';
@@ -571,6 +576,7 @@ function game_parse(val) {
     helpopt('menu',    'pause the game for menu input');
     helpopt('quote',   'display a header pane with a centered box quote');
     helpopt('link',    'hyperlinks in the story window and quote box');
+    helpopt('image',   'display an image');
     helpopt('split',   'open a second story window');
     helpopt('unsplit', 'close the second story window');
     helpopt('both',    'print output in both story windows');
@@ -617,6 +623,13 @@ function game_parse(val) {
     game_print({ newline:false, text:' is an external URL set off by a distinct style. (External hyperlinks may be clickable or not, depending on GlkOte\'s configuration.)\n'});
     game_quotemove = game_moves+1;
     game_quotehaslink = true;
+    return;
+  }
+
+  if (val == 'image') {
+    game_print('Here\'s an image:\n');
+    var img = { special:'image', image:0, url:'media/pict-0.jpeg', alttext:'Picture of Zarf', alignment:'inlineup', width:125, height:180 };
+    game_print(img);
     return;
   }
 
