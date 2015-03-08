@@ -739,7 +739,7 @@ function accept_one_content(arg) {
         for (sx=0; sx<content.length; sx++) {
           var rdesc = content[sx];
           var rstyle, rtext, rlink;
-          if (jQuery.type(rdesc) == 'object') {
+          if (jQuery.type(rdesc) === 'object') {
             if (rdesc.special !== undefined)
               continue;
             rstyle = rdesc.style;
@@ -852,9 +852,23 @@ function accept_one_content(arg) {
       for (sx=0; sx<content.length; sx++) {
         var rdesc = content[sx];
         var rstyle, rtext, rlink;
-        if (jQuery.type(rdesc) == 'object') {
-          if (rdesc.special !== undefined)
+        if (jQuery.type(rdesc) === 'object') {
+          if (rdesc.special !== undefined) {
+            if (rdesc.special == 'image') {
+              /*### reload URL if possible */
+              /*### alignment */
+              var el = $('<img>', 
+                { src:rdesc.url, 
+                  width:''+rdesc.width, height:''+rdesc.height } );
+              if (rdesc.alttext)
+                el.attr('alt', rdesc.alttext);
+              else
+                el.attr('alt', 'Image '+rdesc.image);
+              divel.append(el);
+              divel.data('endswhite', false);
+            }
             continue;
+          }
           rstyle = rdesc.style;
           rtext = rdesc.text;
           rlink = rdesc.hyperlink;
