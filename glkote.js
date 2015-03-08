@@ -740,6 +740,8 @@ function accept_one_content(arg) {
           var rdesc = content[sx];
           var rstyle, rtext, rlink;
           if (jQuery.type(rdesc) == 'object') {
+            if (rdesc.special !== undefined)
+              continue;
             rstyle = rdesc.style;
             rtext = rdesc.text;
             rlink = rdesc.hyperlink;
@@ -851,6 +853,8 @@ function accept_one_content(arg) {
         var rdesc = content[sx];
         var rstyle, rtext, rlink;
         if (jQuery.type(rdesc) == 'object') {
+          if (rdesc.special !== undefined)
+            continue;
           rstyle = rdesc.style;
           rtext = rdesc.text;
           rlink = rdesc.hyperlink;
