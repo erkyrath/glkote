@@ -244,41 +244,68 @@ function glkote_init(iface) {
      different point sizes)
    - the amount of padding space around buffer and grid window content
 
-   This stuff is determined by measuring the dimensions of the (invisible,
-   offscreen) windows in the layouttestpane div.
+   This stuff is determined by measuring dimensions of some invisible,
+   offscreen windows.
 */
 function measure_window() {
   var metrics = {};
-  var el, linesize, winsize, line1size, line2size, spansize;
+  var linesize, winsize, line1size, line2size, spansize;
 
   /* We assume the gameport is the same size as the windowport, which
      is true on all browsers but IE7. Fortunately, on IE7 it's
      the windowport size that's wrong -- gameport is the size
      we're interested in. */
-  el = $('#'+gameport_id);
-  if (!el.length)
+  var gameport = $('#' + gameport_id);
+  if (!gameport.length)
     return 'Cannot find gameport element #'+gameport_id+' in this document.';
 
   /* Exclude padding and border. */
-  metrics.width  = el.width();
-  metrics.height = el.height();
+  metrics.width  = gameport.width();
+  metrics.height = gameport.height();
 
-  el = $('#layouttest_grid');
-  if (!el.length)
-    return 'Cannot find layouttest_grid element for window measurement.';
+  /* Create a dummy layout div containing a grid window and a buffer window,
+   * each with two lines of text. */
+  var layout_test_pane = $('<div>');
+  layout_test_pane.css({
+    /* display: none would make the pane not render at all, making it
+     * impossible to measure.  Instead, make it invisible and offscreen. */
+    position: 'absolute',
+    visibility: 'hidden',
+    left: '-1000px'
+  });
+  var line = $('<div>');
+  $('<span>', {'class': "Style_normal"}).text('12345678').appendTo(line);
+
+  var gridwin = $('<div>', {'class': "WindowFrame GridWindow"});
+  var gridline1 = line.clone().addClass('GridLine').appendTo(gridwin);
+  var gridline2 = line.clone().addClass('GridLine').appendTo(gridwin);
+  var gridspan = gridline1.children('span');
+  layout_test_pane.append(gridwin);
+
+  var bufwin = $('<div>', {'class': "WindowFrame BufferWindow"});
+  var bufline1 = line.clone().addClass('BufferLine').appendTo(bufwin);
+  var bufline2 = line.clone().addClass('BufferLine').appendTo(bufwin);
+  var bufspan = bufline1.children('span');
+  layout_test_pane.append(bufwin);
+
+  layout_test_pane.appendTo(gameport);
+  console.log(layout_test_pane);
+
+  var get_size = function(element) {
+    return {
+      width: element.outerWidth(),
+      height: element.outerHeight()
+    };
+  };
 
   /* Here we will include padding and border. */
-  winsize = { width:el.outerWidth(), height:el.outerHeight() };
-  el = $('#layouttest_gridspan');
-  spansize = { width:el.outerWidth(), height:el.outerHeight() };
-  el = $('#layouttest_gridline');
-  line1size = { width:el.outerWidth(), height:el.outerHeight() };
-  el = $('#layouttest_gridline2');
-  line2size = { width:el.outerWidth(), height:el.outerHeight() };
+  winsize = get_size(gridwin);
+  spansize = get_size(gridspan);
+  line1size = get_size(gridline1);
+  line2size = get_size(gridline2);
 
-  metrics.gridcharheight = ($('#layouttest_gridline2').position().top
-    - $('#layouttest_gridline').position().top);
-  metrics.gridcharwidth = ($('#layouttest_gridspan').width() / 8);
+  metrics.gridcharheight = gridline2.position().top - gridline1.position().top;
+  metrics.gridcharwidth = gridspan.width() / 8;
   /* Yes, we can wind up with a non-integer charwidth value. */
 
   /* Find the total margin around the character grid (out to the window's
@@ -287,27 +314,22 @@ function measure_window() {
   metrics.gridmarginx = winsize.width - spansize.width;
   metrics.gridmarginy = winsize.height - (line1size.height + line2size.height);
 
-  el = $('#layouttest_buffer');
-  if (!el.length)
-    return 'Cannot find layouttest_buffer element for window measurement.';
-
   /* Here we will include padding and border. */
-  winsize = { width:el.outerWidth(), height:el.outerHeight() };
-  el = $('#layouttest_bufferspan');
-  spansize = { width:el.outerWidth(), height:el.outerHeight() };
-  el = $('#layouttest_bufferline');
-  line1size = { width:el.outerWidth(), height:el.outerHeight() };
-  el = $('#layouttest_bufferline2');
-  line2size = { width:el.outerWidth(), height:el.outerHeight() };
+  winsize = get_size(bufwin);
+  spansize = get_size(bufspan);
+  line1size = get_size(bufline1);
+  line2size = get_size(bufline2);
 
-  metrics.buffercharheight = ($('#layouttest_bufferline2').position().top
-    - $('#layouttest_bufferline').position().top);
-  metrics.buffercharwidth = ($('#layouttest_bufferspan').width() / 8);
+  metrics.buffercharheight = bufline2.position().top - bufline1.position().top;
+  metrics.buffercharwidth = bufspan.width() / 8;
   /* Yes, we can wind up with a non-integer charwidth value. */
 
   /* Again, these values include both sides (left+right, top+bottom). */
   metrics.buffermarginx = winsize.width - spansize.width;
   metrics.buffermarginy = winsize.height - (line1size.height + line2size.height);
+
+  /* Now that we're done measuring, discard the pane */
+  layout_test_pane.remove();
 
   /* these values come from the game interface object */
   metrics.outspacingx = 0;
