@@ -951,12 +951,15 @@ A buffer window can contain inline images. These are described by a "run" contai
 <p>
 
 <pre class="Sample">
-{ special: "image", image: NUMBER, alignment: ALIGNMENT }
+{ special: "image", image: NUMBER, hyperlink: VALUE,
+  alignment: ALIGNMENT,
+  width: NUMBER, height: NUMBER, url: STRING, alttext: STRING }
 </pre>
 <p>
 
-### flow break -- special or line flag?
 ### image scaling: what scale is the scale in?
+### I think we throw in size, URL, alt text -- everything so that we *don't* need a GiLoad call here. Then do an optional GiLoad to load the image data, if that is necessary.
+### flow break -- special or line flag?
 <p>
 
 (Future extensions will use different <code>special</code> field values.)

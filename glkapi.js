@@ -618,7 +618,14 @@ var Const = {
       stylehint_just_LeftFlush : 0,
       stylehint_just_LeftRight : 1,
       stylehint_just_Centered : 2,
-      stylehint_just_RightFlush : 3
+      stylehint_just_RightFlush : 3,
+
+    imagealign_InlineUp : 1,
+    imagealign_InlineDown : 2,
+    imagealign_InlineCenter : 3,
+    imagealign_MarginLeft : 4,
+    imagealign_MarginRight : 5
+
 };
 
 var KeystrokeNameMap = {
@@ -2256,6 +2263,40 @@ function gli_window_buffer_deaccumulate(win) {
     win.accum.length = 0;
     win.accumstyle = win.style;
     win.accumhyperlink = win.hyperlink;
+}
+
+/* Add a special object onto a buffer window update. This resets the
+   accumulator.
+*/
+function gli_window_buffer_put_special(win, obj) {
+    gli_window_buffer_deaccumulate(win);
+
+    var conta = win.content;
+    var arr = undefined;
+    var obj;
+
+    /* The next bit is a simplified version of the array-append code 
+       from deaccumulate(). It's simpler because we have exactly one
+       item to add. */
+
+    if (conta.length == 0) {
+        arr = [];
+        conta.push({ content: arr, append: true });
+    }
+    else {
+        obj = conta[conta.length-1];
+        if (!obj.content) {
+            arr = [];
+            obj.content = arr;
+        }
+        else {
+            arr = obj.content;
+        }
+    }
+    
+    if (arr !== undefined) {
+        arr.push(obj);
+    }
 }
 
 function gli_window_close(win, recurse) {
@@ -4243,18 +4284,56 @@ function glk_image_get_info(imgid, widthref, heightref) {
 function glk_image_draw(win, imgid, val1, val2) {
     if (!win)
         throw('glk_image_draw: invalid window');
+
+    if (!window.GiLoad || !GiLoad.get_image_info)
+        return 0;
+    var info = GiLoad.get_image_info(imgid);
+    if (info === null)
+        return 0;
+
+    var img = { special:'image', image:imgid, 
+                url:info.url, alttext:info.alttext,
+                width:info.width, height:info.height };
+
+    switch (win.type) {
+    case Const.wintype_TextBuffer:
+        var alignment = 'inlineup';
+        switch (val1) {
+            case Const.imagealign_InlineUp:
+                alignment = 'inlineup';
+                break;
+            case Const.imagealign_InlineDown:
+                alignment = 'inlinedown';
+                break;
+            case Const.imagealign_InlineCenter:
+                alignment = 'inlinecenter';
+                break;
+            case Const.imagealign_MarginLeft:
+                alignment = 'marginleft';
+                break;
+            case Const.imagealign_MarginRight:
+                alignment = 'marginright';
+                break;
+        }
+        img.alignment = alignment;
+        gli_window_buffer_put_special(win, img);
+        return 1;
+    }
+
     return 0;
 }
 
 function glk_image_draw_scaled(win, imgid, val1, val2, width, height) {
     if (!win)
         throw('glk_image_draw_scaled: invalid window');
+    //###
     return 0;
 }
 
 function glk_window_flow_break(win) {
     if (!win)
         throw('glk_window_flow_break: invalid window');
+    //###
 }
 
 function glk_window_erase_rect(win, left, top, width, height) {
