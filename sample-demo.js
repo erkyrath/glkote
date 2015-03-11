@@ -83,6 +83,8 @@ function game_print(val) {
     return;
   }
 
+  /* If val is a string, it is added. If the string contains newlines, this
+     will require several content entries. */
   if (jQuery.type(val) === 'string') {
     var ls = val.split('\n');
     for (ix=0; ix<ls.length; ix++) {
@@ -94,11 +96,21 @@ function game_print(val) {
     return;
   }
 
+  /* If val is an array, it must contain valid line_array_data entries. */
+  if (jQuery.type(val) === 'array') {
+    stream.push({ content: val });
+    return;
+  }
+
+  /* If val is an object with a special field, it is added as a singleton
+     line_array_data entry. */
   if (val.special !== undefined) {
     stream.push({ content: [ val ] });
     return;
   }
 
+  /* Otherwise, we add a singleton text entry. We're careful about the
+     format, though. */
   var style = val.style;
   if (!style)
     style = 'normal';
@@ -629,7 +641,7 @@ function game_parse(val) {
   if (val == 'image') {
     game_print('Here\'s an image:\n');
     var img = { special:'image', image:0, url:'media/pict-0.jpeg', alttext:'Picture of Zarf', alignment:'inlineup', width:125, height:180 };
-    game_print(img);
+    game_print(['normal', '(', img, 'normal', ')']);
     return;
   }
 
