@@ -638,6 +638,15 @@ function game_parse(val) {
     return;
   }
 
+  if (val == 'images') {
+    game_print('Here are several images in a row:\n');
+    var img1 = { special:'image', image:0, url:'media/pict-0.jpeg', alttext:'Picture of Zarf', alignment:'inlineup', width:125, height:180 };
+    var img2 = { special:'image', image:10, url:'media/pict-10.jpeg', alttext:'Green texture', alignment:'inlinedown', width:128, height:128 };
+    var img3 = { special:'image', image:5, url:'media/pict-5.png', alttext:'Capital I', alignment:'inlinecenter', width:47, height:62 };
+    game_print(['normal', 'With inlineup: ', img1, 'normal', ' With inlinedown: ', img2, 'normal', ' with inlinecenter: ', img3]);
+    return;
+  }
+
   if (val == 'image') {
     game_print('Here\'s an image:\n');
     var img = { special:'image', image:0, url:'media/pict-0.jpeg', alttext:'Picture of Zarf', alignment:'inlineup', width:125, height:180 };

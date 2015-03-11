@@ -856,14 +856,27 @@ function accept_one_content(arg) {
           if (rdesc.special !== undefined) {
             if (rdesc.special == 'image') {
               /*### reload URL if possible */
-              /*### alignment */
               var el = $('<img>', 
-                { src:rdesc.url, 
+                { src:rdesc.url,
                   width:''+rdesc.width, height:''+rdesc.height } );
               if (rdesc.alttext)
                 el.attr('alt', rdesc.alttext);
               else
                 el.attr('alt', 'Image '+rdesc.image);
+              var alignment = 'bottom';
+              switch (rdesc.alignment) {
+                case 'inlineup':
+                  alignment = 'text-bottom';
+                  break;
+                case 'inlinedown':
+                  alignment = 'text-top';
+                  break;
+                case 'inlinecenter':
+                  alignment = 'middle';
+                  break;
+                /*###*/
+              }
+              el.css('vertical-align', alignment);
               divel.append(el);
               divel.data('endswhite', false);
             }
