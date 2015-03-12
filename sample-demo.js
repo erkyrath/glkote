@@ -621,6 +621,13 @@ function game_parse(val) {
       game_print({ newline:false, style:'subheader', text: cmd});
       game_print({ newline:false, text: ': ' + val});
     }
+    helpopt2 = function(cmd, args, val) {
+      game_print({ text: '    '});
+      game_print({ newline:false, style:'subheader', text: cmd});
+      game_print({ newline:false, text: ' '});
+      game_print({ newline:false, style:'emphasized', text: args});
+      game_print({ newline:false, text: ': ' + val});
+    }
 
     helpopt('help',    'this list');
     helpopt('long',    'a long paragraph of text');
@@ -633,7 +640,7 @@ function game_parse(val) {
     helpopt('menu',    'pause the game for menu input');
     helpopt('quote',   'display a header pane with a centered box quote');
     helpopt('link',    'hyperlinks in the story window and quote box');
-    helpopt('image',   'display an image');
+    helpopt2('image',  '[number] [left/right/up/down/center] [caption]',  'display an image');
     helpopt('split',   'open a second story window');
     helpopt('unsplit', 'close the second story window');
     helpopt('both',    'print output in both story windows');
