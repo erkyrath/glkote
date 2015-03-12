@@ -688,13 +688,14 @@ function game_parse(val) {
     var img1 = game_fetch_image(0, 'inlineup');
     var img2 = game_fetch_image(10, 'inlinedown');
     var img3 = game_fetch_image(5, 'inlinecenter');
-    game_print(['normal', 'With inlineup: ', img1, 'normal', ' With inlinedown: ', img2, 'normal', ' with inlinecenter: ', img3]);
+    game_print(['normal', 'With inlineup: ', img1, 'normal', ' With inlinedown: ', img2, 'normal', ' With inlinecenter: ', img3]);
     return;
   }
 
   if (val.slice(0,5) == 'image') {
     var imagenum = 0;
     var alignment = 'inlineup';
+    var caption = false;
     var ls = val.split(' ');
     for (var ix=0; ix<ls.length; ix++) {
       val = ls[ix];
@@ -704,13 +705,42 @@ function game_parse(val) {
         imagenum = 1 * val;
         continue;
       }
+      if (val == 'up' || val == 'inlineup') {
+        alignment = 'inlineup';
+        continue;
+      }
+      if (val == 'down' || val == 'inlinedown') {
+        alignment = 'inlinedown';
+        continue;
+      }
+      if (val == 'center' || val == 'inlinecenter') {
+        alignment = 'inlinecenter';
+        continue;
+      }
+      if (val == 'left' || val == 'marginleft') {
+        alignment = 'marginleft';
+        continue;
+      }
+      if (val == 'right' || val == 'marginright') {
+        alignment = 'marginleft';
+        continue;
+      }
+      if (val == 'caption') {
+        caption = true;
+        continue;
+      }
     }
     var img = game_fetch_image(imagenum, alignment);
     if (!img) {
       game_print('There is no image number ' + imagenum + '.');
       return;
     }
-    game_print(img);
+    if (!caption) {
+      game_print(img);
+    }
+    else {
+      game_print([img, "normal", " -- ", "emphasized", img.alttext]);      
+    }
     return;
   }
 
