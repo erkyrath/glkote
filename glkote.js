@@ -855,6 +855,10 @@ function accept_one_content(arg) {
         if (jQuery.type(rdesc) === 'object') {
           if (rdesc.special !== undefined) {
             if (rdesc.special == 'image') {
+              /* This is not as restrictive as the Glk spec says it should
+                 be. Margin-aligned images which do not follow a line
+                 break should disappear. This will undoubtedly cause
+                 headaches for portability someday. */
               /*### reload URL if possible */
               var el = $('<img>', 
                 { src:rdesc.url,
