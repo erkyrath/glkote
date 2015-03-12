@@ -567,6 +567,51 @@ function game_file_save_selected(ref) {
   game_select();
 }
 
+function game_fetch_image(num, alignment) {
+  var img = null;
+
+  switch (num) {
+  case 0:
+    img = { special:'image', image:0, 
+            url:'media/pict-0.jpeg', alttext:'Picture of Zarf',
+            width:125, height:180 };
+    break;
+  case 1:
+    img = { special:'image', image:1, 
+            url:'media/pict-1.png', alttext:'Colored stripes',
+            width:150, height:180 };
+    break;
+  case 2:
+    img = { special:'image', image:2, 
+            url:'media/pict-2.png', alttext:'Monochrome textured symbol',
+            width:155, height:180 };
+    break;
+  case 5:
+    img = { special:'image', image:5, 
+            url:'media/pict-5.png', alttext:'Capital I',
+            width:47, height:62 };
+    break;
+  case 10:
+    img = { special:'image', image:10, 
+            url:'media/pict-10.jpeg', alttext:'Green texture',
+            width:128, height:128 };
+    break;
+  case 11:
+    img = { special:'image', image:11, 
+            url:'media/pict-11.jpeg', alttext:'Purple texture',
+            width:128, height:128 };
+    break;
+  }
+
+  if (!img)
+    return null;
+
+  if (alignment)
+    img.alignment = alignment;
+
+  return img;
+}
+
 function game_parse(val) {
   if (val == 'help' || val == 'about' || val == '?') {
     game_print('This is an interface demo of the RemGlk Javascript front end. There is no IF interpreter behind the display library -- just a few lines of Javascript. It accepts some commands which demonstrate the capabilities of the display system.\n');
@@ -640,17 +685,32 @@ function game_parse(val) {
 
   if (val == 'images') {
     game_print('Here are several images in a row:\n');
-    var img1 = { special:'image', image:0, url:'media/pict-0.jpeg', alttext:'Picture of Zarf', alignment:'inlineup', width:125, height:180 };
-    var img2 = { special:'image', image:10, url:'media/pict-10.jpeg', alttext:'Green texture', alignment:'inlinedown', width:128, height:128 };
-    var img3 = { special:'image', image:5, url:'media/pict-5.png', alttext:'Capital I', alignment:'inlinecenter', width:47, height:62 };
+    var img1 = game_fetch_image(0, 'inlineup');
+    var img2 = game_fetch_image(10, 'inlinedown');
+    var img3 = game_fetch_image(5, 'inlinecenter');
     game_print(['normal', 'With inlineup: ', img1, 'normal', ' With inlinedown: ', img2, 'normal', ' with inlinecenter: ', img3]);
     return;
   }
 
-  if (val == 'image') {
-    game_print('Here\'s an image:\n');
-    var img = { special:'image', image:0, url:'media/pict-0.jpeg', alttext:'Picture of Zarf', alignment:'inlineup', width:125, height:180 };
-    game_print(['normal', '(', img, 'normal', ')']);
+  if (val.slice(0,5) == 'image') {
+    var imagenum = 0;
+    var alignment = 'inlineup';
+    var ls = val.split(' ');
+    for (var ix=0; ix<ls.length; ix++) {
+      val = ls[ix];
+      if (!val || val == 'image')
+        continue;
+      if (val.match(/^[0-9]+$/)) {
+        imagenum = 1 * val;
+        continue;
+      }
+    }
+    var img = game_fetch_image(imagenum, alignment);
+    if (!img) {
+      game_print('There is no image number ' + imagenum + '.');
+      return;
+    }
+    game_print(img);
     return;
   }
 
