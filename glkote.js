@@ -865,19 +865,19 @@ function accept_one_content(arg) {
                 el.attr('alt', 'Image '+rdesc.image);
               switch (rdesc.alignment) {
                 case 'inlineup':
-                  el.css('vertical-align', 'text-bottom');
+                  el.addClass('ImageInlineUp');
                   break;
                 case 'inlinedown':
-                  el.css('vertical-align', 'text-top');
+                  el.addClass('ImageInlineDown');
                   break;
                 case 'inlinecenter':
-                  el.css('vertical-align', 'middle');
+                  el.addClass('ImageInlineCenter');
                   break;
                 case 'marginleft':
-                  el.css('float', 'left');
+                  el.addClass('ImageMarginLeft');
                   break;
                 case 'marginright':
-                  el.css('float', 'right');
+                  el.addClass('ImageMarginRight');
                   break;
               }
               divel.append(el);
