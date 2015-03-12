@@ -863,20 +863,23 @@ function accept_one_content(arg) {
                 el.attr('alt', rdesc.alttext);
               else
                 el.attr('alt', 'Image '+rdesc.image);
-              var alignment = 'bottom';
               switch (rdesc.alignment) {
                 case 'inlineup':
-                  alignment = 'text-bottom';
+                  el.css('vertical-align', 'text-bottom');
                   break;
                 case 'inlinedown':
-                  alignment = 'text-top';
+                  el.css('vertical-align', 'text-top');
                   break;
                 case 'inlinecenter':
-                  alignment = 'middle';
+                  el.css('vertical-align', 'middle');
                   break;
-                /*###*/
+                case 'marginleft':
+                  el.css('float', 'left');
+                  break;
+                case 'marginright':
+                  el.css('float', 'right');
+                  break;
               }
-              el.css('vertical-align', alignment);
               divel.append(el);
               divel.data('endswhite', false);
             }

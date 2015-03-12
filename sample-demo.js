@@ -722,7 +722,7 @@ function game_parse(val) {
         continue;
       }
       if (val == 'right' || val == 'marginright') {
-        alignment = 'marginleft';
+        alignment = 'marginright';
         continue;
       }
       if (val == 'caption') {
