@@ -573,32 +573,32 @@ function game_fetch_image(num, alignment) {
   switch (num) {
   case 0:
     img = { special:'image', image:0, 
-            url:'media/pict-0.jpeg', alttext:'Picture of Zarf',
+            url:'demomedia/pict-0.jpeg', alttext:'Picture of Zarf',
             width:125, height:180 };
     break;
   case 1:
     img = { special:'image', image:1, 
-            url:'media/pict-1.png', alttext:'Colored stripes',
+            url:'demomedia/pict-1.png', alttext:'Colored stripes',
             width:150, height:180 };
     break;
   case 2:
     img = { special:'image', image:2, 
-            url:'media/pict-2.png', alttext:'Monochrome textured symbol',
+            url:'demomedia/pict-2.png', alttext:'Monochrome textured symbol',
             width:155, height:180 };
     break;
   case 5:
     img = { special:'image', image:5, 
-            url:'media/pict-5.png', alttext:'Capital I',
+            url:'demomedia/pict-5.png', alttext:'Capital I',
             width:47, height:62 };
     break;
   case 10:
     img = { special:'image', image:10, 
-            url:'media/pict-10.jpeg', alttext:'Green texture',
+            url:'demomedia/pict-10.jpeg', alttext:'Green texture',
             width:128, height:128 };
     break;
   case 11:
     img = { special:'image', image:11, 
-            url:'media/pict-11.jpeg', alttext:'Purple texture',
+            url:'demomedia/pict-11.jpeg', alttext:'Purple texture',
             width:128, height:128 };
     break;
   }
