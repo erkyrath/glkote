@@ -975,10 +975,10 @@ An image entry has the <code>special</code> value <code>"image"</code>.
 </pre>
 <p>
 
-In the simplest case, the <code>url</code> field refers to the image resource. If the application uses GiLoad to locate image data, you may instead supply an <code>image</code> number.
+In the simplest case, the <code>url</code> field is a URL (absolute or relative to the HTML document) which refers to the image resource. If the application uses GiLoad to locate image data, you may instead supply an <code>image</code> number.
 <p>
 
-The <code>width</code> and <code>height</code> fields are required. The width and height do not have to match the native image size; it will be resized to the given values.
+The <code>width</code> and <code>height</code> fields are <em>required</em>. If they do not match the image's native size, it will be resized to the given values.
 <p>
 
 The alignments are <code>"inlineup"</code>, <code>"inlinedown"</code>, <code>"inlinecenter"</code>, <code>"marginleft"</code>, <code>"marginright"</code>. The margin alignments float left and right (in the HTML sense). The others are <em>vertical</em> alignments; the image hangs above, below, or centered relative to its line of text. If the <code>alignment</code> is missing or unrecognized, the default is <code>"inlineup"</code>.
@@ -987,7 +987,7 @@ The alignments are <code>"inlineup"</code>, <code>"inlinedown"</code>, <code>"in
 The <code>alttext</code> is recommended. If you do not supply this, GlkOte will create some generic alt text for the image.
 <p>
 
-The <code>hyperlink</code> is optional, and has the same meaning as in text.
+The <code>hyperlink</code> is optional. If defined, the image is a hyperlink with that target value.
 <p>
 
 <h2><a name="disabling">Disabling the UI</a></h2>
