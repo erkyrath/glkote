@@ -149,6 +149,7 @@ Commons Attribution-Noncommercial-Share Alike 3.0 Unported License</a>.
     <li><a href="#gridupdate">Grid Window Updates</a>
     <li><a href="#bufferupdate">Buffer Window Updates</a>
     <li><a href="#linedata">The Line Data Array</a>
+    <li><a href="#imagedata">Image Entries in Line Data</a>
   </ul>
 </ul>
 <li><a href="#specialrequests">Special Input Requests</a>
@@ -947,25 +948,10 @@ This gives the name of a style, and a string of characters in that style. If the
 All these runs are concatenated to make the line. For grid windows, if this is short of the grid width, it is padded (on the right) with whitespace in the "normal" style. For buffer windows, no padding is needed.
 <p>
 
-A buffer window can contain inline images. These are described by a "run" containing no text, just an image number and an alignment string ("inlineup", "inlinedown", "inlinecenter", "marginleft", "marginright").
+Some windows can contain special inline entries, such as images in a buffer window. These are described by a "run" object with a <code>special</code> field (and no text). See <a href="#imagedata">below</a>.
 <p>
 
-<pre class="Sample">
-{ special: "image", image: NUMBER, hyperlink: VALUE,
-  alignment: ALIGNMENT,
-  width: NUMBER, height: NUMBER, url: STRING, alttext: STRING }
-</pre>
-<p>
-
-### image scaling: what scale is the scale in?
-### I think we throw in size, URL, alt text -- everything so that we *don't* need a GiLoad call here. Then do an optional GiLoad to load the image data, if that is necessary.
-### flow break -- special or line flag?
-<p>
-
-(Future extensions will use different <code>special</code> field values.)
-<p>
-
-You can also describe a text run in the array by giving two separate strings (the style and text values). This is a simpler format for a run; note that it cannot specify a hyperlink. You can even mix the two run formats:
+You can also describe a text run in the array by giving two separate strings (the style and text values). This is a simpler format for a run; note that it cannot specify a hyperlink or a special entry. You can even mix the two run formats:
 <p>
 
 <pre class="Sample">
@@ -976,6 +962,33 @@ You can also describe a text run in the array by giving two separate strings (th
 <p>
 
 Yes, parsing this is a bit of a nuisance. You have to examine the type of each entry to decide whether it's an object or (the first of) a pair of strings. Then, if it's an object, you have to look for a <code>special</code> field. Sorry; the format has evolved over time.
+
+<h4><a name="imagedata">Image Entries in Line Data</a></h4>
+
+An image entry has the <code>special</code> value <code>"image"</code>.
+<p>
+
+<pre class="Sample">
+{ special: 'image', image: NUMBER, hyperlink: VALUE,
+  alignment: ALIGNMENT,
+  width: NUMBER, height: NUMBER, url: STRING, alttext: STRING }
+</pre>
+<p>
+
+In the simplest case, the <code>url</code> field refers to the image resource. If the application uses GiLoad to locate image data, you may instead supply an <code>image</code> number.
+<p>
+
+The <code>width</code> and <code>height</code> fields are required. The width and height do not have to match the native image size; it will be resized to the given values.
+<p>
+
+The alignments are <code>"inlineup"</code>, <code>"inlinedown"</code>, <code>"inlinecenter"</code>, <code>"marginleft"</code>, <code>"marginright"</code>. The margin alignments float left and right (in the HTML sense). The others are <em>vertical</em> alignments; the image hangs above, below, or centered relative to its line of text. If the <code>alignment</code> is missing or unrecognized, the default is <code>"inlineup"</code>.
+<p>
+
+The <code>alttext</code> is recommended. If you do not supply this, GlkOte will create some generic alt text for the image.
+<p>
+
+The <code>hyperlink</code> is optional, and has the same meaning as in text.
+<p>
 
 <h2><a name="disabling">Disabling the UI</a></h2>
 
