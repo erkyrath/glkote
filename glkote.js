@@ -884,10 +884,15 @@ function accept_one_content(arg) {
                 case 'marginright':
                   el.addClass('ImageMarginRight');
                   break;
+                default:
+                  el.addClass('ImageInlineUp');
+                  break;
               }
               divel.append(el);
               divel.data('endswhite', false);
+              continue;
             }
+            glkote_log('Unknown special entry in line data: ' + rdesc.special);
             continue;
           }
           rstyle = rdesc.style;
