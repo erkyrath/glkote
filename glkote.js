@@ -888,6 +888,13 @@ function accept_one_content(arg) {
                   el.addClass('ImageInlineUp');
                   break;
               }
+              if (rdesc.hyperlink != undefined) {
+                var ael = $('<a>',
+                  { 'href': '#', 'class': 'Internal' } );
+                ael.append(el);
+                ael.on('click', build_evhan_hyperlink(win.id, rdesc.hyperlink));
+                el = ael;
+              }
               divel.append(el);
               divel.data('endswhite', false);
               continue;

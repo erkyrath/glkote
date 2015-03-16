@@ -503,6 +503,8 @@ function game_submit_hyperlink_input(winid, val) {
     msg = 'brillig';
   else if (val == 4)
     msg = 'a tove';
+  else if (val == 5)
+    msg = 'an image';
   else
     msg = 'BUG';
 
@@ -693,9 +695,10 @@ function game_parse(val) {
   if (val == 'images') {
     game_print('Here are several images in a row:\n');
     var img1 = game_fetch_image(0, 'inlineup');
+    img1.hyperlink = 5;
     var img2 = game_fetch_image(10, 'inlinedown');
     var img3 = game_fetch_image(5, 'inlinecenter');
-    game_print(['normal', 'With inlineup: ', img1, 'normal', ' With inlinedown: ', img2, 'normal', ' With inlinecenter: ', img3]);
+    game_print(['normal', 'With inlineup and link: ', img1, 'normal', ' With inlinedown: ', img2, 'normal', ' With inlinecenter: ', img3]);
     return;
   }
 
@@ -703,6 +706,7 @@ function game_parse(val) {
     var imagenum = 0;
     var alignment = 'inlineup';
     var caption = false;
+    var link = false;
     var ls = val.split(' ');
     for (var ix=0; ix<ls.length; ix++) {
       val = ls[ix];
@@ -736,12 +740,18 @@ function game_parse(val) {
         caption = true;
         continue;
       }
+      if (val == 'link') {
+        link = true;
+        continue;
+      }
     }
     var img = game_fetch_image(imagenum, alignment);
     if (!img) {
       game_print('There is no image number ' + imagenum + '.');
       return;
     }
+    if (link)
+      img.hyperlink = 5;
     if (!caption) {
       game_print(img);
     }
