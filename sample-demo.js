@@ -656,7 +656,8 @@ function game_parse(val) {
     helpopt('menu',    'pause the game for menu input');
     helpopt('quote',   'display a header pane with a centered box quote');
     helpopt('link',    'hyperlinks in the story window and quote box');
-    helpopt2('image',  '[number] [left/right/up/down/center] [caption]',  'display an image');
+    helpopt('image',   'display three-image test');
+    helpopt2('image',  '[number] [left/right/up/down/center] [WxH] [caption]',  'display an image');
     helpopt('break',   'insert a flow break');
     helpopt('split',   'open a second story window');
     helpopt('unsplit', 'close the second story window');
@@ -712,7 +713,7 @@ function game_parse(val) {
     return;
   }
 
-  if (val == 'images') {
+  if (val == 'image') {
     game_print('Here are several images in a row:\n');
     var img1 = game_fetch_image(0, 'inlineup');
     img1.hyperlink = 5;
