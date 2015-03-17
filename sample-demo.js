@@ -709,7 +709,8 @@ function game_parse(val) {
   }
 
   if (val == 'break') {
-    game_print('This line is flow-breaked. Flow-broken?', { flowbreak:true });
+    game_print(null, { flowbreak:true });
+    game_print('The previous line is flow-breaked. Flow-broken?');
     return;
   }
 

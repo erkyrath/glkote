@@ -833,6 +833,8 @@ function accept_one_content(arg) {
         /* jquery-wrap the element. */
         divel = $(divel);
       }
+      if (textarg.flowbreak)
+        divel.addClass('FlowBreak');
       if (!content || !content.length) {
         if (divel.data('blankpara'))
           divel.text(NBSP);
