@@ -69,7 +69,7 @@ function game_clear_window(val) {
   }
 }
 
-function game_print(val) {
+function game_print(val, lineflags) {
   var ix;
   var stream;
 
@@ -79,33 +79,47 @@ function game_print(val) {
     stream = game_streamout_right;
 
   if (val == null) {
-    stream.push({ });
+    var obj = {};
+    if (lineflags)
+      jQuery.extend(obj, lineflags);
+    stream.push(obj);
     return;
   }
 
   /* If val is a string, it is added. If the string contains newlines, this
      will require several content entries. */
   if (jQuery.type(val) === 'string') {
+    var obj;
     var ls = val.split('\n');
     for (ix=0; ix<ls.length; ix++) {
       if (ls[ix])
-        stream.push({ content: ['normal', ls[ix]] });
+        obj = { content: ['normal', ls[ix]] };
       else
-        stream.push({ });
+        obj = {};
+      if (lineflags)
+        jQuery.extend(obj, lineflags);
+      stream.push(obj);
+      lineflags = undefined;
     }
     return;
   }
 
   /* If val is an array, it must contain valid line_array_data entries. */
   if (jQuery.type(val) === 'array') {
-    stream.push({ content: val });
+    var obj = { content: val };
+    if (lineflags)
+      jQuery.extend(obj, lineflags);
+    stream.push(obj);
     return;
   }
 
   /* If val is an object with a special field, it is added as a singleton
      line_array_data entry. */
   if (val.special !== undefined) {
-    stream.push({ content: [ val ] });
+    var obj = { content: [ val ] };
+    if (lineflags)
+      jQuery.extend(obj, lineflags);
+    stream.push(obj);
     return;
   }
 
@@ -643,6 +657,7 @@ function game_parse(val) {
     helpopt('quote',   'display a header pane with a centered box quote');
     helpopt('link',    'hyperlinks in the story window and quote box');
     helpopt2('image',  '[number] [left/right/up/down/center] [caption]',  'display an image');
+    helpopt('break',   'insert a flow break');
     helpopt('split',   'open a second story window');
     helpopt('unsplit', 'close the second story window');
     helpopt('both',    'print output in both story windows');
@@ -689,6 +704,11 @@ function game_parse(val) {
     game_print({ newline:false, text:' is an external URL set off by a distinct style. (External hyperlinks may be clickable or not, depending on GlkOte\'s configuration.)\n'});
     game_quotemove = game_moves+1;
     game_quotehaslink = true;
+    return;
+  }
+
+  if (val == 'break') {
+    game_print('This line is flow-breaked. Flow-broken?', { flowbreak:true });
     return;
   }
 
