@@ -725,6 +725,7 @@ function game_parse(val) {
   if (val.slice(0,5) == 'image') {
     var imagenum = 0;
     var alignment = 'inlineup';
+    var dimensions = undefined;
     var caption = false;
     var link = false;
     var ls = val.split(' ');
@@ -735,6 +736,10 @@ function game_parse(val) {
       if (val.match(/^[0-9]+$/)) {
         imagenum = 1 * val;
         continue;
+      }
+      if (val.match(/^[0-9]+x[0-9]+$/)) {
+        val = val.split('x');
+        dimensions = { width:(1*val[0]), height:(1*val[1]) };
       }
       if (val == 'up' || val == 'inlineup') {
         alignment = 'inlineup';
@@ -772,6 +777,10 @@ function game_parse(val) {
     }
     if (link)
       img.hyperlink = 5;
+    if (dimensions) {
+      img.width = dimensions.width;
+      img.height = dimensions.height;
+    }
     if (!caption) {
       game_print(img);
     }
