@@ -170,6 +170,10 @@
   vertical-align: middle;
 }
 
+.FlowBreak {
+  clear: both;
+}
+
 /* The following are the standard Glk styles. */
 
 .Style_normal {
