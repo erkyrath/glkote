@@ -270,11 +270,6 @@ Game = {
 &lt;em&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;Loading...&lt;/em&gt;
 &lt;/div&gt;
 &lt;div id="errorpane" style="display:none;"&gt;&lt;div id="errorcontent"&gt;...&lt;/div&gt;&lt;/div&gt;
-&lt;div id="layouttestpane"&gt;
-This should not be visible
-&lt;div id="layouttest_grid" class="WindowFrame GridWindow"&gt;&lt;div id="layouttest_gridline" class="GridLine"&gt;&lt;span id="layouttest_gridspan" class="Style_normal"&gt;12345678&lt;/span&gt;&lt;/div&gt;&lt;div id="layouttest_gridline2" class="GridLine"&gt;&lt;span class="Style_normal"&gt;12345678&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;div id="layouttest_buffer" class="WindowFrame BufferWindow"&gt;&lt;div id="layouttest_bufferline" class="BufferLine"&gt;&lt;span id="layouttest_bufferspan" class="Style_normal"&gt;12345678&lt;/span&gt;&lt;/div&gt;&lt;div id="layouttest_bufferline2" class="BufferLine"&gt;&lt;span class="Style_normal"&gt;12345678&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;/div&gt;
 &lt;/div&gt;
 
 &lt;/body&gt;
@@ -392,10 +387,6 @@ The GlkOte library begins working when you call <code>GlkOte.init</code>. The si
 &lt;/div&gt;
 &lt;div id="errorpane" style="display:none;"&gt;
     &lt;div id="errorcontent"&gt;...&lt;/div&gt;&lt;/div&gt;
-&lt;div id="layouttestpane"&gt;
-This should not be visible
-    <em>[...unwieldy but critical test data here...]</em>
-&lt;/div&gt;
 &lt;/div&gt;
 </pre>
 <p>
@@ -1313,7 +1304,6 @@ To play with your CSS, you have to know the structure of GlkOte's document. Let'
      <em>...windows...</em>
   &lt;div id="loadingpane"&gt;
   &lt;div id="errorpane"&gt;
-  &lt;div id="layouttestpane"&gt;
 </pre>
 <p>
 
@@ -1324,7 +1314,7 @@ The appearance properties of the <code>gameport</code> are mostly irrelevant, si
 (See "<a href="#cssspacing">Spacing, borders, and padding</a>".)
 <p>
 
-There are four divs stacked inside <code>gameport</code>:
+There are three divs stacked inside <code>gameport</code>:
 <p>
 
 The <code>windowport</code> contains all of the game windows -- everything the player sees in the normal course of play. It is the same size as the <code>gameport</code>. We will discuss it further in a moment.
@@ -1336,13 +1326,7 @@ The <code>loadingpane</code> contains the spinny compass and the sign "Loading..
 The <code>errorpane</code> is a red-bordered panel which appears at the top of the <code>gameport</code> when a fatal error occurs. Until that happens, it is hidden, so it won't be bothering you either.
 <p>
 
-The <code>layouttestpane</code> is... a nuisance. To reliably allocate space for, say, a grid window which is three lines high or forty columns wide, GlkOte has to know how large such a window will be -- including CSS padding, borders, line spacing, scroll bars, and all the other widgetry with which text surrounds itself. The easiest way to do this is to put a small text window in the DOM and measure it. This is <code>layouttestpane</code>.
-<p>
-
-The <code>layouttestpane</code> can't be hidden (<code>display:none</code>), because that prevents the web browser from constructing it at all. Instead, it has the property <code>visibility:hidden</code>. As an additional safeguard, it is placed far offscreen (<code>left:-1000px</code>). You should never see it.
-<p>
-
-You should not modify the CSS positioning of <code>windowport</code>, <code>loadingpane</code>, <code>errorpane</code>, or <code>layouttestpane</code>. You may modify their appearance, if you want.
+You should not modify the CSS positioning of <code>windowport</code>, <code>loadingpane</code>, or <code>errorpane</code>. You may modify their appearance, if you want.
 <p>
 
 <h3><a name="csswindowport">The contents of the <code>windowport</code></a></h3>
