@@ -278,7 +278,7 @@ function measure_window() {
     left: '-1000px'
   });
   var line = $('<div>');
-  $('<span>', {'class': "Style_normal"}).text('12345678').appendTo(line);
+  line.append($('<span>', {'class': "Style_normal"}).text('12345678'));
 
   var gridwin = $('<div>', {'class': 'WindowFrame GridWindow'});
   var gridline1 = line.clone().addClass('GridLine').appendTo(gridwin);
@@ -292,7 +292,7 @@ function measure_window() {
   var bufspan = bufline1.children('span');
   layout_test_pane.append(bufwin);
 
-  layout_test_pane.appendTo(gameport);
+  gameport.append(layout_test_pane);
 
   var get_size = function(el) {
     return {
