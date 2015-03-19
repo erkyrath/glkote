@@ -250,13 +250,13 @@ function glkote_init(iface) {
 */
 function measure_window() {
   var metrics = {};
-  var linesize, winsize, line1size, line2size, spansize;
+  var winsize, line1size, line2size, spansize;
 
   /* We assume the gameport is the same size as the windowport, which
      is true on all browsers but IE7. Fortunately, on IE7 it's
      the windowport size that's wrong -- gameport is the size
      we're interested in. */
-  gameport = $('#'+gameport_id, dom_context);
+  var gameport = $('#'+gameport_id, dom_context);
   if (!gameport.length)
     return 'Cannot find gameport element #'+gameport_id+' in this document.';
 
