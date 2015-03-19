@@ -33,8 +33,8 @@ game_mood = 0;
 game_mood_list = [ 'cheery', 'dopey', 'hungry', 'explodey' ];
 
 function game_version() {
-  return ('Release 18; GlkOte library ' + GlkOte.version 
-    + '; last updated 6-Feb-2015');
+  return ('Release 19; GlkOte library ' + GlkOte.version 
+    + '; last updated 19-Mar-2015');
 }
 
 function game_n_spaces(count) {
@@ -666,6 +666,7 @@ function game_parse(val) {
     helpopt('timer',   'set a timed event to fire in two seconds');
     helpopt('save, load',  'open a file dialog');
     helpopt('script',  'write a fake transcript file');
+    helpopt('metrics', 'display the computed window metrics');
     helpopt('crash',   'react as if the game had crashed');
     helpopt('slow',    'react as if the game were taking a long time to compute its output');
     helpopt('todo',    'what do I still need to fix in this interface?');
@@ -1045,6 +1046,16 @@ function game_parse(val) {
 
   if (val == 'version') {
     game_print(game_version());
+    return;
+  }
+
+  if (val == 'metric' || val == 'metrics') {
+    game_print('Window metrics (as computed by GlkOte):');
+    var ls = jQuery.map(game_metrics, function(val, key) { return key; });
+    ls.sort();
+    for (var ix=0; ix<ls.length; ix++) {
+      game_print('  ' + ls[ix] + ': ' + game_metrics[ls[ix]]);
+    }
     return;
   }
 
