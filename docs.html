@@ -799,6 +799,9 @@ Each element in the <code>windows</code> array has one of the forms:
 { id: WINDOW_ID, type: 'grid', rock: ROCK_VALUE,
   gridheight: LINES, gridwidth: ROWS,
   left: POS, top: POS, width: SIZE, height: SIZE }
+
+{ id: WINDOW_ID, type: 'graphics', rock: ROCK_VALUE,
+  left: POS, top: POS, width: SIZE, height: SIZE }
 </pre>
 <p>
 
@@ -1384,7 +1387,7 @@ Here is a typical Infocom-style IF game. It has a status window (grid format, tw
 Each window is a div, absolutely positioned in the <code>windowport</code>. The <code>id</code> of the window identifies it, using the integer identifier you created it with.
 <p>
 
-As you see, each window has <em>three</em> CSS classes. <code>WindowFrame</code> is a general class which applies to all windows. <code>GridWindow</code> or <code>BufferWindow</code> identifies the format of the window; you can use these classes to adjust the properties of all grid or all buffer windows. (For example, the default stylesheet ensures that grid windows have a fixed-width font by putting <code>font-family: monospace</code> in the <code>GridWindow</code> class definition.)
+As you see, each window has <em>three</em> CSS classes. <code>WindowFrame</code> is a general class which applies to all windows. <code>GridWindow</code>, <code>BufferWindow</code>, or <code>GraphicsWindow</code> identifies the format of the window; you can use these classes to adjust the properties of all windows of a given type. (For example, the default stylesheet ensures that grid windows have a fixed-width font by putting <code>font-family: monospace</code> in the <code>GridWindow</code> class definition.)
 <p>
 
 The <code>WindowRock_...</code> class identifies the window by the rock value you created it with. (If you didn't give a rock, it gets the class <code>WindowRock_undefined</code>.) You can use this to adjust the appearance of a single window.
