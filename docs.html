@@ -820,6 +820,9 @@ for more than you wanted to know about determining these values.
 A grid window must have <code>gridwidth</code> and <code>gridheight</code> values as well. These are measured in characters (the number of columns and rows in the character grid). These values should fit within the pixel <code>width</code> and <code>height</code>, when all of the grid character metrics are taken into account.
 <p>
 
+Graphics windows depend on the <code>&lt;canvas&gt;</code> HTML element. Do not try to open a graphics window in an older browser which does not support <code>&lt;canvas&gt;</code>.
+<p>
+
 <h3><a name="inputupdate">The Input Update Array</a></h3>
 
 The <code>input</code> property is an array listing all the windows which should be awaiting input. If no input fields have been cancelled or posted since the last update, you should omit the <code>input</code> field. (Omitting it is different from including an <em>empty</em> <code>input</code> array; that would cancel all input fields.)
