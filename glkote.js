@@ -658,6 +658,7 @@ function accept_one_window(arg) {
 
   if (win.type == 'graphics') {
     win.frameel.append($('<canvas>'));
+    /* #### we're getting a non-square coordinate system here */
   }
 
   /* The trick is that left/right/top/bottom are measured to the outside
