@@ -14,6 +14,7 @@ game_moves = 1;
 game_quotemove = 0;
 game_quotehaslink = false;
 game_splitwin = false;
+game_graphwin = false;
 game_statusmenu = false;
 game_statusmenu_from_left = true;
 game_print_left = true;
@@ -176,6 +177,7 @@ function game_select() {
      a "window" element whether any windows have changed or not. */
 
   var have_quotewin = (game_quotemove == game_moves);
+  var have_graphwin = game_graphwin;
 
   var metrics = game_metrics;
   var pwidth = metrics.width;
@@ -201,13 +203,21 @@ function game_select() {
   /* How many pixels are needed for statuslines and quotelines? */
   var statusheight = metrics.gridcharheight*statuslines + metrics.gridmarginy;
   var quoteheight  = metrics.gridcharheight*quotelines + metrics.gridmarginy;
+  var graphheight = 120;
 
   /* As many characters as fit horizontally given the pixel width. */
   var gridchars = Math.floor((pwidth - (2*metrics.outspacingx+metrics.gridmarginx)) / metrics.gridcharwidth);
 
   var storytop = (metrics.outspacingy+statusheight+metrics.inspacingy);
-  if (have_quotewin)
-    storytop = (metrics.outspacingy+statusheight+metrics.inspacingy+quoteheight+metrics.inspacingy);
+  if (have_quotewin) {
+    var quotetop = storytop;
+    storytop = storytop + (quoteheight+metrics.inspacingy);
+  }
+  if (have_graphwin) {
+    var graphtop = storytop;
+    storytop = storytop + (graphheight+metrics.inspacingy);
+  }
+
   var storyright = pwidth;
   if (game_splitwin)
     storyright = Math.round(pwidth/2 + metrics.inspacingx/2);
@@ -229,9 +239,16 @@ function game_select() {
     argw.push({ id: 3, type: 'grid', rock: 33,
       gridheight: quotelines, gridwidth: gridchars,
       left: metrics.outspacingx,
-      top: (metrics.outspacingy+statusheight+metrics.inspacingy),
+      top: quotetop,
       width: pwidth-(2*metrics.outspacingx),
       height: quoteheight });
+  }
+  if (have_graphwin) {
+    argw.push({ id: 5, type: 'graphics', rock: 55,
+      left: metrics.outspacingx,
+      top: graphtop,
+      width: pwidth-(2*metrics.outspacingx),
+      height: graphheight });
   }
   if (game_splitwin) {
     argw.push({ id: 4, type: 'buffer', rock: 44,
@@ -659,8 +676,8 @@ function game_parse(val) {
     helpopt('image',   'display three-image test');
     helpopt2('image',  '[number] [left/right/up/down/center] [WxH] [caption]',  'display an image');
     helpopt('break',   'insert a flow break');
-    helpopt('split',   'open a second story window');
-    helpopt('unsplit', 'close the second story window');
+    helpopt('split/unsplit', 'open/close a second story window');
+    helpopt('graph/ungraph', 'open/close a graphics window');
     helpopt('both',    'print output in both story windows');
     helpopt('bothlong','print long output in both story windows');
     helpopt('timer',   'set a timed event to fire in two seconds');
@@ -838,6 +855,28 @@ function game_parse(val) {
       game_inputline_right = true;
       game_inputinitial_right = null;
       game_streamout_right.length = 0;
+    }
+    return;
+  }
+
+  if (val == 'graph' || val == 'graphics') {
+    if (game_graphwin) {
+      game_print('The graphics window is already open.');
+    }
+    else {
+      game_print('You now have a graphics window.');
+      game_graphwin = true;
+    }
+    return;
+  }
+
+  if (val == 'ungraph' || val == 'ungraphics') {
+    if (!game_graphwin) {
+      game_print('There is no graphics window.');
+    }
+    else {
+      game_print('The graphics window is closed.');
+      game_graphwin = false;
     }
     return;
   }
