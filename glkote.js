@@ -657,8 +657,26 @@ function accept_one_window(arg) {
   }
 
   if (win.type == 'graphics') {
-    win.frameel.append($('<canvas>'));
-    /* #### we're getting a non-square coordinate system here */
+    var el = $('#win'+win.id+'_canvas', dom_context);
+    if (!el.length) {
+      win.graphwidth = arg.width;
+      win.graphheight = arg.height;
+      el = $('<canvas>',
+        { id: 'win'+win.id+'_canvas' });
+      el.attr('width', win.graphwidth);
+      el.attr('height', win.graphheight);
+      win.frameel.append(el);
+    }
+    else {
+      if (win.graphwidth != arg.width || win.graphheight != arg.height) {
+        glkote_log('### resize');
+        win.graphwidth = arg.width;
+        win.graphheight = arg.height;
+        el.attr('width', win.graphwidth);
+        el.attr('height', win.graphheight);
+        /* ### event! */
+      }
+    }
   }
 
   /* The trick is that left/right/top/bottom are measured to the outside

@@ -167,8 +167,6 @@
 
 .GraphicsWindow canvas {
   background-color: white;
-  width: 100%;
-  height: 100%;
 }
 
 /* The following are the standard Glk styles. */
