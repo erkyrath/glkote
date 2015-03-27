@@ -597,6 +597,8 @@ function accept_one_window(arg) {
       typeclass = 'GridWindow';
     if (win.type == 'buffer')
       typeclass = 'BufferWindow';
+    if (win.type == 'graphics')
+      typeclass = 'GraphicsWindow';
     var rockclass = 'WindowRock_' + arg.rock;
     frameel = $('<div>',
       { id: 'window'+arg.id,
@@ -652,6 +654,10 @@ function accept_one_window(arg) {
 
   if (win.type == 'buffer') {
     /* Don't need anything? */
+  }
+
+  if (win.type == 'graphics') {
+    win.frameel.append($('<canvas>'));
   }
 
   /* The trick is that left/right/top/bottom are measured to the outside
