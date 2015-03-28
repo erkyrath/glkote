@@ -332,6 +332,9 @@ function update() {
                 obj.gridwidth = win.gridwidth;
                 obj.gridheight = win.gridheight;
                 break;
+            case Const.wintype_Graphics:
+                obj.type = 'graphics';
+                break;
             }
 
             obj.left = win.bbox.left;
@@ -3138,6 +3141,8 @@ function glk_gestalt_ext(sel, val, arr) {
     case 7: // gestalt_DrawImage
         if (val == Const.wintype_TextBuffer)
             return 1;
+        if (val == Const.wintype_Graphics && has_canvas)
+            return 1;
         return 0;
 
     case 8: // gestalt_Sound
@@ -3289,6 +3294,8 @@ function glk_window_open(splitwin, method, size, wintype, rock) {
         newwin.lines = [];
         newwin.cursorx = 0;
         newwin.cursory = 0;
+        break;
+    case Const.wintype_Graphics:
         break;
     case Const.wintype_Blank:
         break;
@@ -3443,6 +3450,7 @@ function glk_window_get_size(win, widthref, heightref) {
         hgt = Math.max(0, Math.floor((boxheight-content_metrics.buffermarginy) / content_metrics.buffercharheight));        
         break;
 
+        /*#### wintype_Graphics: compute, using graphicsmarginx/y */
     }
 
     if (widthref)
@@ -3562,6 +3570,7 @@ function glk_window_clear(win) {
             }
         }
         break;
+    /*#### wintype_Graphics */
     }
 }
 
@@ -4202,6 +4211,7 @@ function glk_request_char_event(win) {
     else {
         throw('glk_request_char_event: window does not support keyboard input');
     }
+    /*#### wintype_Graphics? */
 }
 
 function glk_cancel_char_event(win) {
@@ -4330,6 +4340,10 @@ function glk_image_draw(win, imgid, val1, val2) {
         img.alignment = alignment;
         gli_window_buffer_put_special(win, img);
         return 1;
+
+    case Const.wintype_Graphics:
+        /*#### wintype_Graphics */
+        return 1;
     }
 
     return 0;
@@ -4373,6 +4387,10 @@ function glk_image_draw_scaled(win, imgid, val1, val2, width, height) {
         }
         img.alignment = alignment;
         gli_window_buffer_put_special(win, img);
+        return 1;
+
+    case Const.wintype_Graphics:
+        /*#### wintype_Graphics */
         return 1;
     }
 
@@ -4910,6 +4928,7 @@ function glk_request_char_event_uni(win) {
         win.input_generation = event_generation;
     }
     else {
+        /*#### wintype_Graphics? */
         throw('glk_request_char_event: window does not support keyboard input');
     }
 }
