@@ -1039,6 +1039,51 @@ function accept_one_content(arg) {
       }
     }
   }
+
+  if (win.type == 'graphics') {
+    /* Perform the requested draw operations. */
+    var draw = arg.draw;
+    var ix;
+    
+    /* Accept a missing draw field as doing nothing. */
+    if (draw === undefined)
+      draw = [];
+
+    var ctx = undefined;
+    var canvas = undefined;
+    var el = $('#win'+win.id+'_canvas', dom_context);
+    if (el.length) {
+      canvas = el.get(0);
+      if (canvas && canvas.getContext)
+        ctx = canvas.getContext('2d');
+    }
+
+    if (ctx) {
+      for (ix=0; ix<draw.length; ix++) {
+        var op = draw[ix];
+        var optype = op.special;
+        GlkOte.log('### draw op ' + ix + ' ' + optype); /*###*/
+
+        switch (optype) {
+          case 'fill':
+            ctx.fillStyle = op.color;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#000000';
+            break;
+          case 'draw':
+            ctx.fillStyle = op.color;
+            ctx.fillRect(op.x, op.y, op.width, op.height);
+            ctx.fillStyle = '#000000';
+            break;
+          case 'image':
+            /*####*/
+            break;
+          default:
+            glkote_log('Unknown special entry in graphics content: ' + optype);
+        }
+      }
+    }
+  }
 }
 
 /* Handle all necessary removal of input fields.
