@@ -3296,6 +3296,11 @@ function glk_window_open(splitwin, method, size, wintype, rock) {
         newwin.cursory = 0;
         break;
     case Const.wintype_Graphics:
+        if (!has_canvas) {
+            /* Graphics windows not supported; silently return null */
+            gli_delete_window(newwin);
+            return null;
+        }
         break;
     case Const.wintype_Blank:
         break;
