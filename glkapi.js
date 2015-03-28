@@ -50,6 +50,10 @@ Glk = function() {
 /* The VM interface object. */
 var VM = null;
 
+/* Environment capabilities. (Checked at init time.) */
+var has_canvas;
+
+/* Library display state. */
 var has_exited = false;
 var ui_disabled = false;
 var ui_specialinput = null;
@@ -73,6 +77,9 @@ var current_partial_outputs = null;
    library sets that up for you.)
 */
 function init(vm_options) {
+    /* Check for canvas support. We don't rely on jquery here. */
+    has_canvas = (document.createElement('canvas').getContext != undefined);
+
     VM = vm_options.vm;
     if (window.GiDispa)
         GiDispa.set_vm(VM);
