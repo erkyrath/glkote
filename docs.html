@@ -148,6 +148,7 @@ Commons Attribution-Noncommercial-Share Alike 3.0 Unported License</a>.
   <ul>
     <li><a href="#gridupdate">Grid Window Updates</a>
     <li><a href="#bufferupdate">Buffer Window Updates</a>
+    <li><a href="#graphicsupdate">Graphics Window Updates</a>
     <li><a href="#linedata">The Line Data Array</a>
     <li><a href="#imagedata">Image Entries in Line Data</a>
   </ul>
@@ -932,6 +933,34 @@ The <code>clear</code>, <code>append</code>, and <code>flowbreak</code> values m
 (For efficiency, only the first element of the <code>text</code> array should have <code>append</code>. Condense elements into complete paragraphs where possible.)
 <p>
 
+<h4><a name="graphicsupdate">Graphics Window Updates</a></h4>
+
+<pre class="Sample">
+{ id: WINDOW_ID, draw: [
+  { special: 'fill', color: COLOR },
+  { special: 'rect', color: COLOR,
+    x: NUMBER, y: NUMBER, width: NUMBER, height: NUMBER },
+  { special: 'image', image: NUMBER, x: NUMBER, y: NUMBER,
+    width: NUMBER, height: NUMBER, url: STRING, alttext: STRING },
+  ... ] }
+</pre>
+<p>
+
+Each element in the <code>draw</code> array represents a drawing operation, specified by the <code>special</code> field.
+<p>
+
+<code>fill</code> fills the graphics window with a given color. The <code>color</code> field should be a string containing a valid CSS color. (There are several possible formats; the most familiar looks like <code>"#C0207F"</code>.)
+<p>
+
+<code>rect</code> fills a rectangular area with a given color.
+<p>
+
+<code>image</code> draws an image into the window. See <a href="#imagedata">below</a> for the description of the image object.
+<p>
+
+(For efficiency, <code>fill</code> should appear only at the beginning of the <code>draw</code> array.)
+<p>
+
 <h4><a name="linedata">The Line Data Array</a></h4>
 
 Both grid and buffer windows use a <code>content</code> field, which contains an array of runs of characters. Each run in the array has the form
@@ -965,7 +994,7 @@ Yes, parsing this is a bit of a nuisance. You have to examine the type of each e
 
 <h4><a name="imagedata">Image Entries in Line Data</a></h4>
 
-An image entry has the <code>special</code> value <code>"image"</code>.
+An image entry in the line data array has the <code>special</code> value <code>"image"</code>.
 <p>
 
 <pre class="Sample">
@@ -988,6 +1017,18 @@ The <code>alttext</code> is recommended. If you do not supply this, GlkOte will 
 <p>
 
 The <code>hyperlink</code> is optional. If defined, the image is a hyperlink with that target value.
+<p>
+
+An image entry in a graphics content array is similar:
+<p>
+
+<pre class="Sample">
+{ special: 'image', image: NUMBER, x: NUMBER, y: NUMBER,
+  width: NUMBER, height: NUMBER, url: STRING, alttext: STRING }
+</pre>
+<p>
+
+The <code>x</code> and <code>y</code> fields give the position of (the top left corner of) the image. There is no <code>alignment</code> or <code>hyperlink</code> field.
 <p>
 
 <h2><a name="disabling">Disabling the UI</a></h2>
