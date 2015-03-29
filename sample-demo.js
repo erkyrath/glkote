@@ -911,6 +911,42 @@ function game_parse(val) {
     return;
   }
 
+  if (val.slice(0,5) == 'grect') {
+    if (!game_graphwin) {
+      game_print('There is no graphics window.');
+    }
+    else {
+      var obj = { special:'rect', color:'#000000' };
+      var ls = val.split(' ');
+      for (var ix=0; ix<ls.length; ix++) {
+        var val = ls[ix];
+        if (val.match(regexp_color)) {
+          obj.color = val;
+        }
+        else if (val.match(/^[0-9]+,[0-9]+$/)) {
+          var pair = val.split(',');
+          obj.x = (1*pair[0]);
+          obj.y = (1*pair[1]);
+        }
+        else if (val.match(/^[0-9]+x[0-9]+$/)) {
+          var pair = val.split('x');
+          obj.width = (1*pair[0]);
+          obj.height = (1*pair[1]);
+        }
+      }
+      if (obj.width == undefined) {
+        obj.width = 200;
+        obj.height = 50;
+      }
+      if (obj.x == undefined) {
+        obj.x = 50;
+        obj.y = 50;
+      }
+      game_streamout_graph.push(obj);
+    }
+    return;
+  }
+
   if (val == 'both') {
     if (!game_splitwin) {
       game_print('The story window is not currently split.');

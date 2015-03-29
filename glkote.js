@@ -1070,7 +1070,7 @@ function accept_one_content(arg) {
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = '#000000';
             break;
-          case 'draw':
+          case 'rect':
             ctx.fillStyle = op.color;
             ctx.fillRect(op.x, op.y, op.width, op.height);
             ctx.fillStyle = '#000000';
