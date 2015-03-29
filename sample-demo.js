@@ -7,6 +7,7 @@
 game_metrics = null;
 game_streamout_left = new Array();
 game_streamout_right = new Array();
+game_streamout_graph = new Array();
 game_streamclear_left = false;
 game_streamclear_right = false;
 game_generation = 1;
@@ -302,6 +303,14 @@ function game_select() {
     }
   }
 
+  if (game_graphwin) {
+    if (game_streamout_graph.length) {
+      var obj = { id: 5 };
+      obj.draw = game_streamout_graph;
+      argc.push(obj);
+    }
+  }
+
   if (have_quotewin) {
     var indent = Math.floor((gridchars - '  Pay no attention to the  '.length) / 2);
     indent = game_n_spaces(indent);
@@ -376,6 +385,7 @@ function game_select() {
 
   game_streamout_left.length = 0;
   game_streamout_right.length = 0;
+  game_streamout_graph.length = 0;
   game_streamclear_left = false;
   game_streamclear_right = false;
 }
@@ -645,6 +655,8 @@ function game_fetch_image(num, alignment) {
   return img;
 }
 
+var regexp_color = /(^#(?:[0-9a-f]{3})$)|(^#(?:[0-9a-f]{6})$)|(^red|green|blue|yellow|orange|purple|magenta|cyan|black|white$)/;
+
 function game_parse(val) {
   if (val == 'help' || val == 'about' || val == '?') {
     game_print('This is an interface demo of the RemGlk Javascript front end. There is no IF interpreter behind the display library -- just a few lines of Javascript. It accepts some commands which demonstrate the capabilities of the display system.\n');
@@ -678,6 +690,7 @@ function game_parse(val) {
     helpopt('break',   'insert a flow break');
     helpopt('split/unsplit', 'open/close a second story window');
     helpopt('graph/ungraph', 'open/close a graphics window');
+    helpopt2('gfill',  '[color]', 'fill graphics window with a color');
     helpopt('both',    'print output in both story windows');
     helpopt('bothlong','print long output in both story windows');
     helpopt('timer',   'set a timed event to fire in two seconds');
@@ -859,7 +872,7 @@ function game_parse(val) {
     return;
   }
 
-  if (val == 'graph' || val == 'graphics') {
+  if (val == 'graph' || val == 'graphics' || val == 'hgr') {
     if (game_graphwin) {
       game_print('The graphics window is already open.');
     }
@@ -870,13 +883,30 @@ function game_parse(val) {
     return;
   }
 
-  if (val == 'ungraph' || val == 'ungraphics') {
+  if (val == 'ungraph' || val == 'ungraphics' || val == 'unhgr') {
     if (!game_graphwin) {
       game_print('There is no graphics window.');
     }
     else {
       game_print('The graphics window is closed.');
       game_graphwin = false;
+    }
+    return;
+  }
+
+  if (val.slice(0,5) == 'gfill') {
+    if (!game_graphwin) {
+      game_print('There is no graphics window.');
+    }
+    else {
+      var color = '#000000';
+      var ls = val.split(' ');
+      for (var ix=0; ix<ls.length; ix++) {
+        var val = ls[ix];
+        if (val.match(regexp_color))
+          color = val;
+      }
+      game_streamout_graph.push({special:'fill', color:color});
     }
     return;
   }
