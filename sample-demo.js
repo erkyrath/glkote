@@ -691,6 +691,7 @@ function game_parse(val) {
     helpopt('split/unsplit', 'open/close a second story window');
     helpopt('graph/ungraph', 'open/close a graphics window');
     helpopt2('gfill',  '[color]', 'fill graphics window with a color');
+    helpopt2('grect',  '[color] [X,Y] [WxH]', 'draw rectangle in graphics window with a color');
     helpopt('both',    'print output in both story windows');
     helpopt('bothlong','print long output in both story windows');
     helpopt('timer',   'set a timed event to fire in two seconds');
@@ -943,6 +944,28 @@ function game_parse(val) {
         obj.y = 50;
       }
       game_streamout_graph.push(obj);
+    }
+    return;
+  }
+
+  if (val == 'gsmiley') {
+    if (!game_graphwin) {
+      game_print('There is no graphics window.');
+    }
+    else {
+      var obj = { special:'fill', color:'#FFF' };
+      game_streamout_graph.push(obj);
+      obj = { special:'rect', color:'#EEE', x:24, y:8, width:148, height:96 };
+      game_streamout_graph.push(obj);
+      obj = { special:'rect', color:'#44F', x:32, y:16, width:32, height:32 };
+      game_streamout_graph.push(obj);
+      obj = { special:'rect', color:'#44F', x:132, y:16, width:32, height:32 };
+      game_streamout_graph.push(obj);
+      obj = { special:'rect', color:'#F08', x:64, y:80, width:68, height:16 };
+      game_streamout_graph.push(obj);
+      obj = { special:'rect', color:'#F08', x:48, y:64, width:100, height:16 };
+      game_streamout_graph.push(obj);
+      game_print('Cleared graphics window, drew a terrible smiley face.');
     }
     return;
   }

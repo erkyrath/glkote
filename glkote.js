@@ -1062,7 +1062,6 @@ function accept_one_content(arg) {
       for (ix=0; ix<draw.length; ix++) {
         var op = draw[ix];
         var optype = op.special;
-        GlkOte.log('### draw op ' + ix + ' ' + optype); /*###*/
 
         switch (optype) {
           case 'fill':
