@@ -1689,7 +1689,7 @@ function recording_send(arg) {
       recording_state.input = '';
     }
     else {
-      /* Do not send 'arrange' events. */
+      /* Do not send 'arrange' or 'redraw' events. */
       send = false;
     }
 
