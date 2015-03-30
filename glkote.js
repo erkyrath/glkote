@@ -669,12 +669,15 @@ function accept_one_window(arg) {
     }
     else {
       if (win.graphwidth != arg.width || win.graphheight != arg.height) {
-        glkote_log('### resize');
         win.graphwidth = arg.width;
         win.graphheight = arg.height;
         el.attr('width', win.graphwidth);
         el.attr('height', win.graphheight);
-        /* ### event! */
+        /* We have to trigger a redraw event for this window. But we can't do
+           that from inside the accept handler. We'll set up a deferred
+           function call. */
+        var funcarg = win.id;
+        defer_func(function() { send_window_redraw(funcarg); });
       }
     }
   }
@@ -1606,6 +1609,9 @@ function send_response(type, win, val, val2) {
     res.response = val;
     res.value = val2;
   }
+  else if (type == 'redraw') {
+    res.window = win.id;
+  }
   else if (type == 'init' || type == 'arrange') {
     res.metrics = val;
   }
@@ -1795,6 +1801,15 @@ function evhan_doc_resize(ev) {
 /* This executes when no new resize events have come along in the past
    0.20 seconds. (But if the UI is disabled, we delay again, because
    the game can't deal with events yet.)
+
+   Note that this sends a Glk "arrange" event, not a "redraw" event.
+   Those will follow soon if needed.
+
+   (What actually happens, and I apologize for this, is that the
+   "arrange" event causes the game to send new window sizes. The
+   accept handler sees a size change for a graphics window and queues
+   up a "redraw" event via send_window_redraw.)
+
    ### We really should distinguish between disabling the UI (delay
    resize events) from shutting down the UI (ignore resize events).
  */
@@ -1820,6 +1835,23 @@ function doc_resize_real() {
   }
   current_metrics = new_metrics;
   send_response('arrange', null, current_metrics);
+}
+
+/* Send a "redraw" event for the given (graphics) window. This is triggered
+   by the accept handler when it sees a graphics window change size.
+
+   (Not actually an event handler, but I put it down here with
+   doc_resize_real.)
+*/
+function send_window_redraw(winid) {
+  var win = windowdic[winid];
+
+  /* It's not likely that the window has been deleted since this function
+     was queued up. But we'll be paranoid. */
+  if (!win || win.type != 'graphics')
+    return;
+
+  send_response('redraw', win, null);
 }
 
 /* Event handler: keypress events on input fields.
