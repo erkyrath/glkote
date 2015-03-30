@@ -454,6 +454,9 @@ function game_accept(res) {
     game_metrics = res.metrics;
     game_inputgen_top = 0;
   }
+  else if (res.type == 'redraw') {
+    game_submit_redraw_input(res.window);
+  }
   else if (res.type == 'init') {
     game_metrics = res.metrics;
     game_print('A hollow voice booooooms out...\n');
@@ -573,6 +576,16 @@ function game_submit_timer_input() {
   game_inputline_left = true;
   game_print_left = true;
   game_print('The timer has gone off. Ding!');
+}
+
+function game_submit_redraw_input(win) {
+  game_inputgen_left = 0;
+  game_inputline_left = true;
+  game_print_left = true;
+  if (win == 5)
+    game_print('Detected graphics redraw event.');
+  else
+    game_print('Detected graphics redraw event for window ' + win + ' (which is weird, should be 5).');
 }
 
 function game_file_load_selected(ref) {
