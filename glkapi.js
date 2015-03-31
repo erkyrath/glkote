@@ -3301,6 +3301,8 @@ function glk_window_open(splitwin, method, size, wintype, rock) {
             gli_delete_window(newwin);
             return null;
         }
+        newwin.backgroundcolor = '#FFF';
+        newwin.accum = [];
         break;
     case Const.wintype_Blank:
         break;
@@ -3575,7 +3577,7 @@ function glk_window_clear(win) {
             }
         }
         break;
-    /*#### wintype_Graphics */
+    /*#### wintype_Graphics: clear to background color */
     }
 }
 
@@ -4347,7 +4349,7 @@ function glk_image_draw(win, imgid, val1, val2) {
         return 1;
 
     case Const.wintype_Graphics:
-        /*#### wintype_Graphics */
+        /*#### wintype_Graphics: drop in an image special */
         return 1;
     }
 
@@ -4395,7 +4397,7 @@ function glk_image_draw_scaled(win, imgid, val1, val2, width, height) {
         return 1;
 
     case Const.wintype_Graphics:
-        /*#### wintype_Graphics */
+        /*#### wintype_Graphics: drop in an image special */
         return 1;
     }
 
