@@ -661,6 +661,7 @@ function accept_one_window(arg) {
     if (!el.length) {
       win.graphwidth = arg.width;
       win.graphheight = arg.height;
+      win.defcolor = '#FFF';
       el = $('<canvas>',
         { id: 'win'+win.id+'_canvas' });
       el.attr('width', win.graphwidth);
@@ -673,6 +674,17 @@ function accept_one_window(arg) {
         win.graphheight = arg.height;
         el.attr('width', win.graphwidth);
         el.attr('height', win.graphheight);
+        /* Clear to the default color, as if for a "fill" command. */
+        var canvas = el.get(0);
+        if (canvas && canvas.getContext) {
+          var ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.fillStyle = win.defcolor;
+            ctx.fillRect(0, 0, win.graphwidth, win.graphheight);
+            ctx.fillStyle = '#000000';
+          }
+        }
+        win.frameel.css('background-color', win.defcolor);
         /* We have to trigger a redraw event for this window. But we can't do
            that from inside the accept handler. We'll set up a deferred
            function call. */
@@ -1067,14 +1079,25 @@ function accept_one_content(arg) {
         var optype = op.special;
 
         switch (optype) {
-          case 'fill':
-            ctx.fillStyle = op.color;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#000000';
+          case 'setcolor':
+            /* Set the default color (no visible changes). */
+            win.defcolor = op.color;
             break;
-          case 'rect':
-            ctx.fillStyle = op.color;
-            ctx.fillRect(op.x, op.y, op.width, op.height);
+          case 'fill':
+            /* Both color and geometry are optional here. */
+            if (op.color === undefined)
+              ctx.fillStyle = win.defcolor;
+            else
+              ctx.fillStyle = op.color;
+            if (op.x === undefined) {
+              /* Fill the whole canvas frame. Also set the background color,
+                 so that future window resizes look nice. */
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              win.frameel.css('background-color', ctx.fillStyle);
+            }
+            else {
+              ctx.fillRect(op.x, op.y, op.width, op.height);
+            }
             ctx.fillStyle = '#000000';
             break;
           case 'image':

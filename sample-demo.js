@@ -908,29 +908,30 @@ function game_parse(val) {
     return;
   }
 
+  if (val.slice(0,6) == 'gcolor' || val.slice(0,8) == 'setcolor') {
+    if (!game_graphwin) {
+      game_print('There is no graphics window.');
+    }
+    else {
+      var obj = { special:'setcolor', color:'#FFFFFF' };
+      var ls = val.split(' ');
+      for (var ix=0; ix<ls.length; ix++) {
+        var val = ls[ix];
+        if (val.match(regexp_color))
+          obj.color = val;
+      }
+      game_streamout_graph.push(obj);
+      game_print('Set default color to ' + obj.color + '.');
+    }
+    return;
+  }
+
   if (val.slice(0,5) == 'gfill') {
     if (!game_graphwin) {
       game_print('There is no graphics window.');
     }
     else {
-      var color = '#000000';
-      var ls = val.split(' ');
-      for (var ix=0; ix<ls.length; ix++) {
-        var val = ls[ix];
-        if (val.match(regexp_color))
-          color = val;
-      }
-      game_streamout_graph.push({special:'fill', color:color});
-    }
-    return;
-  }
-
-  if (val.slice(0,5) == 'grect') {
-    if (!game_graphwin) {
-      game_print('There is no graphics window.');
-    }
-    else {
-      var obj = { special:'rect', color:'#000000' };
+      var obj = { special:'fill' };
       var ls = val.split(' ');
       for (var ix=0; ix<ls.length; ix++) {
         var val = ls[ix];
@@ -948,15 +949,16 @@ function game_parse(val) {
           obj.height = (1*pair[1]);
         }
       }
-      if (obj.width == undefined) {
-        obj.width = 200;
-        obj.height = 50;
+      if (obj.width == undefined && obj.x != undefined) {
+        game_print('Must specify both X,Y and WxH.');
       }
-      if (obj.x == undefined) {
-        obj.x = 50;
-        obj.y = 50;
+      else if (obj.width != undefined && obj.x == undefined) {
+        game_print('Must specify both X,Y and WxH.');
       }
-      game_streamout_graph.push(obj);
+      else {
+        game_streamout_graph.push(obj);
+        game_print('Filled a rectangle with a color.');
+      }
     }
     return;
   }
@@ -966,19 +968,21 @@ function game_parse(val) {
       game_print('There is no graphics window.');
     }
     else {
-      var obj = { special:'fill', color:'#FFF' };
+      var obj = { special:'setcolor', color:'#FFF' };
       game_streamout_graph.push(obj);
-      obj = { special:'rect', color:'#EEE', x:24, y:8, width:148, height:96 };
+      obj = { special:'fill' };
       game_streamout_graph.push(obj);
-      obj = { special:'rect', color:'#44F', x:32, y:16, width:32, height:32 };
+      obj = { special:'fill', color:'#EEE', x:24, y:8, width:148, height:96 };
       game_streamout_graph.push(obj);
-      obj = { special:'rect', color:'#44F', x:132, y:16, width:32, height:32 };
+      obj = { special:'fill', color:'#44F', x:32, y:16, width:32, height:32 };
       game_streamout_graph.push(obj);
-      obj = { special:'rect', color:'#F08', x:64, y:80, width:68, height:16 };
+      obj = { special:'fill', color:'#44F', x:132, y:16, width:32, height:32 };
       game_streamout_graph.push(obj);
-      obj = { special:'rect', color:'#F08', x:48, y:64, width:100, height:16 };
+      obj = { special:'fill', color:'#F08', x:64, y:80, width:68, height:16 };
       game_streamout_graph.push(obj);
-      game_print('Cleared graphics window, drew a terrible smiley face.');
+      obj = { special:'fill', color:'#F08', x:48, y:64, width:100, height:16 };
+      game_streamout_graph.push(obj);
+      game_print('Cleared graphics window to white, drew a terrible smiley face.');
     }
     return;
   }
