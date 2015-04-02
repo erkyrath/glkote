@@ -3301,7 +3301,6 @@ function glk_window_open(splitwin, method, size, wintype, rock) {
             gli_delete_window(newwin);
             return null;
         }
-        newwin.backgroundcolor = '#FFF';
         newwin.accum = [];
         break;
     case Const.wintype_Blank:
