@@ -4406,22 +4406,29 @@ function glk_window_flow_break(win) {
     if (!win)
         throw('glk_window_flow_break: invalid window');
 
-    gli_window_buffer_put_special(win, undefined, true);
+    if (win.type == Const.wintype_TextBuffer)
+        gli_window_buffer_put_special(win, undefined, true);
 }
 
 function glk_window_erase_rect(win, left, top, width, height) {
     if (!win)
         throw('glk_window_erase_rect: invalid window');
+    if (win.type != Const.wintype_Graphics)
+        throw('glk_window_erase_rect: not a graphics window');
 }
 
 function glk_window_fill_rect(win, color, left, top, width, height) {
     if (!win)
         throw('glk_window_fill_rect: invalid window');
+    if (win.type != Const.wintype_Graphics)
+        throw('glk_window_fill_rect: not a graphics window');
 }
 
 function glk_window_set_background_color(win, color) {
     if (!win)
         throw('glk_window_set_background_color: invalid window');
+    if (win.type != Const.wintype_Graphics)
+        throw('glk_window_set_background_color: not a graphics window');
 }
 
 
