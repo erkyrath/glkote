@@ -953,7 +953,7 @@ The <code>clear</code>, <code>append</code>, and <code>flowbreak</code> values m
 Each element in the <code>draw</code> array represents a drawing operation, specified by the <code>special</code> field.
 <p>
 
-<code>setcolor</code> sets the (default) fill color. The <code>color</code> field (required) should be a string containing a valid CSS color. (There are several possible formats; the most familiar looks like <code>"#C0207F"</code>.)
+<code>setcolor</code> sets the (default) fill color. The <code>color</code> field (required) should be a string containing a valid CSS color. (There are several possible formats; the most familiar looks like <code>"#C0207F"</code>.) This does not change the window appearance, but it affects later <code>fill</code> commands and window resizes.
 <p>
 
 <code>fill</code> fills a rectangle of the graphics window with a color. If the <code>color</code> field is given, it should be a valid CSS color; if omitted, the default fill color will be used. If the <code>x, y, width, height</code> fields are given, they define the fill rectangle; if omitted, the entire graphics window is filled. (All four of these fields must be specified if any is.)
