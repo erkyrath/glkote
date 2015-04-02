@@ -703,8 +703,8 @@ function game_parse(val) {
     helpopt('break',   'insert a flow break');
     helpopt('split/unsplit', 'open/close a second story window');
     helpopt('graph/ungraph', 'open/close a graphics window');
-    helpopt2('gfill',  '[color]', 'fill graphics window with a color');
-    helpopt2('grect',  '[color] [X,Y] [WxH]', 'draw rectangle in graphics window with a color');
+    helpopt2('gcolor', '[color]', 'set the default color of the graphics window');
+    helpopt2('gfill',  '[color] [X,Y] [WxH]', 'draw rectangle in graphics window (or fill it) with a color (or the default color)');
     helpopt('both',    'print output in both story windows');
     helpopt('bothlong','print long output in both story windows');
     helpopt('timer',   'set a timed event to fire in two seconds');

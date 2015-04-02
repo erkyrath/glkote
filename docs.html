@@ -824,6 +824,9 @@ A grid window must have <code>gridwidth</code> and <code>gridheight</code> value
 Graphics windows depend on the <code>&lt;canvas&gt;</code> HTML element. Do not try to open a graphics window in an older browser which does not support <code>&lt;canvas&gt;</code>.
 <p>
 
+A newly-opened graphics window is cleared to white, and its default fill color is white. If a graphics window is resized, it is cleared to its current default fill color.
+<p>
+
 <h3><a name="inputupdate">The Input Update Array</a></h3>
 
 The <code>input</code> property is an array listing all the windows which should be awaiting input. If no input fields have been cancelled or posted since the last update, you should omit the <code>input</code> field. (Omitting it is different from including an <em>empty</em> <code>input</code> array; that would cancel all input fields.)
@@ -938,6 +941,7 @@ The <code>clear</code>, <code>append</code>, and <code>flowbreak</code> values m
 <pre class="Sample">
 { id: WINDOW_ID, draw: [
   { special: 'setcolor', color: COLOR },
+  { special: 'fill' },
   { special: 'fill', color: COLOR,
     x: NUMBER, y: NUMBER, width: NUMBER, height: NUMBER },
   { special: 'image', image: NUMBER, x: NUMBER, y: NUMBER,
@@ -949,16 +953,16 @@ The <code>clear</code>, <code>append</code>, and <code>flowbreak</code> values m
 Each element in the <code>draw</code> array represents a drawing operation, specified by the <code>special</code> field.
 <p>
 
-<code>fill</code> fills the graphics window with a given color. The <code>color</code> field should be a string containing a valid CSS color. (There are several possible formats; the most familiar looks like <code>"#C0207F"</code>.)
+<code>setcolor</code> sets the (default) fill color. The <code>color</code> field (required) should be a string containing a valid CSS color. (There are several possible formats; the most familiar looks like <code>"#C0207F"</code>.)
 <p>
 
-<code>rect</code> fills a rectangular area with a given color.
+<code>fill</code> fills a rectangle of the graphics window with a color. If the <code>color</code> field is given, it should be a valid CSS color; if omitted, the default fill color will be used. If the <code>x, y, width, height</code> fields are given, they define the fill rectangle; if omitted, the entire graphics window is filled. (All four of these fields must be specified if any is.)
 <p>
 
 <code>image</code> draws an image into the window. See <a href="#imagedata">below</a> for the description of the image object.
 <p>
 
-(For efficiency, <code>fill</code> should appear only at the beginning of the <code>draw</code> array.)
+(For efficiency, minimize overdraw where possible. It's a waste of time to have multiple window-filling operations in the same <code>draw</code> array, or to draw content that is then erased by filling the window with a solid color.)
 <p>
 
 <h4><a name="linedata">The Line Data Array</a></h4>
