@@ -54,6 +54,7 @@ var currently_focussed = false;
 var last_known_focus = 0;
 var last_known_paging = 0;
 var windows_paging_count = 0;
+var graphics_draw_queue = [];
 var resize_timer = null;
 var retry_timer = null;
 var perform_paging = true;
@@ -1064,58 +1065,26 @@ function accept_one_content(arg) {
     if (draw === undefined)
       draw = [];
 
-    var ctx = undefined;
-    var canvas = undefined;
-    var el = $('#win'+win.id+'_canvas', dom_context);
-    if (el.length) {
-      canvas = el.get(0);
-      if (canvas && canvas.getContext)
-        ctx = canvas.getContext('2d');
+    /* Unfortunately, image-draw actions might take some time (if the image
+       data is not cached). So we can't do this with a simple synchronous loop.
+       Instead, we must add drawing ops to a queue, and then have a function
+       callback that executes them. (It's a global queue, not per-window.)
+       
+       We assume that if the queue is nonempty, a callback is already waiting
+       out there, so we don't have to set it up.
+    */
+
+    var docall = (graphics_draw_queue.length == 0);
+    for (ix=0; ix<draw.length; ix++) {
+      var op = draw[ix];
+      /* We'll be paranoid and clone the op object, throwing in a window
+         number. */
+      var newop = { winid:win.id };
+      jQuery.extend(newop, op);
+      graphics_draw_queue.push(newop);
     }
-
-    if (ctx) {
-      for (ix=0; ix<draw.length; ix++) {
-        var op = draw[ix];
-        var optype = op.special;
-
-        switch (optype) {
-          case 'setcolor':
-            /* Set the default color (no visible changes). */
-            win.defcolor = op.color;
-            break;
-          case 'fill':
-            /* Both color and geometry are optional here. */
-            if (op.color === undefined)
-              ctx.fillStyle = win.defcolor;
-            else
-              ctx.fillStyle = op.color;
-            if (op.x === undefined) {
-              /* Fill the whole canvas frame. Also set the background color,
-                 so that future window resizes look nice. */
-              ctx.fillRect(0, 0, canvas.width, canvas.height);
-              win.frameel.css('background-color', ctx.fillStyle);
-            }
-            else {
-              ctx.fillRect(op.x, op.y, op.width, op.height);
-            }
-            ctx.fillStyle = '#000000';
-            break;
-          case 'image':
-            var imgurl = op.url;
-            if (window.GiLoad && GiLoad.get_image_url) {
-              var newurl = GiLoad.get_image_url(op.image);
-              if (newurl)
-                imgurl = newurl;
-            }
-            /* #### not reliable */
-            var img = new Image();
-            img.src = imgurl;
-            ctx.drawImage(img, op.x, op.y, op.width, op.height);
-            break;
-          default:
-            glkote_log('Unknown special entry in graphics content: ' + optype);
-        }
-      }
+    if (docall && graphics_draw_queue.length > 0) {
+      perform_graphics_ops(null);
     }
   }
 }
@@ -1535,6 +1504,112 @@ function insert_text_detecting(el, val) {
 
   /* Fall-through case. Just add the text. */
   el.append(document.createTextNode(val));
+}
+
+/* This is responsible for drawing the queue of graphics operations.
+   It will do simple fills synchronously, but image draws must be
+   handled in a callback (because the image data might need to be pulled
+   from the server).
+
+   If the loadedimg argument is null, this was called to take care of
+   new drawing ops. On an image draw, we call back here with loadedimg
+   as the Image DOM object that succeeded (or failed).
+*/
+function perform_graphics_ops(loadedimg, loadedev) {
+  if (graphics_draw_queue.length == 0) {
+    glkote_log('perform_graphics_ops called with no queued ops' + (loadedimg ? ' (plus image!)' : ''));
+    return;
+  }
+  glkote_log('### perform_graphics_ops, ' + graphics_draw_queue.length + ' queued' + (loadedimg ? ' (plus image!)' : '') + '.'); /*###*/
+
+  /* Look at the first queue entry, execute it, and then shift it off.
+     On error we must be sure to shift anyway, or the queue will jam!
+     Note that if loadedimg is not null, the first queue entry should
+     be a matching 'image' draw. */
+
+  while (graphics_draw_queue.length) {
+    var op = graphics_draw_queue[0];
+    var win = windowdic[op.winid];
+    if (!win) {
+      glkote_log('perform_graphics_ops: op for nonexistent window ' + op.winid);
+      graphics_draw_queue.shift();
+      continue;
+    }
+
+    var ctx = undefined;
+    var canvas = undefined;
+    var el = $('#win'+win.id+'_canvas', dom_context);
+    if (el.length) {
+      canvas = el.get(0);
+      if (canvas && canvas.getContext)
+        ctx = canvas.getContext('2d');
+    }
+    if (!ctx) {
+      glkote_log('perform_graphics_ops: op for nonexistent canvas ' + win.id);
+      graphics_draw_queue.shift();
+      continue;
+    }
+
+    var optype = op.special;
+    
+    switch (optype) {
+      case 'setcolor':
+        /* Set the default color (no visible changes). */
+        win.defcolor = op.color;
+        break;
+      case 'fill':
+        /* Both color and geometry are optional here. */
+        if (op.color === undefined)
+          ctx.fillStyle = win.defcolor;
+        else
+          ctx.fillStyle = op.color;
+        if (op.x === undefined) {
+          /* Fill the whole canvas frame. Also set the background color,
+             so that future window resizes look nice. */
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          win.frameel.css('background-color', ctx.fillStyle);
+        }
+        else {
+          ctx.fillRect(op.x, op.y, op.width, op.height);
+        }
+        ctx.fillStyle = '#000000';
+        break;
+      case 'image':
+        /* This is the tricky case. If loadedimg is null, we have to
+           create an Image() and set up the loading callbacks. */
+        if (!loadedimg) {
+          var imgurl = op.url;
+          if (window.GiLoad && GiLoad.get_image_url) {
+            var newurl = GiLoad.get_image_url(op.image);
+            if (newurl)
+              imgurl = newurl;
+          }
+          glkote_log('### setting up callback with url ' + imgurl);
+          var newimg = new Image();
+          $(newimg).on('load', function(ev) { perform_graphics_ops(newimg, ev); });
+          $(newimg).on('error', function(ev) { perform_graphics_ops(newimg, null); });
+          /* Setting the src attribute will trigger one of the above
+             callbacks. */
+          newimg.src = imgurl;
+          return;
+        }
+        /* We were called back with an image. Hopefully it loaded ok. Note that
+           for the error callback, loadedev is null. */
+        if (loadedev) {
+          ctx.drawImage(loadedimg, op.x, op.y, op.width, op.height);
+        }
+        loadedev = null;
+        loadedimg = null;
+        /* Either way, continue with the queue. */
+        break;
+      default:
+        glkote_log('Unknown special entry in graphics content: ' + optype);
+        break;
+    }
+
+    graphics_draw_queue.shift();
+  }
+  glkote_log('### queue empty.');
 }
 
 /* Run a function (no arguments) in timeout seconds. */
