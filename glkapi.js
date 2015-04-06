@@ -401,6 +401,13 @@ function update() {
             }
             useobj = obj.lines.length;
             break;
+        case Const.wintype_Graphics:
+            if (win.content.length) {
+                obj.draw = win.content.slice(0);
+                win.content.length = 0;
+                useobj = true;
+            }
+            break;
         }
 
         if (useobj)
@@ -2350,6 +2357,9 @@ function gli_window_close(win, recurse) {
         case Const.wintype_TextGrid: 
             win.lines = null;
             break;
+        case Const.wintype_Graphics:
+            win.content = null;
+            break;
     }
     
     gli_delete_window(win);
@@ -2434,6 +2444,10 @@ function gli_window_rearrange(win, box) {
                     split = (win.pair_size * content_metrics.gridcharheight + content_metrics.gridmarginy);
                 else
                     split = (win.pair_size * content_metrics.gridcharwidth + content_metrics.gridmarginx);
+            }
+            if (win.pair_key && win.pair_key.type == Const.wintype_Graphics) {
+                split = win.pair_size;
+                /*#### allow for graphicsmarginx/y? */
             }
             split = Math.ceil(split);
         }
@@ -3301,7 +3315,7 @@ function glk_window_open(splitwin, method, size, wintype, rock) {
             gli_delete_window(newwin);
             return null;
         }
-        newwin.accum = [];
+        newwin.content = [];
         break;
     case Const.wintype_Blank:
         break;
@@ -3576,7 +3590,10 @@ function glk_window_clear(win) {
             }
         }
         break;
-    /*#### wintype_Graphics: clear to background color */
+    case Const.wintype_Graphics:
+        win.content.length = 0;
+        win.content.push({ special: 'fill' }); /* clear to background color */
+        break;
     }
 }
 
@@ -4416,6 +4433,8 @@ function glk_window_erase_rect(win, left, top, width, height) {
         throw('glk_window_erase_rect: invalid window');
     if (win.type != Const.wintype_Graphics)
         throw('glk_window_erase_rect: not a graphics window');
+
+    win.content.push({ special:'fill', x:left, y:top, width:width, height:height });
 }
 
 function glk_window_fill_rect(win, color, left, top, width, height) {
@@ -4423,6 +4442,9 @@ function glk_window_fill_rect(win, color, left, top, width, height) {
         throw('glk_window_fill_rect: invalid window');
     if (win.type != Const.wintype_Graphics)
         throw('glk_window_fill_rect: not a graphics window');
+
+    var colstr = gli_color_to_css(color);
+    win.content.push({ special:'fill', color:colstr, x:left, y:top, width:width, height:height });
 }
 
 function glk_window_set_background_color(win, color) {
@@ -4430,8 +4452,17 @@ function glk_window_set_background_color(win, color) {
         throw('glk_window_set_background_color: invalid window');
     if (win.type != Const.wintype_Graphics)
         throw('glk_window_set_background_color: not a graphics window');
+
+    var colstr = gli_color_to_css(color);
+    win.content.push({ special:'setcolor', color:colstr });
 }
 
+/* Convert a Glk numeric color value to a CSS-compatible string.
+*/
+function gli_color_to_css(color) {
+    var res = (color & 0xFFFFFF).toString(16);
+    return '#' + res.toUpperCase();
+}
 
 function glk_schannel_iterate(schan, rockref) {
     if (!schan)
