@@ -3470,7 +3470,13 @@ function glk_window_get_size(win, widthref, heightref) {
         hgt = Math.max(0, Math.floor((boxheight-content_metrics.buffermarginy) / content_metrics.buffercharheight));        
         break;
 
-        /*#### wintype_Graphics: compute, using graphicsmarginx/y */
+    case Const.wintype_Graphics:
+        boxwidth = win.bbox.right - win.bbox.left;
+        boxheight = win.bbox.bottom - win.bbox.top;
+        wid = boxwidth;
+        hgt = boxheight;
+        /*#### use graphicsmarginx/y? */
+        break;
     }
 
     if (widthref)
@@ -4365,7 +4371,9 @@ function glk_image_draw(win, imgid, val1, val2) {
         return 1;
 
     case Const.wintype_Graphics:
-        /*#### wintype_Graphics: drop in an image special */
+        img.x = val1;
+        img.y = val2;
+        win.content.push(img);
         return 1;
     }
 
@@ -4413,7 +4421,10 @@ function glk_image_draw_scaled(win, imgid, val1, val2, width, height) {
         return 1;
 
     case Const.wintype_Graphics:
-        /*#### wintype_Graphics: drop in an image special */
+        img.x = val1;
+        img.y = val2;
+        /* width, height already set */
+        win.content.push(img);
         return 1;
     }
 
