@@ -1101,7 +1101,16 @@ function accept_one_content(arg) {
             ctx.fillStyle = '#000000';
             break;
           case 'image':
-            /*####*/
+            var imgurl = op.url;
+            if (window.GiLoad && GiLoad.get_image_url) {
+              var newurl = GiLoad.get_image_url(op.image);
+              if (newurl)
+                imgurl = newurl;
+            }
+            /* #### not reliable */
+            var img = new Image();
+            img.src = imgurl;
+            ctx.drawImage(img, op.x, op.y, op.width, op.height);
             break;
           default:
             glkote_log('Unknown special entry in graphics content: ' + optype);

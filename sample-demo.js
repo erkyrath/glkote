@@ -705,6 +705,7 @@ function game_parse(val) {
     helpopt('graph/ungraph', 'open/close a graphics window');
     helpopt2('gcolor', '[color]', 'set the default color of the graphics window');
     helpopt2('gfill',  '[color] [X,Y] [WxH]', 'draw rectangle in graphics window (or fill it) with a color (or the default color)');
+    helpopt2('gimage', '[number] [X,Y] [WxH]', 'draw image in graphics window');
     helpopt('both',    'print output in both story windows');
     helpopt('bothlong','print long output in both story windows');
     helpopt('timer',   'set a timed event to fire in two seconds');
@@ -960,6 +961,48 @@ function game_parse(val) {
         game_print('Filled a rectangle with a color.');
       }
     }
+    return;
+  }
+
+  if (val.slice(0,6) == 'gimage') {
+    if (!game_graphwin) {
+      game_print('There is no graphics window.');
+      return;
+    }
+    var imagenum = 0;
+    var dimensions = undefined;
+    var pos = { x:0, y:0 };
+    var ls = val.split(' ');
+    for (var ix=0; ix<ls.length; ix++) {
+      val = ls[ix];
+      if (!val || val == 'gimage')
+        continue;
+      if (val.match(/^[0-9]+$/)) {
+        imagenum = 1 * val;
+        continue;
+      }
+      if (val.match(/^[0-9]+x[0-9]+$/)) {
+        var pair = val.split('x');
+        dimensions = { width:(1*pair[0]), height:(1*pair[1]) };
+      }
+      if (val.match(/^[0-9]+,[0-9]+$/)) {
+        var pair = val.split(',');
+        pos = { x:(1*pair[0]), y:(1*pair[1]) };
+      }
+    }
+    var img = game_fetch_image(imagenum, alignment);
+    if (!img) {
+      game_print('There is no image number ' + imagenum + '.');
+      return;
+    }
+    img.x = pos.x;
+    img.y = pos.y;
+    if (dimensions) {
+      img.width = dimensions.width;
+      img.height = dimensions.height;
+    }
+    game_streamout_graph.push(img);
+    game_print('Drew image ' + imagenum + '.');
     return;
   }
 
