@@ -1008,7 +1008,7 @@ An image entry in the line data array has the <code>special</code> value <code>"
 </pre>
 <p>
 
-In the simplest case, the <code>url</code> field is a URL (absolute or relative to the HTML document) which refers to the image resource. If the application uses GiLoad to locate image data, you may instead supply an <code>image</code> number.
+In the simplest case, the <code>url</code> field is a URL which refers to the image resource. (The URL can be absolute or relative to the document. However, absolute is preferred, in case the update stream is recorded and stored on a different server.) If the application uses GiLoad to locate image data, you may supply an <code>image</code> number instead of a <code>url</code>.
 <p>
 
 The <code>width</code> and <code>height</code> fields are <em>required</em>. If they do not match the image's native size, it will be resized to the given values.
