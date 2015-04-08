@@ -4476,6 +4476,9 @@ function glk_window_set_background_color(win, color) {
 */
 function gli_color_to_css(color) {
     var res = (color & 0xFFFFFF).toString(16);
+    while (res.length < 6) {
+        res = '0' + res;
+    }
     return '#' + res.toUpperCase();
 }
 
