@@ -504,10 +504,6 @@ function update() {
                 }
             }
         }
-        /* ### I bet we should be pushing an object for every window, or
-           perhaps for every window that has ever requested any kind of
-           input. This might leave mouse/hyperlink input pending when
-           it has actually expired. */
         if (win.hyperlink_request) {
             if (!obj)
                 obj = { id: win.disprock };
