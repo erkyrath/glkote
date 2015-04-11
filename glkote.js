@@ -2140,8 +2140,8 @@ function evhan_input_graphics_click(ev) {
     return;
 
   var pos = $(ev.target).offset();
-  glkote_log('### mousedown ' + (ev.clientX-pos.left) + ' ' + (ev.clientY-pos.top));
   if (win.reqmouse) {
+    ev.preventDefault();
     send_response('mouse', win, (ev.clientX-pos.left), (ev.clientY-pos.top));
   }
 }
