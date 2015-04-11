@@ -126,6 +126,10 @@ function accept_ui_event(obj) {
         handle_hyperlink_input(obj.window, obj.value);
         break;
 
+    case 'mouse':
+        handle_mouse_input(obj.window, obj.x, obj.y);
+        break;
+
     case 'char':
         handle_char_input(obj.window, obj.value);
         break;
@@ -222,6 +226,31 @@ function handle_hyperlink_input(disprock, val) {
     gli_selectref.set_field(3, 0);
 
     win.hyperlink_request = false;
+
+    if (window.GiDispa)
+        GiDispa.prepare_resume(gli_selectref);
+    gli_selectref = null;
+    VM.resume();
+}
+
+function handle_mouse_input(disprock, xpos, ypos) {
+    if (!gli_selectref)
+        return;
+
+    var win = null;
+    for (win=gli_windowlist; win; win=win.next) {
+        if (win.disprock == disprock) 
+            break;
+    }
+    if (!win || !win.mouse_request)
+        return;
+
+    gli_selectref.set_field(0, Const.evtype_Mouse);
+    gli_selectref.set_field(1, win);
+    gli_selectref.set_field(2, xpos);
+    gli_selectref.set_field(3, ypos);
+
+    win.mouse_request = false;
 
     if (window.GiDispa)
         GiDispa.prepare_resume(gli_selectref);
@@ -479,6 +508,11 @@ function update() {
             if (!obj)
                 obj = { id: win.disprock };
             obj.hyperlink = true;
+        }
+        if (win.mouse_request) {
+            if (!obj)
+                obj = { id: win.disprock };
+            obj.mouse = true;
         }
         if (obj)
             inputarray.push(obj);
@@ -2107,6 +2141,7 @@ function gli_new_window(type, rock) {
     win.char_request_uni = false;
     win.line_request_uni = false;
     win.hyperlink_request = false;
+    win.mouse_request = false;
     win.echo_line_input = true;
     win.line_input_terminators = [];
     win.request_echo_line_input = null; /* only used during a request */
@@ -3164,6 +3199,7 @@ function glk_gestalt_ext(sel, val, arr) {
         return 2; // gestalt_CharOutput_ExactPrint
 
     case 4: // gestalt_MouseInput
+        /*####*/
         return 0;
 
     case 5: // gestalt_Timer
@@ -4306,15 +4342,21 @@ function glk_set_terminators_line_event(win, arr) {
 }
 
 function glk_request_mouse_event(win) {
-   if (!win)
+    if (!win)
         throw('glk_request_mouse_event: invalid window');
-   /* Not supported. */
+    if (win.mouse_request)
+        throw('glk_request_mouse_event: window already has mouse request');
+
+    if (win.type == Const.wintype_Graphics) {
+        win.mouse_request = true;
+    }
+    /* else ignore request */
 }
 
 function glk_cancel_mouse_event(win) {
-   if (!win)
+    if (!win)
         throw('glk_cancel_mouse_event: invalid window');
-   /* Not supported. */
+    win.mouse_request = false;
 }
 
 function glk_request_timer_events(msec) {
