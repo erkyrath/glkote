@@ -366,6 +366,10 @@ function game_select() {
       type: 'char', xpos:15, ypos:3+game_mood };
     argi.push(obj);
   }
+  if (game_graphwin) {
+    var obj = { id: 5, mouse: true };
+    argi.push(obj);
+  }
   if (true) {
     var obj = { id: 3, hyperlink: true };
     argi.push(obj);
@@ -445,6 +449,9 @@ function game_accept(res) {
   }
   else if (res.type == 'hyperlink') {
     game_submit_hyperlink_input(res.window, res.value);
+  }
+  else if (res.type == 'mouse') {
+    game_submit_mouse_input(res.window, res.x, res.y);
   }
   else if (res.type == 'external') {
     if (res.value == 'timer')
@@ -569,6 +576,13 @@ function game_submit_hyperlink_input(winid, val) {
   }
 
   game_print('You clicked on ' + msg + '.');
+}
+
+function game_submit_mouse_input(winid, xpos, ypos) {
+  game_inputgen_left = 0;
+  game_inputline_left = true;
+  game_print_left = true;
+  game_print('You clicked at coordinates ' + xpos + ', ' + ypos + '.');
 }
 
 function game_submit_timer_input() {

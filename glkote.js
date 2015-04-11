@@ -615,6 +615,7 @@ function accept_one_window(arg) {
     win.inputel = null;
     win.terminators = {};
     win.reqhyperlink = false;
+    win.reqmouse = false;
     win.needscroll = false;
     win.needspaging = false;
     win.topunseen = 0;
@@ -667,6 +668,7 @@ function accept_one_window(arg) {
         { id: 'win'+win.id+'_canvas' });
       el.attr('width', win.graphwidth);
       el.attr('height', win.graphheight);
+      el.on('click', win.id, evhan_input_graphics_click);
       win.frameel.append(el);
     }
     else {
@@ -1123,15 +1125,19 @@ function accept_inputcancel(arg) {
 function accept_inputset(arg) {
   var hasinput = {};
   var hashyperlink = {};
+  var hasmouse = {};
   jQuery.map(arg, function(argi) {
     if (argi.type)
       hasinput[argi.id] = argi;
     if (argi.hyperlink)
       hashyperlink[argi.id] = true;
+    if (argi.mouse)
+      hasmouse[argi.id] = true;
   });
 
   jQuery.each(windowdic, function(tmpid, win) {
     win.reqhyperlink = hashyperlink[win.id];
+    win.reqmouse = hasmouse[win.id];
 
     var argi = hasinput[win.id];
     if (argi == null)
@@ -1709,6 +1715,11 @@ function send_response(type, win, val, val2) {
     res.window = win.id;
     res.value = val;
   }
+  else if (type == 'mouse') {
+    res.window = win.id;
+    res.x = val;
+    res.y = val2;
+  }
   else if (type == 'external') {
     res.value = val;
   }
@@ -2115,6 +2126,24 @@ function evhan_window_mousedown(ev) {
     last_known_paging = win.id;
   else if (win.inputel)
     last_known_paging = 0;
+}
+
+/* Event handler: mouse click events on graphics windows
+*/
+function evhan_input_graphics_click(ev) {
+  var winid = ev.data;
+  var win = windowdic[winid];
+  if (!win)
+    return;
+
+  if (ev.button != 0)
+    return;
+
+  var pos = $(ev.target).offset();
+  glkote_log('### mousedown ' + (ev.clientX-pos.left) + ' ' + (ev.clientY-pos.top));
+  if (win.reqmouse) {
+    send_response('mouse', win, (ev.clientX-pos.left), (ev.clientY-pos.top));
+  }
 }
 
 /* Event handler: keydown events on input fields (character input)
