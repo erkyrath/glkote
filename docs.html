@@ -1576,7 +1576,7 @@ The color of these margins, between and around your windows, is the <code>backgr
 A window can have a CSS <code>border</code> property. You specify the width, color, and style as part of the property value. For example, <code class="Inline">border: 2px solid red</code> would put a two-pixel red line around the window. (See the CSS spec for complete details.) If you specify both a spacing and a border, the spacing is measured from the outer edge of the border.
 <p>
 
-A window can also have a CSS <code>padding</code> property. This is the distance between the inner edge of the border (if any) and the window content -- the text in the window. (This padding space is the same color as the window background.) The default stylesheet defines a fair bit of padding; you don't want to skimp on it.
+A window can also have a CSS <code>padding</code> property. This is the distance between the inner edge of the border (if any) and the window content -- the text in the window. (This padding space is the same color as the window background. For graphics windows, that means it will start out white.) The default stylesheet defines a fair bit of padding; you don't want to skimp on it.
 <p>
 
 <em>Within</em> a window -- that is, within lines of text -- you are free to adjust the spacing however you want. The <code>letter-spacing</code> and <code>line-height</code> properties are safe. You can set <code>margin</code> values on <code>BufferLine</code>, but don't try it on <code>GridLine</code>.
