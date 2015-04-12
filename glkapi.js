@@ -2512,9 +2512,9 @@ function gli_window_rearrange(win, box) {
             }
             if (win.pair_key && win.pair_key.type == Const.wintype_Graphics) {
                 if (!win.pair_vertical) 
-                    split = win.pair_size + content_metrics.graphicsmarginx;
-                else
                     split = win.pair_size + content_metrics.graphicsmarginy;
+                else
+                    split = win.pair_size + content_metrics.graphicsmarginx;
             }
             split = Math.ceil(split);
         }
