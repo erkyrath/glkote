@@ -382,6 +382,8 @@ function update() {
                 break;
             case Const.wintype_Graphics:
                 obj.type = 'graphics';
+                obj.graphwidth = win.graphwidth;
+                obj.graphheight = win.graphheight;
                 break;
             }
 
