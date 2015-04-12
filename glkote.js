@@ -251,7 +251,7 @@ function glkote_init(iface) {
 */
 function measure_window() {
   var metrics = {};
-  var winsize, line1size, line2size, spansize;
+  var winsize, line1size, line2size, spansize, canvassize;
 
   /* We assume the gameport is the same size as the windowport, which
      is true on all browsers but IE7. Fortunately, on IE7 it's
@@ -274,7 +274,8 @@ function measure_window() {
 
   /* Create a dummy layout div containing a grid window and a buffer window,
      each with two lines of text. */
-  var layout_test_pane = $('<div>').text('This should not be visible');
+  var layout_test_pane = $('<div>', { 'id':'layout_test_pane' });
+  layout_test_pane.text('This should not be visible');
   layout_test_pane.css({
     /* "display:none" would make the pane not render at all, making it
        impossible to measure. Instead, make it invisible and offscreen. */
@@ -296,6 +297,13 @@ function measure_window() {
   var bufline2 = line.clone().addClass('BufferLine').appendTo(bufwin);
   var bufspan = bufline1.children('span');
   layout_test_pane.append(bufwin);
+
+  var graphwin = $('<div>', {'class': 'WindowFrame GraphicsWindow'});
+  var graphcanvas = $('<canvas>');
+  graphcanvas.attr('width', 64);
+  graphcanvas.attr('height', 32);
+  graphwin.append(graphcanvas);
+  layout_test_pane.append(graphwin);
 
   gameport.append(layout_test_pane);
 
@@ -335,7 +343,15 @@ function measure_window() {
   /* Again, these values include both sides (left+right, top+bottom). */
   metrics.buffermarginx = winsize.width - spansize.width;
   metrics.buffermarginy = winsize.height - (line1size.height + line2size.height);
+
+  /* Here we will include padding and border. */
+  winsize = get_size(graphwin);
+  canvassize = get_size(graphcanvas);
   
+  /* Again, these values include both sides (left+right, top+bottom). */
+  metrics.graphicsmarginx = winsize.width - canvassize.width;
+  metrics.graphicsmarginy = winsize.height - canvassize.height;
+
   /* Now that we're done measuring, discard the pane. */
   layout_test_pane.remove();
   
@@ -663,19 +679,20 @@ function accept_one_window(arg) {
   if (win.type == 'graphics') {
     var el = $('#win'+win.id+'_canvas', dom_context);
     if (!el.length) {
-      win.graphwidth = arg.width;
-      win.graphheight = arg.height;
+      win.graphwidth = arg.graphwidth;
+      win.graphheight = arg.graphheight;
       win.defcolor = '#FFF';
       el = $('<canvas>',
         { id: 'win'+win.id+'_canvas' });
       el.attr('width', win.graphwidth);
       el.attr('height', win.graphheight);
+      win.frameel.css('background-color', win.defcolor);
       win.frameel.append(el);
     }
     else {
-      if (win.graphwidth != arg.width || win.graphheight != arg.height) {
-        win.graphwidth = arg.width;
-        win.graphheight = arg.height;
+      if (win.graphwidth != arg.graphwidth || win.graphheight != arg.graphheight) {
+        win.graphwidth = arg.graphwidth;
+        win.graphheight = arg.graphheight;
         el.attr('width', win.graphwidth);
         el.attr('height', win.graphheight);
         /* Clear to the default color, as if for a "fill" command. */

@@ -810,6 +810,7 @@ Each element in the <code>windows</code> array has one of the forms:
   left: POS, top: POS, width: SIZE, height: SIZE }
 
 { id: WINDOW_ID, type: 'graphics', rock: ROCK_VALUE,
+  graphwidth: SIZE, graphheight: SIZE,
   left: POS, top: POS, width: SIZE, height: SIZE }
 </pre>
 <p>
@@ -832,7 +833,7 @@ A grid window must have <code>gridwidth</code> and <code>gridheight</code> value
 Graphics windows depend on the <code>&lt;canvas&gt;</code> HTML element. Do not try to open a graphics window in an older browser which does not support <code>&lt;canvas&gt;</code>.
 <p>
 
-A newly-opened graphics window is cleared to white, and its default fill color is white. If a graphics window is resized, it is cleared to its current default fill color.
+A graphics window must have <code>graphwidth</code> and <code>graphheight</code> values. These are in pixels, and must fit in <code>width</code> and <code>height</code> when the metrics (<code>graphicsmarginx/y</code>) are taken into account. A newly-opened graphics window is cleared to white, and its default fill color is white. If a graphics window is resized, it is cleared to its current default fill color.
 <p>
 
 <h3><a name="inputupdate">The Input Update Array</a></h3>
@@ -1275,6 +1276,14 @@ metrics.buffermarginx, metrics.buffermarginy
 <p>
 
 The extra space consumption for buffer windows.
+<p>
+
+<pre class="Def">
+metrics.graphicsmarginx, metrics.graphicsmarginy
+</pre>
+<p>
+
+The extra space consumption for graphics windows.
 <p>
 
 <h3><a name="layoutmath">Doing the Math</a></h3>

@@ -204,7 +204,7 @@ function game_select() {
   /* How many pixels are needed for statuslines and quotelines? */
   var statusheight = metrics.gridcharheight*statuslines + metrics.gridmarginy;
   var quoteheight  = metrics.gridcharheight*quotelines + metrics.gridmarginy;
-  var graphheight = 120;
+  var graphheight = 120 + metrics.graphicsmarginy;
 
   /* As many characters as fit horizontally given the pixel width. */
   var gridchars = Math.floor((pwidth - (2*metrics.outspacingx+metrics.gridmarginx)) / metrics.gridcharwidth);
@@ -246,6 +246,8 @@ function game_select() {
   }
   if (have_graphwin) {
     argw.push({ id: 5, type: 'graphics', rock: 55,
+      graphwidth: pwidth-(2*metrics.outspacingx)-metrics.graphicsmarginx,
+      graphheight: graphheight-metrics.graphicsmarginy,
       left: metrics.outspacingx,
       top: graphtop,
       width: pwidth-(2*metrics.outspacingx),
