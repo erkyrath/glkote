@@ -363,11 +363,8 @@ function game_select() {
   }
   if (game_statusmenu) {
     var obj = { id: 1, gen: game_inputgen_top,
-      type: 'char', xpos:15, ypos:3+game_mood };
-    argi.push(obj);
-  }
-  else {
-    var obj = { id: 1, mouse: true };
+      type: 'char', xpos:15, ypos:3+game_mood,
+      mouse: true };
     argi.push(obj);
   }
   if (game_graphwin) {
@@ -593,6 +590,12 @@ function game_submit_mouse_input(winid, xpos, ypos) {
   else if (winid == 5)
     msg = 'in the graphics window at coordinates';
   game_print('You clicked ' + msg + ' ' + xpos + ', ' + ypos + '.');
+
+  if (winid == 1) {
+    if (game_statusmenu && xpos >= 4 && xpos <= 20
+      && ypos >= 3 && ypos <= 3+game_mood_list.length)
+      game_mood = ypos - 3;
+  }
 }
 
 function game_submit_timer_input() {
@@ -1150,7 +1153,7 @@ function game_parse(val) {
     game_inputinitial_right = null;
     game_statusmenu_from_left = game_print_left;
     var printtmp = game_print_left;
-    game_print('Select an option with the arrow keys; accept by hitting Return. (N, P, and Q will also work.) Waiting...');
+    game_print('Select an option with the arrow keys; accept by hitting Return. (N, P, and Q will also work. Or you can click on a menu line.) Waiting...');
     if (game_splitwin) {
       game_print_left = !game_print_left;
       game_print('Awaiting menu selection...');
