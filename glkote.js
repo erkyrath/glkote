@@ -2162,12 +2162,21 @@ function evhan_input_mouse_click(ev) {
       ypos = 0;
   }
   else if (win.type == 'graphics') {
+    /* Measure click position relative to the canvas. */
     var canel = $('#win'+win.id+'_canvas', dom_context);
     if (canel.length) {
       var pos = canel.offset();
       xpos = ev.clientX - pos.left;
       ypos = ev.clientY - pos.top;
     }
+    if (xpos >= win.graphwidth)
+      xpos = win.graphwidth-1;
+    if (xpos < 0)
+      xpos = 0;
+    if (ypos >= win.graphheight)
+      ypos = win.graphheight-1;
+    if (ypos < 0)
+      ypos = 0;
   }
   else {
     return;
