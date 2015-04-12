@@ -608,6 +608,8 @@ function accept_one_window(arg) {
     frameel.on('mousedown', arg.id, evhan_window_mousedown);
     if (perform_paging && win.type == 'buffer')
       frameel.on('scroll', arg.id, evhan_window_scroll);
+    if (win.type == 'grid' || win.type == 'graphics')
+      frameel.on('click', win.id, evhan_input_mouse_click);
     win.frameel = frameel;
     win.gridheight = 0;
     win.gridwidth = 0;
@@ -668,7 +670,6 @@ function accept_one_window(arg) {
         { id: 'win'+win.id+'_canvas' });
       el.attr('width', win.graphwidth);
       el.attr('height', win.graphheight);
-      el.on('click', win.id, evhan_input_graphics_click);
       win.frameel.append(el);
     }
     else {
@@ -2128,9 +2129,9 @@ function evhan_window_mousedown(ev) {
     last_known_paging = 0;
 }
 
-/* Event handler: mouse click events on graphics windows
+/* Event handler: mouse click events on graphics or grid windows
 */
-function evhan_input_graphics_click(ev) {
+function evhan_input_mouse_click(ev) {
   var winid = ev.data;
   var win = windowdic[winid];
   if (!win)
@@ -2138,12 +2139,42 @@ function evhan_input_graphics_click(ev) {
 
   if (ev.button != 0)
     return;
+  if (!win.reqmouse)
+    return;
 
-  var pos = $(ev.target).offset();
-  if (win.reqmouse) {
-    ev.preventDefault();
-    send_response('mouse', win, (ev.clientX-pos.left), (ev.clientY-pos.top));
+  var xpos = 0;
+  var ypos = 0;
+  if (win.type == 'grid') {
+    /* Measure click position relative to the zeroth line of the grid. */
+    var lineel = $('#win'+win.id+'_ln'+0, dom_context);
+    if (lineel.length) {
+      var linepos = lineel.offset();
+      xpos = Math.floor((ev.clientX - linepos.left) / current_metrics.gridcharwidth);
+      ypos = Math.floor((ev.clientY - linepos.top) / current_metrics.gridcharheight);
+    }
+    if (xpos >= win.gridwidth)
+      xpos = win.gridwidth-1;
+    if (xpos < 0)
+      xpos = 0;
+    if (ypos >= win.gridheight)
+      ypos = win.gridheight-1;
+    if (ypos < 0)
+      ypos = 0;
   }
+  else if (win.type == 'graphics') {
+    var canel = $('#win'+win.id+'_canvas', dom_context);
+    if (canel.length) {
+      var pos = canel.offset();
+      xpos = ev.clientX - pos.left;
+      ypos = ev.clientY - pos.top;
+    }
+  }
+  else {
+    return;
+  }
+
+  ev.preventDefault();
+  send_response('mouse', win, xpos, ypos);
 }
 
 /* Event handler: keydown events on input fields (character input)
