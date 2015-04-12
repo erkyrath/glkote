@@ -2468,6 +2468,14 @@ function gli_window_rearrange(win, box) {
         }
         break;
 
+    case Const.wintype_Graphics:
+        /* Compute the new canvas size. */
+        width = box.right - box.left;
+        height = box.bottom - box.top;
+        win.graphwidth = Math.max(0, width - content_metrics.graphicsmarginx);
+        win.graphheight = Math.max(0, height - content_metrics.graphicsmarginy);
+        break;
+
     case Const.wintype_Pair:
         if (win.pair_vertical) {
             min = win.bbox.left;
@@ -2501,8 +2509,10 @@ function gli_window_rearrange(win, box) {
                     split = (win.pair_size * content_metrics.gridcharwidth + content_metrics.gridmarginx);
             }
             if (win.pair_key && win.pair_key.type == Const.wintype_Graphics) {
-                split = win.pair_size;
-                /*#### allow for graphicsmarginx/y? */
+                if (!win.pair_vertical) 
+                    split = win.pair_size + content_metrics.graphicsmarginx;
+                else
+                    split = win.pair_size + content_metrics.graphicsmarginy;
             }
             split = Math.ceil(split);
         }
@@ -3532,9 +3542,8 @@ function glk_window_get_size(win, widthref, heightref) {
     case Const.wintype_Graphics:
         boxwidth = win.bbox.right - win.bbox.left;
         boxheight = win.bbox.bottom - win.bbox.top;
-        wid = boxwidth;
-        hgt = boxheight;
-        /*#### use graphicsmarginx/y? */
+        wid = boxwidth - content_metrics.graphicsmarginx;
+        hgt = boxheight - content_metrics.graphicsmarginy;
         break;
     }
 
