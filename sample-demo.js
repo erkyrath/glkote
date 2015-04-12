@@ -366,6 +366,10 @@ function game_select() {
       type: 'char', xpos:15, ypos:3+game_mood };
     argi.push(obj);
   }
+  else {
+    var obj = { id: 1, mouse: true };
+    argi.push(obj);
+  }
   if (game_graphwin) {
     var obj = { id: 5, mouse: true };
     argi.push(obj);
@@ -582,7 +586,13 @@ function game_submit_mouse_input(winid, xpos, ypos) {
   game_inputgen_left = 0;
   game_inputline_left = true;
   game_print_left = true;
-  game_print('You clicked at coordinates ' + xpos + ', ' + ypos + '.');
+
+  var msg = '??? at';
+  if (winid == 1)
+    msg = 'in the status line at character';
+  else if (winid == 5)
+    msg = 'in the graphics window at coordinates';
+  game_print('You clicked ' + msg + ' ' + xpos + ', ' + ypos + '.');
 }
 
 function game_submit_timer_input() {
