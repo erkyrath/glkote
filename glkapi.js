@@ -3211,7 +3211,10 @@ function glk_gestalt_ext(sel, val, arr) {
         return 2; // gestalt_CharOutput_ExactPrint
 
     case 4: // gestalt_MouseInput
-        /*####*/
+        if (val == Const.wintype_TextBuffer)
+            return 1;
+        if (val == Const.wintype_Graphics && has_canvas)
+            return 1;
         return 0;
 
     case 5: // gestalt_Timer
@@ -4358,7 +4361,8 @@ function glk_request_mouse_event(win) {
     if (win.mouse_request)
         throw('glk_request_mouse_event: window already has mouse request');
 
-    if (win.type == Const.wintype_Graphics) {
+    if (win.type == Const.wintype_TextGrid
+        || win.type == Const.wintype_Graphics) {
         win.mouse_request = true;
     }
     /* else ignore request */
