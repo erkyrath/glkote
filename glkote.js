@@ -631,6 +631,11 @@ function accept_one_window(arg) {
       frameel.on('scroll', arg.id, evhan_window_scroll);
     if (win.type == 'grid' || win.type == 'graphics')
       frameel.on('click', win.id, evhan_input_mouse_click);
+    if (win.type == 'buffer')
+      frameel.attr({
+        'aria-live':'polite',
+        'aria-atomic':'false',
+        'aria-relevant':'additions' });
     win.frameel = frameel;
     win.gridheight = 0;
     win.gridwidth = 0;
