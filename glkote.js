@@ -1194,6 +1194,9 @@ function accept_inputset(arg) {
           'class': classes, type: 'text', maxlength: maxlen });
       if (true) /* should be mobile-webkit-only? */
         inputel.attr('autocapitalize', 'off');
+      inputel.attr({
+          'aria-live':'off'
+        });
       if (argi.type == 'line') {
         inputel.on('keypress', evhan_input_keypress);
         inputel.on('keydown', evhan_input_keydown);
