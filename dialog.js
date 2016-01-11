@@ -2,7 +2,7 @@
  * Designed by Andrew Plotkin <erkyrath@eblong.com>
  * <http://eblong.com/zarf/glk/glkote.html>
  * 
- * This Javascript library is copyright 2010-15 by Andrew Plotkin.
+ * This Javascript library is copyright 2010-16 by Andrew Plotkin.
  * It is distributed under the MIT license; see the "LICENSE" file.
  *
  * This library lets you open a modal dialog box to select a "file" for saving
@@ -12,6 +12,11 @@
  *
  * This library also contains utility routines to manage "files", which are
  * actually entries in the browser's localStorage object.
+ *
+ * If you are in the Electron.io environment, you want to include electrofs.js
+ * instead of this module. To distinguish this from electrofs.js, look at
+ * Dialog.streaming, which will be true for electrofs.js and false for
+ * dialog.js.
  *
  * The primary function to call:
  *
@@ -973,6 +978,10 @@ function file_read(dirent, israw) {
         return decode_array(content);
 }
 
+function file_notimplemented() {
+    throw('streaming function not implemented in Dialog');
+}
+
 /* Check whether a given fileref matches the given usage and gameid strings. If
    you don't want to check one attribute or the other, pass null for that
    argument.
@@ -1114,13 +1123,20 @@ $(window).on('storage', evhan_storage_changed);
 /* End of Dialog namespace function. Return the object which will
    become the Dialog global. */
 return {
+    streaming: false,
     open: dialog_open,
 
     file_construct_ref: file_construct_ref,
     file_ref_exists: file_ref_exists,
     file_remove_ref: file_remove_ref,
     file_write: file_write,
-    file_read: file_read
+    file_read: file_read,
+
+    /* stubs for not-implemented functions */
+    file_fopen: file_notimplemented,
+    file_fclose: file_notimplemented,
+    file_fread: file_notimplemented,
+    file_fwrite: file_notimplemented
 };
 
 }();

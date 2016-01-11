@@ -2593,15 +2593,21 @@ function gli_new_stream(type, readable, writable, rock) {
     str.disprock = undefined;
 
     str.unicode = false;
+    str.streaming = false;
     str.ref = null;
     str.win = null;
     str.file = null;
+
+    /* for buffer mode */
     str.buf = null;
     str.bufpos = 0;
     str.buflen = 0;
     str.bufeof = 0;
     str.timer_id = null;
     str.flush_func = null;
+
+    /* for streaming mode */
+    str.fstream = null;
 
     str.readcount = 0;
     str.writecount = 0;
@@ -2633,6 +2639,12 @@ function gli_delete_stream(str) {
         if (window.GiDispa)
             GiDispa.unretain_array(str.buf);
     }
+    else if (str.type == strtype_File) {
+        if (str.fstream) {
+            Dialog.file_fclose(str.fstream);
+            str.fstream = null;
+        }
+    }
 
     if (window.GiDispa)
         GiDispa.class_unregister('stream', str);
@@ -2649,6 +2661,7 @@ function gli_delete_stream(str) {
     if (next)
         next.prev = prev;
 
+    str.fstream = null;
     str.buf = null;
     str.readable = false;
     str.writable = false;
@@ -2676,6 +2689,8 @@ function gli_stream_open_window(win) {
    The timer calls a flush method on the stream.
 */
 function gli_stream_dirty_file(str) {
+    if (str.streaming)
+        GlkOte.log('### gli_stream_dirty_file called for streaming file!');
     if (str.timer_id === null) {
         if (str.flush_func === null) {
             /* Bodge together a closure to act as a stream method. */
@@ -2767,6 +2782,27 @@ function gli_put_char(str, ch) {
     
     switch (str.type) {
     case strtype_File:
+        if (str.streaming) {
+            //### ensure_op?
+            if (!str.unicode) {
+                Dialog.file_fwrite(str.fstream, String.fromCharCode(ch));
+            }
+            else {
+                if (!str.isbinary) {
+                    /* cheap UTF-8 stream */
+                    Dialog.file_fwrite(str.fstream, String.fromCharCode(ch)); /*#### UTF-8!*/
+                }
+                else {
+                    /* cheap big-endian stream */
+                    Dialog.file_fwrite(str.fstream, String.fromCharCode(0));
+                    Dialog.file_fwrite(str.fstream, String.fromCharCode(0));
+                    Dialog.file_fwrite(str.fstream, String.fromCharCode(0));
+                    Dialog.file_fwrite(str.fstream, String.fromCharCode(ch));
+                }
+            }
+            break;
+        }
+        /* non-streaming... */
         gli_stream_dirty_file(str);
         /* fall through to memory... */
     case strtype_Memory:
@@ -2807,6 +2843,38 @@ function gli_put_array(str, arr, allbytes) {
     
     switch (str.type) {
     case strtype_File:
+        if (str.streaming) {
+            //### ensure_op?
+            if (!str.unicode) {
+                if (allbytes)
+                    val = String.fromCharCode.apply(this, arr);
+                else
+                    val = UniArrayToString(arr);
+                Dialog.file_fwrite(str.fstream, val);
+            }
+            else {
+                if (!str.isbinary) {
+                    /* cheap UTF-8 stream */
+                    if (allbytes)
+                        val = String.fromCharCode.apply(this, arr);
+                    else
+                        val = UniArrayToString(arr);
+                    Dialog.file_fwrite(str.fstream, val); /*#### UTF-8!*/
+                }
+                else {
+                    /* cheap big-endian stream */
+                    for (ix=0; ix<arr.length; ix++) {
+                        val = arr[ix];
+                        Dialog.file_fwrite(str.fstream, String.fromCharCode(((val >> 24) & 0xFF)));
+                        Dialog.file_fwrite(str.fstream, String.fromCharCode(((val >> 16) & 0xFF)));
+                        Dialog.file_fwrite(str.fstream, String.fromCharCode(((val >> 8) & 0xFF)));
+                        Dialog.file_fwrite(str.fstream, String.fromCharCode(((val) & 0xFF)));
+                    }
+                }
+            }
+            break;
+        }
+        /* non-streaming... */
         gli_stream_dirty_file(str);
         /* fall through to memory... */
     case strtype_Memory:
@@ -2920,6 +2988,85 @@ function gli_get_char(str, want_unicode) {
         }
         /* non-unicode streams: fall through to memory... */
     case strtype_File:
+        if (str.streaming) {
+            //### ensure_op?
+            if (!str.unicode) {
+                var buf = Dialog.file_fread(str.fstream, 1);
+                if (!buf || !buf.length)
+                    return -1;
+                str.readcount++;
+                return buf[0];
+            }
+            else {
+                if (!str.isbinary) {
+                    /* slightly less cheap UTF8 stream */
+                    var val0, val1, val2, val3;
+                    var buf = Dialog.file_fread(str.fstream, 1);
+                    if (!buf || !buf.length)
+                        return -1;
+                    val0 = buf[0];
+                    if (val0 < 0x80) {
+                        ch = val0;
+                    }
+                    else {
+                        buf = Dialog.file_fread(str.fstream, 1);
+                        if (!buf || !buf.length)
+                            return -1;
+                        val1 = buf[0];
+                        if ((val1 & 0xC0) != 0x80)
+                            return -1;
+                        if ((val0 & 0xE0) == 0xC0) {
+                            ch = (val0 & 0x1F) << 6;
+                            ch |= (val1 & 0x3F);
+                        }
+                        else {
+                            buf = Dialog.file_fread(str.fstream, 1);
+                            if (!buf || !buf.length)
+                                return -1;
+                            val2 = buf[0];
+                            if ((val2 & 0xC0) != 0x80)
+                                return -1;
+                            if ((val0 & 0xF0) == 0xE0) {
+                                ch = (((val0 & 0xF)<<12)  & 0x0000F000);
+                                ch |= (((val1 & 0x3F)<<6) & 0x00000FC0);
+                                ch |= (((val2 & 0x3F))    & 0x0000003F);
+                            }
+                            else if ((val0 & 0xF0) == 0xF0) {
+                                buf = Dialog.file_fread(str.fstream, 1);
+                                if (!buf || !buf.length)
+                                    return -1;
+                                val3 = buf[0];
+                                if ((val3 & 0xC0) != 0x80)
+                                    return -1;
+                                ch = (((val0 & 0x7)<<18)   & 0x1C0000);
+                                ch |= (((val1 & 0x3F)<<12) & 0x03F000);
+                                ch |= (((val2 & 0x3F)<<6)  & 0x000FC0);
+                                ch |= (((val3 & 0x3F))     & 0x00003F);
+                            }
+                            else {
+                                return -1;
+                            }
+                        }
+                    }
+                }
+                else {
+                    /* cheap big-endian stream */
+                    var buf = Dialog.file_fread(str.fstream, 4);
+                    if (!buf || buf.length < 4)
+                        return -1;
+                    ch = (buf[0] << 24);
+                    ch |= (buf[1] << 16);
+                    ch |= (buf[2] << 8);
+                    ch |= buf[3];
+                }
+                str.readcount++;
+                ch >>>= 0;
+                if (!want_unicode && ch >= 0x100)
+                    return 63; // return '?'
+                return ch;
+            }
+        }
+        /* non-streaming or resource... */
         /* fall through to memory... */
     case strtype_Memory:
         if (str.bufpos < str.bufeof) {
@@ -2963,6 +3110,21 @@ function gli_get_line(str, buf, want_unicode) {
         }
         /* non-unicode streams: fall through to memory... */
     case strtype_File:
+        if (str.streaming) {
+            if (len == 0)
+                return 0;
+            len -= 1; /* for the terminal null */
+            gotnewline = false;
+            for (lx=0; lx<len && !gotnewline; lx++) {
+                ch = gli_get_char(str, want_unicode);
+                if (ch == -1)
+                    break;
+                buf[lx] = ch;
+                gotnewline = (ch == 10);
+            }
+            return lx;
+        }
+        /* non-streaming or resource... */
         /* fall through to memory... */
     case strtype_Memory:
         if (len == 0)
@@ -3020,6 +3182,16 @@ function gli_get_buffer(str, buf, want_unicode) {
         }
         /* non-unicode streams: fall through to memory... */
     case strtype_File:
+        if (str.streaming) {
+            for (lx=0; lx<len; lx++) {
+                ch = gli_get_char(str, want_unicode);
+                if (ch == -1)
+                    break;
+                buf[lx] = ch;
+            }
+            return lx;
+        }
+        /* non-streaming or resource... */
         /* fall through to memory... */
     case strtype_Memory:
         if (str.bufpos >= str.bufeof) {
@@ -3071,6 +3243,11 @@ function glk_put_jstring_stream(str, val, allbytes) {
     
     switch (str.type) {
     case strtype_File:
+        if (str.streaming) {
+            //### if !allbytes, this isn't right
+            Dialog.file_fwrite(str.fstream, val);
+            break;
+        }
         gli_stream_dirty_file(str);
         /* fall through to memory... */
     case strtype_Memory:
@@ -3777,21 +3954,26 @@ function glk_stream_open_file(fref, fmode, rock) {
     if (fmode == Const.filemode_Read && !Dialog.file_ref_exists(fref.ref))
         throw('glk_stream_open_file: file not found for reading: ' + fref.ref.filename);
 
-    var content = null;
-    if (fmode != Const.filemode_Write) {
-        content = Dialog.file_read(fref.ref);
-    }
-    if (content == null) {
-        content = [];
-        if (fmode != Const.filemode_Read) {
-            /* We just created this file. (Or perhaps we're in Write mode and
-               we're truncating.) Write immediately, to create it and get the
-               creation date right. */
-            Dialog.file_write(fref.ref, '', true);
+    if (!Dialog.streaming) {
+        var content = null;
+        if (fmode != Const.filemode_Write) {
+            content = Dialog.file_read(fref.ref);
         }
+        if (content == null) {
+            content = [];
+            if (fmode != Const.filemode_Read) {
+                /* We just created this file. (Or perhaps we're in Write mode
+                   and we're truncating.) Write immediately, to create it and
+                   get the creation date right. */
+                Dialog.file_write(fref.ref, '', true);
+            }
+        }
+        if (content.length == null) 
+            throw('glk_stream_open_file: data read had no length');
     }
-    if (content.length == null) 
-        throw('glk_stream_open_file: data read had no length');
+    else {
+        var fstream = Dialog.file_fopen(fmode, fref.ref);
+    }
 
     str = gli_new_stream(strtype_File, 
         (fmode != Const.filemode_Write), 
@@ -3800,16 +3982,23 @@ function glk_stream_open_file(fref, fmode, rock) {
     str.unicode = false;
     str.ref = fref.ref;
 
-    str.buf = content;
-    str.buflen = 0xFFFFFFFF; /* enormous */
-    if (fmode == Const.filemode_Write)
-        str.bufeof = 0;
-    else
-        str.bufeof = content.length;
-    if (fmode == Const.filemode_WriteAppend)
-        str.bufpos = str.bufeof;
-    else
-        str.bufpos = 0;
+    if (!Dialog.streaming) {
+        str.streaming = false;
+        str.buf = content;
+        str.buflen = 0xFFFFFFFF; /* enormous */
+        if (fmode == Const.filemode_Write)
+            str.bufeof = 0;
+        else
+            str.bufeof = content.length;
+        if (fmode == Const.filemode_WriteAppend)
+            str.bufpos = str.bufeof;
+        else
+            str.bufpos = 0;
+    }
+    else {
+        str.streaming = true;
+        str.fstream = fstream;
+    }
 
     return str;
 }
@@ -3861,6 +4050,9 @@ function glk_stream_open_resource(filenum, rock) {
         rock);
     str.unicode = false;
     str.isbinary = isbinary;
+
+    /* Resource streams always use buffer mode. */
+    str.streaming = false;
 
     /* We have been handed an array of bytes. (They're big-endian four-byte
        chunks, or perhaps a UTF-8 byte sequence, rather than native-endian
@@ -3919,11 +4111,13 @@ function glk_stream_close(str, result) {
         throw('glk_stream_close: cannot close window stream');
 
     if (str.type == strtype_File && str.writable) {
-        if (!(str.timer_id === null)) {
-            clearTimeout(str.timer_id);
-            str.timer_id = null;
+        if (!str.streaming) {
+            if (!(str.timer_id === null)) {
+                clearTimeout(str.timer_id);
+                str.timer_id = null;
+            }
+            Dialog.file_write(str.ref, str.buf);
         }
-        Dialog.file_write(str.ref, str.buf);
     }
 
     gli_stream_fill_result(str, result);
@@ -3936,6 +4130,7 @@ function glk_stream_set_position(str, pos, seekmode) {
 
     switch (str.type) {
     case strtype_File:
+        //### if streaming...
         //### check if file has been modified? This is a half-decent time.
         /* fall through to memory... */
     case strtype_Resource:
@@ -3964,6 +4159,7 @@ function glk_stream_get_position(str) {
 
     switch (str.type) {
     case strtype_File:
+        //### if streaming...
         /* fall through to memory... */
     case strtype_Resource:
         /* fall through to memory... */
@@ -4999,18 +5195,23 @@ function glk_stream_open_file_uni(fref, fmode, rock) {
     if (fmode == Const.filemode_Read && !Dialog.file_ref_exists(fref.ref))
         throw('glk_stream_open_file_uni: file not found for reading: ' + fref.ref.filename);
 
-    var content = null;
-    if (fmode != Const.filemode_Write) {
-        content = Dialog.file_read(fref.ref);
-    }
-    if (content == null) {
-        content = [];
-        if (fmode != Const.filemode_Read) {
-            /* We just created this file. (Or perhaps we're in Write mode and
-               we're truncating.) Write immediately, to create it and get the
-               creation date right. */
-            Dialog.file_write(fref.ref, '', true);
+    if (!Dialog.streaming) {
+        var content = null;
+        if (fmode != Const.filemode_Write) {
+            content = Dialog.file_read(fref.ref);
         }
+        if (content == null) {
+            content = [];
+            if (fmode != Const.filemode_Read) {
+                /* We just created this file. (Or perhaps we're in Write mode
+                   and we're truncating.) Write immediately, to create it and
+                   get the creation date right. */
+                Dialog.file_write(fref.ref, '', true);
+            }
+        }
+    }
+    else {
+        var fstream = Dialog.file_fopen(fmode, fref.ref);
     }
 
     str = gli_new_stream(strtype_File, 
@@ -5020,16 +5221,23 @@ function glk_stream_open_file_uni(fref, fmode, rock) {
     str.unicode = true;
     str.ref = fref.ref;
 
-    str.buf = content;
-    str.buflen = 0xFFFFFFFF; /* enormous */
-    if (fmode == Const.filemode_Write)
-        str.bufeof = 0;
-    else
-        str.bufeof = content.length;
-    if (fmode == Const.filemode_WriteAppend)
-        str.bufpos = str.bufeof;
-    else
-        str.bufpos = 0;
+    if (!Dialog.streaming) {
+        str.streaming = false;
+        str.buf = content;
+        str.buflen = 0xFFFFFFFF; /* enormous */
+        if (fmode == Const.filemode_Write)
+            str.bufeof = 0;
+        else
+            str.bufeof = content.length;
+        if (fmode == Const.filemode_WriteAppend)
+            str.bufpos = str.bufeof;
+        else
+            str.bufpos = 0;
+    }
+    else {
+        str.streaming = true;
+        str.fstream = fstream;
+    }
 
     return str;
 }
