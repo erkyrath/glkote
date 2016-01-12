@@ -25,10 +25,10 @@
 Dialog = function() {
 
 const fs = require('fs-ext');
-const path = require('path');
-const buffer = require('buffer');
+const path_mod = require('path');
+const buffer_mod = require('buffer');
 var userpath = require('electron').remote.app.getPath('userData');
-var extfilepath = path.join(userpath, 'quixe-files');
+var extfilepath = path_mod.join(userpath, 'quixe-files');
 
 /* We try to create a directory for external files at launch time.
    This will usually fail because there's already a directory there.
@@ -124,7 +124,7 @@ function file_construct_ref(filename, usage, gameid)
         usage = '';
     if (!gameid)
         gameid = '';
-    var path = path.join(extfilepath, filename);
+    var path = path_mod.join(extfilepath, filename);
     var ref = { filename:path, usage:usage };
     return ref;
 }
@@ -242,7 +242,7 @@ function file_fclose(fstream)
  */
 function file_fread(fstream, len)
 {
-    var buf = new buffer.Buffer(len);
+    var buf = new buffer_mod.Buffer(len);
     var count = fs.readSync(fstream.fd, buf, 0, len);
     if (count == len)
         return buf;
@@ -257,7 +257,7 @@ function file_fread(fstream, len)
  */
 function file_fwrite(fstream, str)
 {
-    var buf = new buffer.Buffer(str, 'binary');
+    var buf = new buffer_mod.Buffer(str, 'binary');
     var count = fs.writeSync(fstream.fd, buf, 0, buf.length);
     return count;
 }
@@ -268,7 +268,7 @@ function file_fwrite(fstream, str)
  */
 function file_write(dirent, content, israw)
 {
-    throw('file_write not implemented in electrofs');
+    throw new Error('file_write not implemented in electrofs');
 }
 
 /* Dialog.file_read(dirent, israw) -- read data from the file
@@ -277,7 +277,7 @@ function file_write(dirent, content, israw)
  */
 function file_read(dirent, israw)
 {
-    throw('file_read not implemented in electrofs');
+    throw new Error('file_read not implemented in electrofs');
 }
 
 /* End of Dialog namespace function. Return the object which will
