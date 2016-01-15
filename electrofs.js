@@ -17,14 +17,11 @@
  * This presents itself as a Dialog module. To distinguish it from dialog.js,
  * look at Dialog.streaming, which will be true for electrofs.js and false for
  * dialog.js.
- *
- * TODO: Add buffering! Make the fopen/fread/fwrite calls true clones of
- * the C stdio functions.
  */
 
 Dialog = function() {
 
-const fs = require('fs-ext');
+const fs = require('fs');
 const path_mod = require('path');
 const buffer_mod = require('buffer');
 var userpath = require('electron').remote.app.getPath('userData');
@@ -37,6 +34,41 @@ try {
     fs.mkdirSync(extfilepath);
 }
 catch (ex) {}
+
+/* Constants -- same as in glkapi.js. */
+const filemode_Write = 0x01;
+const filemode_Read = 0x02;
+const filemode_ReadWrite = 0x03;
+const filemode_WriteAppend = 0x05;
+const seekmode_Start = 0;
+const seekmode_Current = 1;
+const seekmode_End = 2;
+const fileusage_Data = 0x00;
+const fileusage_SavedGame = 0x01;
+const fileusage_Transcript = 0x02;
+const fileusage_InputRecord = 0x03;
+
+/* The size of our stream buffering. */
+const BUFFER_SIZE = 256;
+
+/* Construct a file-filter list for a given usage type. These lists are
+   used by showOpenDialog and showSaveDialog, below. 
+*/
+function filters_for_usage(val)
+{
+    switch (val) {
+    case 'data': 
+        return [ { name: 'Glk Data File', extensions: ['glkdata'] } ];
+    case 'save': 
+        return [ { name: 'Glk Save File', extensions: ['glksave'] } ];
+    case 'transcript': 
+        return [ { name: 'Transcript File', extensions: ['txt'] } ];
+    case 'command': 
+        return [ { name: 'Command File', extensions: ['txt'] } ];
+    default:
+        return [];
+    }
+}
 
 /* Dialog.open(tosave, usage, gameid, callback) -- open a file-choosing dialog
  *
@@ -85,28 +117,36 @@ function dialog_open(tosave, usage, gameid, callback)
     }
 }
 
-/* Same as in glkapi.js. */
-const filemode_Write = 0x01;
-const filemode_Read = 0x02;
-const filemode_ReadWrite = 0x03;
-const filemode_WriteAppend = 0x05;
+/* Dialog.file_clean_fixed_name(filename, usage) -- clean up a filename
+ *
+ * Take an arbitrary string and convert it into a filename that can
+ * validly be stored in the user's directory. This is called for filenames
+ * that come from the game file, but not for filenames selected directly
+ * by the user (i.e. from a file selection dialog).
+ *
+ * The new spec recommendations: delete all characters in the string
+ * "/\<>:|?*" (including quotes). Truncate at the first period. Change to
+ * "null" if there's nothing left. Then append an appropriate suffix:
+ * ".glkdata", ".glksave", ".txt".
+ */
+function file_clean_fixed_name(filename, usage) {
+    var res = filename.replace(/["/\\<>:|?*]/g, '');
+    var pos = res.indexOf('.');
+    if (pos >= 0) 
+        res = res.slice(0, pos);
+    if (res.length == 0)
+        res = "null";
 
-/* Construct a file-filter list for a given usage type. These lists are
-   used by showOpenDialog and showSaveDialog, above. 
-*/
-function filters_for_usage(val)
-{
-    switch (val) {
-    case 'data': 
-        return [ { name: 'Glk Data File', extensions: ['glkdata'] } ];
-    case 'save': 
-        return [ { name: 'Glk Save File', extensions: ['glksave'] } ];
-    case 'transcript': 
-        return [ { name: 'Transcript File', extensions: ['txt'] } ];
-    case 'command': 
-        return [ { name: 'Command File', extensions: ['txt'] } ];
+    switch (usage) {
+    case fileusage_Data:
+        return res + '.glkdata';
+    case fileusage_SavedGame:
+        return res + '.glksave';
+    case fileusage_Transcript:
+    case fileusage_InputRecord:
+        return res + '.txt';
     default:
-        return [];
+        return res;
     }
 }
 
@@ -152,7 +192,198 @@ function file_remove_ref(ref)
     catch (ex) { }
 }
 
+/* FStream -- constructor for a file stream. This is what file_fopen()
+ * returns. It is analogous to a FILE* in C code.
+ */
+function FStream(fmode, filename)
+{
+    this.fmode = fmode;
+    this.filename = filename;
+    this.fd = null; /* will be filled in by file_fopen */
+
+    this.mark = 0; /* read-write position in the file */
+
+    /* We buffer input or output (but never both at the same time). */
+    this.buffer = new buffer_mod.Buffer(BUFFER_SIZE);
+    /* bufuse is filemode_Read or filemode_Write, if the buffer is being used
+       for reading or writing. For writing, the buffer starts at mark and
+       covers buflen bytes. For reading, the buffer *ends* at mark having
+       covered from bufmark to buflen. */
+    this.bufuse = 0; 
+    this.buflen = 0; /* how much of the buffer is used */
+    this.bufmark = 0; /* how much of the buffer has been read out (readmode only) */
+}
+FStream.prototype = {
+
+    /* Export constructor for Buffer objects. See
+       https://nodejs.org/dist/latest-v5.x/docs/api/buffer.html */
+    BufferClass : buffer_mod.Buffer,
+
+    /* fstream.fclose() -- close a file
+     */
+    fclose : function() {
+        if (this.fd === null) {
+            GlkOte.log('file_fclose: file already closed: ' + this.filename);
+            return;
+        }
+        /* flush any unwritten data */
+        this.fflush();
+        fs.closeSync(this.fd);
+        this.fd = null;
+        this.buffer = null;
+    },
+
+    /* fstream.fread(buf, [len]) -- read bytes from a file
+     *
+     * Up to buf.length bytes are read into the given buffer. If the len
+     * argument is given, up to len bytes are read; the buffer must be at least
+     * len bytes long. Returns the number of bytes read, or 0 if end-of-file.
+     */
+    fread : function(buf, len) {
+        if (len === undefined)
+            len = buf.length;
+
+        /* got will be our mark in the buf argument. When got reaches
+           len, we're done. (Unless we hit EOF first.) */
+        var got = 0;
+
+        while (true) {
+            if (this.bufuse == filemode_Read) {
+                if (this.bufmark < this.buflen) {
+                    var want = len - got;
+                    if (want > this.buflen - this.bufmark)
+                        want = this.buflen - this.bufmark;
+                    if (want > 0) {
+                        this.buffer.copy(buf, got, this.bufmark, this.bufmark+want);
+                        this.bufmark += want;
+                        got += want;
+                    }
+                }
+                if (got >= len)
+                    return got;
+                
+                /* We need more, but we've consumed the entire buffer. Fall
+                   through to the next step where we will fflush and keep
+                   reading. */
+            }
+            
+            if (this.bufuse)
+                this.fflush();
+
+            /* ### if len-got >= BUFFER_SIZE, we could read directly and ignore
+               our buffer. */
+            
+            this.bufuse = filemode_Read;
+            this.bufmark = 0;
+            this.buflen = fs.readSync(this.fd, this.buffer, 0, BUFFER_SIZE, this.mark);
+            if (this.buflen == 0) {
+                /* End of file. Mark the buffer unused, since it's empty. */
+                this.bufuse = 0;
+                return got;
+            }
+            this.mark += this.buflen;
+        }
+    },
+
+    /* fstream.fwrite(buf, [len]) -- write data to a file
+     *
+     * buf.length bytes are written to the stream. If the len argument is
+     * given, that many bytes are written; the buffer must be at least len
+     * bytes long. Return the number of bytes written.
+     */
+    fwrite : function(buf, len) {
+        if (len === undefined)
+            len = buf.length;
+
+        var from = 0;
+
+        while (true) {
+            if (this.bufuse == filemode_Write) {
+                var want = len - from;
+                if (want > BUFFER_SIZE - this.buflen)
+                    want = BUFFER_SIZE - this.buflen;
+                if (want > 0) {
+                    buf.copy(this.buffer, this.buflen, from, from+want);
+                    this.buflen += want;
+                    from += want;
+                }
+            }
+            if (from >= len)
+                return from;
+
+            /* We need to write more, but the buffer is full. Fall through
+               to the next step where we will fflush and keep writing. */
+
+            if (this.bufuse)
+                this.fflush();
+
+            /* ### if len-from >= BUFFER_SIZE, we could write directly and
+               ignore our buffer. */
+            
+            this.bufuse = filemode_Write;
+            this.buflen = 0;
+        }
+    },
+
+    ftell : function() {
+        if (this.bufuse == filemode_Read) {
+            return this.mark - (this.buflen - this.bufmark);
+        }
+        else if (this.bufuse == filemode_Write) {
+            return this.mark + this.buflen;
+        }
+        else {
+            return this.mark;
+        }
+    },
+
+    fseek : function(pos, seekmode) {
+        /* ### we could seek within the current buffer, which would be
+           efficient for small moves. */
+        this.fflush();
+
+        var val = 0;
+        if (seekmode == seekmode_Current) {
+            val = this.mark + pos;
+        }
+        else if (seekmode == seekmode_End) {
+            try {
+                var stats = fs.fstatSync(fstream.fd);
+                val = stats.size + pos;
+            }
+            catch (ex) {
+                val = this.mark + pos;
+            }
+        }
+        else {
+            val = pos;
+        }
+        if (val < 0)
+            val = 0;
+        this.mark = val;
+    },
+
+    fflush : function() {
+        if (this.bufuse == filemode_Read) {
+            /* Do nothing, just mark the buffer unused. The mark is already
+               at the end-of-buffer. */
+        }
+        else if (this.bufuse == filemode_Write) {
+            if (this.buflen) {
+                var count = fs.writeSync(this.fd, this.buffer, 0, this.buflen, this.mark);
+                this.mark += count;
+            }
+        }
+        this.bufuse = 0;
+        this.buflen = 0;
+        this.bufmark = 0;
+    }
+
+};
+
 /* Dialog.file_fopen(fmode, ref) -- open a file for reading or writing
+ *
+ * Returns an FStream object.
  */
 function file_fopen(fmode, ref)
 {
@@ -161,12 +392,7 @@ function file_fopen(fmode, ref)
        The good news is, the logic winds up identical to that in
        the C libraries.
     */
-
-    var fstream = {
-        fmode: fmode,
-        filename: ref.filename,
-        fd: null
-    };
+    var fstream = new FStream(fmode, ref.filename);
 
     /* The spec says that Write, ReadWrite, and WriteAppend create the
        file if necessary. However, open(filename, "r+") doesn't create
@@ -216,8 +442,10 @@ function file_fopen(fmode, ref)
     }
 
     if (fmode == filemode_WriteAppend) {
+        /* We must jump to the end of the file. */
         try {
-            fs.seekSync(fstream.fd, 0, 2); /* ...to the end. */
+            var stats = fs.fstatSync(fstream.fd);
+            fstream.mark = stats.size;
         }
         catch (ex) {}
     }
@@ -225,46 +453,10 @@ function file_fopen(fmode, ref)
     return fstream;
 }
 
-/* Dialog.file_fclose(fstream) -- close a file
- */
-function file_fclose(fstream)
-{
-    if (fstream.fd === null) {
-        GlkOte.log('file_fclose: file already closed: ' + fstream.filename);
-        return;
-    }
-    fs.closeSync(fstream.fd);
-    fstream.fd = null;
-}
-
-/* Dialog.file_fread(fstream, len) -- read a given number of bytes from a file
-   Returns a buffer. If end-of-file, returns an empty buffer.
- */
-function file_fread(fstream, len)
-{
-    var buf = new buffer_mod.Buffer(len);
-    var count = fs.readSync(fstream.fd, buf, 0, len);
-    if (count == len)
-        return buf;
-    else
-        return buf.slice(0, count);
-}
-
-/* Dialog.file_fwrite(fstream, str) -- write a string to a file
-   The string must contain only byte values (character values 0-255).
-   Yes, it is inconsistent that file_fwrite takes strings but file_fread
-   returns buffers.
- */
-function file_fwrite(fstream, str)
-{
-    var buf = new buffer_mod.Buffer(str, 'binary');
-    var count = fs.writeSync(fstream.fd, buf, 0, buf.length);
-    return count;
-}
-
 /* Dialog.file_write(dirent, content, israw) -- write data to the file
-   This call is intended for the non-streaming API, so it does not
-   exist in this version of Dialog.
+ *
+ * This call is intended for the non-streaming API, so it does not
+ * exist in this version of Dialog.
  */
 function file_write(dirent, content, israw)
 {
@@ -272,8 +464,9 @@ function file_write(dirent, content, israw)
 }
 
 /* Dialog.file_read(dirent, israw) -- read data from the file
-   This call is intended for the non-streaming API, so it does not
-   exist in this version of Dialog.
+ *
+ * This call is intended for the non-streaming API, so it does not
+ * exist in this version of Dialog.
  */
 function file_read(dirent, israw)
 {
@@ -286,13 +479,11 @@ return {
     streaming: true,
     open: dialog_open,
 
+    file_clean_fixed_name: file_clean_fixed_name,
     file_construct_ref: file_construct_ref,
     file_ref_exists: file_ref_exists,
     file_remove_ref: file_remove_ref,
     file_fopen: file_fopen,
-    file_fclose: file_fclose,
-    file_fread: file_fread,
-    file_fwrite: file_fwrite,
 
     /* stubs for not-implemented functions */
     file_write: file_write,
