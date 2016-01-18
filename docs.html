@@ -126,6 +126,9 @@ Commons Attribution-Noncommercial-Share Alike 3.0 Unported License</a>.
 
 <ul class="ContentTop">
 <li><a href="#whatis">What is GlkOte?</a>
+<ul>
+  <li><a href="#electron">GlkOte under Electron</a>
+</ul>
 <li><a href="#using">Using GlkOte</a>
 <li><a href="#lifecycle">The Application's Life Story</a>
 <ul>
@@ -206,6 +209,17 @@ is an implementation of the Glulx virtual machine, using glkapi.js and GlkOte.
 A
 <a href="sample-demobase.html">stripped-down, but easily extendable example.</a>
 This just accepts lines of input and responds to them, in a single window (no status window). In the HTML source, you'll see stub functions which print the initial text and respond to input lines; modify them as you wish.
+<p>
+
+<h3><a name="electron">GlkOte under Electron</a></h3>
+
+This version of GlkOte has extra support for the <a href="http://electron.atom.io/">Electron</a> environment. This is a version of Node.js wrapped up as an application shell, with extra APIs for native file support.
+<p>
+
+The differences do not affect the glkote.js module itself, so we will not discuss them here. The short answer is: under Electron, use the electrofs.js module instead of dialog.js. (These modules are concerned with file-selection dialogs and storing data.)
+<p>
+
+See <a href="https://github.com/erkyrath/lectrote">Lectrote</a> for a demonstration of GlkOte and Quixe running as an application.
 <p>
 
 <h2><a name="using">Using GlkOte</a></h2>
