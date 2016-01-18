@@ -26,7 +26,7 @@ What you need:
 - glkote.js       -- the GlkOte library
 - glkapi.js       -- a Glk API layer
 - dialog.js       -- a library for loading and saving game data
-- electrofs.js    -- replacement for dialog.js for Electron.io
+- electrofs.js    -- replacement for dialog.js for Electron.atom.io
 - jquery-1.11.2.js     -- the jQuery library
 - jquery-1.11.2.min.js -- the jQuery library, compressed
 - glkote.css      -- the GlkOte default stylesheet
@@ -47,7 +47,7 @@ Example pages:
 * Permissions
 
 The GlkOte, GlkAPI, and Dialog Javascript libraries are copyright
-2008-2015 by Andrew Plotkin. They are distributed under the MIT
+2008-2016 by Andrew Plotkin. They are distributed under the MIT
 license; see the "LICENSE" file.
 
 The GlkOte documentation is licensed under a Creative Commons
