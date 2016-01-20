@@ -36,11 +36,6 @@
    into a UTF-16-encoded pair of two-byte characters. This will come
    out okay in a buffer window, but it will again mess up grid windows,
    and will also double the write-count in a stream.
-
-   When opening a Unicode file stream, the library does not follow
-   the (recent) requirement to store four-byte values (binary mode)
-   or UTF-8 characters (text mode). This causes errors in the
-   extbinaryfile.ulx test.
 */
 
 /* Put everything inside the Glk namespace. */
@@ -2079,6 +2074,20 @@ function UniArrayToUTF8(arr) {
     return res;
 }
 
+/* Convert an array of 32-bit Unicode values to an array of 8-bit byte
+   values, encoded as big-endian words. */
+function UniArrayToBE32(arr) {
+    var res = new Array(4*arr.length);
+    for (var ix=0; ix<arr.length; ix++) {
+        var val = arr[ix];
+        res[4*ix]   = (val >> 24) & 0xFF;
+        res[4*ix+1] = (val >> 16) & 0xFF;
+        res[4*ix+2] = (val >> 8) & 0xFF;
+        res[4*ix+3] = (val) & 0xFF;
+    }
+    return res;
+}
+
 /* Log the message in the browser's error log, if it has one. (This shows
    up in Safari, in Opera, and in Firefox if you have Firebug installed.)
 */
@@ -2868,11 +2877,35 @@ function gli_put_char(str, ch) {
                     str.fstream.fwrite(str.buffer4, 4);
                 }
             }
-            break;
         }
-        /* non-streaming... */
-        gli_stream_dirty_file(str);
-        /* fall through to memory... */
+        else {
+            /* non-streaming... */
+            gli_stream_dirty_file(str);
+            if (!str.unicode || (ch < 0x80 && !str.isbinary)) {
+                if (str.bufpos < str.buflen) {
+                    str.buf[str.bufpos] = ch;
+                    str.bufpos += 1;
+                    if (str.bufpos > str.bufeof)
+                        str.bufeof = str.bufpos;
+                }
+            }
+            else {
+                var arr;
+                if (!str.isbinary)
+                    arr = UniArrayToUTF8([ch]);
+                else
+                    arr = UniArrayToBE32([ch]);
+                var len = arr.length;
+                if (len > str.buflen-str.bufpos)
+                    len = str.buflen-str.bufpos;
+                for (ix=0; ix<len; ix++)
+                    str.buf[str.bufpos+ix] = arr[ix];
+                str.bufpos += len;
+                if (str.bufpos > str.bufeof)
+                    str.bufeof = str.bufpos;
+            }
+        }
+        break;
     case strtype_Memory:
         if (str.bufpos < str.buflen) {
             str.buf[str.bufpos] = ch;
@@ -2932,11 +2965,30 @@ function gli_put_array(str, arr, allbytes) {
                     str.fstream.fwrite(buf);
                 }
             }
-            break;
         }
-        /* non-streaming... */
-        gli_stream_dirty_file(str);
-        /* fall through to memory... */
+        else {
+            /* non-streaming... */
+            gli_stream_dirty_file(str);
+            var arr8;
+            if (!str.unicode) {
+                arr8 = arr;
+            }
+            else {
+                if (!str.isbinary)
+                    arr8 = UniArrayToUTF8(arr);
+                else
+                    arr8 = UniArrayToBE32(arr);
+            }
+            var len = arr8.length;
+            if (len > str.buflen-str.bufpos)
+                len = str.buflen-str.bufpos;
+            for (ix=0; ix<len; ix++)
+                str.buf[str.bufpos+ix] = arr8[ix];
+            str.bufpos += len;
+            if (str.bufpos > str.bufeof)
+                str.bufeof = str.bufpos;
+        }
+        break;
     case strtype_Memory:
         len = arr.length;
         if (len > str.buflen-str.bufpos)
@@ -2968,85 +3020,6 @@ function gli_get_char(str, want_unicode) {
         return -1;
     
     switch (str.type) {
-    case strtype_Resource:
-        if (str.unicode) {
-            if (str.isbinary) {
-                /* cheap big-endian stream */
-                if (str.bufpos >= str.bufeof)
-                    return -1;
-                ch = str.buf[str.bufpos];
-                str.bufpos++;
-                if (str.bufpos >= str.bufeof)
-                    return -1;
-                ch = (ch << 8) | (str.buf[str.bufpos] & 0xFF);
-                str.bufpos++;
-                if (str.bufpos >= str.bufeof)
-                    return -1;
-                ch = (ch << 8) | (str.buf[str.bufpos] & 0xFF);
-                str.bufpos++;
-                if (str.bufpos >= str.bufeof)
-                    return -1;
-                ch = (ch << 8) | (str.buf[str.bufpos] & 0xFF);
-                str.bufpos++;
-            }
-            else {
-                /* slightly less cheap UTF8 stream */
-                var val0, val1, val2, val3;
-                if (str.bufpos >= str.bufeof)
-                    return -1;
-                val0 = str.buf[str.bufpos];
-                str.bufpos++;
-                if (val0 < 0x80) {
-                    ch = val0;
-                }
-                else {
-                    if (str.bufpos >= str.bufeof)
-                        return -1;
-                    val1 = str.buf[str.bufpos];
-                    str.bufpos++;
-                    if ((val1 & 0xC0) != 0x80)
-                        return -1;
-                    if ((val0 & 0xE0) == 0xC0) {
-                        ch = (val0 & 0x1F) << 6;
-                        ch |= (val1 & 0x3F);
-                    }
-                    else {
-                        if (str.bufpos >= str.bufeof)
-                            return -1;
-                        val2 = str.buf[str.bufpos];
-                        str.bufpos++;
-                        if ((val2 & 0xC0) != 0x80)
-                            return -1;
-                        if ((val0 & 0xF0) == 0xE0) {
-                            ch = (((val0 & 0xF)<<12)  & 0x0000F000);
-                            ch |= (((val1 & 0x3F)<<6) & 0x00000FC0);
-                            ch |= (((val2 & 0x3F))    & 0x0000003F);
-                        }
-                        else if ((val0 & 0xF0) == 0xF0) {
-                            if (str.bufpos >= str.bufeof)
-                                return -1;
-                            val3 = str.buf[str.bufpos];
-                            str.bufpos++;
-                            if ((val3 & 0xC0) != 0x80)
-                                return -1;
-                            ch = (((val0 & 0x7)<<18)   & 0x1C0000);
-                            ch |= (((val1 & 0x3F)<<12) & 0x03F000);
-                            ch |= (((val2 & 0x3F)<<6)  & 0x000FC0);
-                            ch |= (((val3 & 0x3F))     & 0x00003F);
-                        }
-                        else {
-                            return -1;
-                        }
-                    }
-                }
-            }
-            str.readcount++;
-            ch >>>= 0;
-            if (!want_unicode && ch >= 0x100)
-                return 63; // return '?'
-            return ch;
-        }
-        /* non-unicode streams: fall through to memory... */
     case strtype_File:
         if (str.streaming) {
             if (!str.unicode) {
@@ -3126,8 +3099,86 @@ function gli_get_char(str, want_unicode) {
                 return ch;
             }
         }
-        /* non-streaming or resource... */
-        /* fall through to memory... */
+        /* non-streaming, fall through to resource... */
+    case strtype_Resource:
+        if (str.unicode) {
+            if (str.isbinary) {
+                /* cheap big-endian stream */
+                if (str.bufpos >= str.bufeof)
+                    return -1;
+                ch = str.buf[str.bufpos];
+                str.bufpos++;
+                if (str.bufpos >= str.bufeof)
+                    return -1;
+                ch = (ch << 8) | (str.buf[str.bufpos] & 0xFF);
+                str.bufpos++;
+                if (str.bufpos >= str.bufeof)
+                    return -1;
+                ch = (ch << 8) | (str.buf[str.bufpos] & 0xFF);
+                str.bufpos++;
+                if (str.bufpos >= str.bufeof)
+                    return -1;
+                ch = (ch << 8) | (str.buf[str.bufpos] & 0xFF);
+                str.bufpos++;
+            }
+            else {
+                /* slightly less cheap UTF8 stream */
+                var val0, val1, val2, val3;
+                if (str.bufpos >= str.bufeof)
+                    return -1;
+                val0 = str.buf[str.bufpos];
+                str.bufpos++;
+                if (val0 < 0x80) {
+                    ch = val0;
+                }
+                else {
+                    if (str.bufpos >= str.bufeof)
+                        return -1;
+                    val1 = str.buf[str.bufpos];
+                    str.bufpos++;
+                    if ((val1 & 0xC0) != 0x80)
+                        return -1;
+                    if ((val0 & 0xE0) == 0xC0) {
+                        ch = (val0 & 0x1F) << 6;
+                        ch |= (val1 & 0x3F);
+                    }
+                    else {
+                        if (str.bufpos >= str.bufeof)
+                            return -1;
+                        val2 = str.buf[str.bufpos];
+                        str.bufpos++;
+                        if ((val2 & 0xC0) != 0x80)
+                            return -1;
+                        if ((val0 & 0xF0) == 0xE0) {
+                            ch = (((val0 & 0xF)<<12)  & 0x0000F000);
+                            ch |= (((val1 & 0x3F)<<6) & 0x00000FC0);
+                            ch |= (((val2 & 0x3F))    & 0x0000003F);
+                        }
+                        else if ((val0 & 0xF0) == 0xF0) {
+                            if (str.bufpos >= str.bufeof)
+                                return -1;
+                            val3 = str.buf[str.bufpos];
+                            str.bufpos++;
+                            if ((val3 & 0xC0) != 0x80)
+                                return -1;
+                            ch = (((val0 & 0x7)<<18)   & 0x1C0000);
+                            ch |= (((val1 & 0x3F)<<12) & 0x03F000);
+                            ch |= (((val2 & 0x3F)<<6)  & 0x000FC0);
+                            ch |= (((val3 & 0x3F))     & 0x00003F);
+                        }
+                        else {
+                            return -1;
+                        }
+                    }
+                }
+            }
+            str.readcount++;
+            ch >>>= 0;
+            if (!want_unicode && ch >= 0x100)
+                return 63; // return '?'
+            return ch;
+        }
+        /* non-unicode file/resource, fall through to memory... */
     case strtype_Memory:
         if (str.bufpos < str.bufeof) {
             ch = str.buf[str.bufpos];
@@ -3153,22 +3204,6 @@ function gli_get_line(str, buf, want_unicode) {
     var gotnewline;
 
     switch (str.type) {
-    case strtype_Resource:
-        if (str.unicode) {
-            if (len == 0)
-                return 0;
-            len -= 1; /* for the terminal null */
-            gotnewline = false;
-            for (lx=0; lx<len && !gotnewline; lx++) {
-                ch = gli_get_char(str, want_unicode);
-                if (ch == -1)
-                    break;
-                buf[lx] = ch;
-                gotnewline = (ch == 10);
-            }
-            return lx;
-        }
-        /* non-unicode streams: fall through to memory... */
     case strtype_File:
         if (str.streaming) {
             if (len == 0)
@@ -3184,8 +3219,23 @@ function gli_get_line(str, buf, want_unicode) {
             }
             return lx;
         }
-        /* non-streaming or resource... */
-        /* fall through to memory... */
+        /* non-streaming, fall through to resource... */
+    case strtype_Resource:
+        if (str.unicode) {
+            if (len == 0)
+                return 0;
+            len -= 1; /* for the terminal null */
+            gotnewline = false;
+            for (lx=0; lx<len && !gotnewline; lx++) {
+                ch = gli_get_char(str, want_unicode);
+                if (ch == -1)
+                    break;
+                buf[lx] = ch;
+                gotnewline = (ch == 10);
+            }
+            return lx;
+        }
+        /* non-unicode file/resource, fall through to memory... */
     case strtype_Memory:
         if (len == 0)
             return 0;
@@ -3230,17 +3280,6 @@ function gli_get_buffer(str, buf, want_unicode) {
     var lx, ch;
     
     switch (str.type) {
-    case strtype_Resource:
-        if (str.unicode) {
-            for (lx=0; lx<len; lx++) {
-                ch = gli_get_char(str, want_unicode);
-                if (ch == -1)
-                    break;
-                buf[lx] = ch;
-            }
-            return lx;
-        }
-        /* non-unicode streams: fall through to memory... */
     case strtype_File:
         if (str.streaming) {
             for (lx=0; lx<len; lx++) {
@@ -3251,8 +3290,18 @@ function gli_get_buffer(str, buf, want_unicode) {
             }
             return lx;
         }
-        /* non-streaming or resource... */
-        /* fall through to memory... */
+        /* non-streaming, fall through to resource... */
+    case strtype_Resource:
+        if (str.unicode) {
+            for (lx=0; lx<len; lx++) {
+                ch = gli_get_char(str, want_unicode);
+                if (ch == -1)
+                    break;
+                buf[lx] = ch;
+            }
+            return lx;
+        }
+        /* non-unicode file/resource, fall through to memory... */
     case strtype_Memory:
         if (str.bufpos >= str.bufeof) {
             len = 0;
@@ -3305,15 +3354,9 @@ function glk_put_jstring_stream(str, val, allbytes) {
     case strtype_File:
         if (str.streaming) {
             if (!str.unicode) {
-                if (allbytes) {
-                    var buf = new str.fstream.BufferClass(val, 'binary');
-                    str.fstream.fwrite(buf);
-                }
-                else {
-                    // give up on non-Latin-1 characters
-                    var buf = new str.fstream.BufferClass(val, 'binary');
-                    str.fstream.fwrite(buf);
-                }
+                // if !allbytes, we just give up on non-Latin-1 characters
+                var buf = new str.fstream.BufferClass(val, 'binary');
+                str.fstream.fwrite(buf);
             }
             else {
                 if (!str.isbinary) {
@@ -3330,10 +3373,33 @@ function glk_put_jstring_stream(str, val, allbytes) {
                     str.fstream.fwrite(buf);
                 }
             }
-            break;
         }
-        gli_stream_dirty_file(str);
-        /* fall through to memory... */
+        else {
+            /* non-streaming... */
+            gli_stream_dirty_file(str);
+            var arr = [];
+            for (ix=0; ix<val.length; ix++)
+                arr.push(val.charCodeAt(ix));
+            var arr8;
+            if (!str.unicode) {
+                arr8 = arr;
+            }
+            else {
+                if (!str.isbinary)
+                    arr8 = UniArrayToUTF8(arr);
+                else
+                    arr8 = UniArrayToBE32(arr);
+            }
+            var len = arr8.length;
+            if (len > str.buflen-str.bufpos)
+                len = str.buflen-str.bufpos;
+            for (ix=0; ix<len; ix++)
+                str.buf[str.bufpos+ix] = arr8[ix];
+            str.bufpos += len;
+            if (str.bufpos > str.bufeof)
+                str.bufeof = str.bufpos;
+        }
+        break;
     case strtype_Memory:
         len = val.length;
         if (len > str.buflen-str.bufpos)
