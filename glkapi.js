@@ -2650,6 +2650,8 @@ function gli_new_stream(type, readable, writable, rock) {
     str.disprock = undefined;
 
     str.unicode = false;
+    /* isbinary is only meaningful for Resource and streaming-File streams */
+    str.isbinary = false;
     str.streaming = false;
     str.ref = null;
     str.win = null;
@@ -2840,7 +2842,6 @@ function gli_put_char(str, ch) {
     switch (str.type) {
     case strtype_File:
         if (str.streaming) {
-            //### ensure_op?
             if (!str.unicode) {
                 str.buffer4[0] = ch;
                 str.fstream.fwrite(str.buffer4, 1);
@@ -2848,15 +2849,22 @@ function gli_put_char(str, ch) {
             else {
                 if (!str.isbinary) {
                     /* cheap UTF-8 stream */
-                    var len = str.buffer4.write(String.fromCharCode(ch));
-                    str.fstream.fwrite(str.buffer4, len);
+                    var len;
+                    if (ch < 0x10000) {
+                        len = str.buffer4.write(String.fromCharCode(ch));
+                        str.fstream.fwrite(str.buffer4, len); // utf8
+                    }
+                    else {
+                        /* String.fromCharCode chokes on astral characters;
+                           do it the hard way */
+                        var arr8 = UniArrayToUTF8([ch]);
+                        var buf = new str.fstream.BufferClass(arr8);
+                        str.fstream.fwrite(buf);
+                    }
                 }
                 else {
                     /* cheap big-endian stream */
-                    str.buffer4[0] = 0;
-                    str.buffer4[1] = 0;
-                    str.buffer4[2] = 0;
-                    str.buffer4[3] = ch;
+                    str.buffer4.writeUInt32BE(ch, 0, true);
                     str.fstream.fwrite(str.buffer4, 4);
                 }
             }
@@ -2904,7 +2912,6 @@ function gli_put_array(str, arr, allbytes) {
     switch (str.type) {
     case strtype_File:
         if (str.streaming) {
-            //### ensure_op?
             if (!str.unicode) {
                 var buf = new str.fstream.BufferClass(arr);
                 str.fstream.fwrite(buf);
@@ -2912,19 +2919,13 @@ function gli_put_array(str, arr, allbytes) {
             else {
                 if (!str.isbinary) {
                     /* cheap UTF-8 stream */
-                    if (allbytes) {
-                        var buf = new str.fstream.BufferClass(arr);
-                        str.fstream.fwrite(buf);
-                    }
-                    else {
-                        var arr8 = UniArrayToUTF8(arr);
-                        var buf = new str.fstream.BufferClass(arr8);
-                        str.fstream.fwrite(buf);
-                    }
+                    var arr8 = UniArrayToUTF8(arr);
+                    var buf = new str.fstream.BufferClass(arr8);
+                    str.fstream.fwrite(buf);
                 }
                 else {
                     /* cheap big-endian stream */
-                    var buf = new str.fstream.BufferClass(4*arr.count);
+                    var buf = new str.fstream.BufferClass(4*arr.length);
                     for (ix=0; ix<arr.length; ix++) {
                         buf.writeUInt32BE(arr[ix], 4*ix, true);
                     }
@@ -3048,7 +3049,6 @@ function gli_get_char(str, want_unicode) {
         /* non-unicode streams: fall through to memory... */
     case strtype_File:
         if (str.streaming) {
-            //### ensure_op?
             if (!str.unicode) {
                 var len = str.fstream.fread(str.buffer4, 1);
                 if (!len)
@@ -3310,7 +3310,8 @@ function glk_put_jstring_stream(str, val, allbytes) {
                     str.fstream.fwrite(buf);
                 }
                 else {
-                    var buf = new str.fstream.BufferClass(val); // utf8
+                    // give up on non-Latin-1 characters
+                    var buf = new str.fstream.BufferClass(val, 'binary');
                     str.fstream.fwrite(buf);
                 }
             }
@@ -4064,6 +4065,7 @@ function glk_stream_open_file(fref, fmode, rock) {
         (fmode != Const.filemode_Read), 
         rock);
     str.unicode = false;
+    str.isbinary = !fref.textmode;
     str.ref = fref.ref;
 
     if (!Dialog.streaming) {
@@ -4279,7 +4281,7 @@ function glk_fileref_create_temp(usage, rock) {
 
 function glk_fileref_create_by_name(usage, filename, rock) {
     /* Filenames that do not come from the user must be cleaned up. */
-    filename = Dialog.file_clean_fixed_name(filename, usage);
+    filename = Dialog.file_clean_fixed_name(filename, (usage & Const.fileusage_TypeMask));
 
     fref = gli_new_fileref(filename, usage, rock, null);
     return fref;
@@ -5314,6 +5316,7 @@ function glk_stream_open_file_uni(fref, fmode, rock) {
         (fmode != Const.filemode_Read), 
         rock);
     str.unicode = true;
+    str.isbinary = !fref.textmode;
     str.ref = fref.ref;
 
     if (!Dialog.streaming) {
