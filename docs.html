@@ -603,6 +603,20 @@ GlkOte.error(msg)
 Display a message to the user. It appears in a pane overlaid on the game's <code>windowport</code>. The error pane cannot be dismissed without reloading the page, so this should be reserved for <em>fatal</em> errors -- the server is not responding, an interpreter bug or assertion, etc.
 <p>
 
+(The standard error-pane style goes translucent on hover, so that the player can read the entire display after the error.)
+<p>
+
+<pre class="Def">
+GlkOte.warning(msg)
+</pre>
+<p>
+
+Display a warning message to the user. As with <code>GlkOte.error</code>, it appears in an overlaid pane, but in a less threatening color. Unlike an error, a warning can be removed -- call <code>GlkOte.warning()</code> with no argument. An error overrides a warning.
+<p>
+
+This can be used for temporary interruptions, or for an end-of-session message. (Permanent but not alarming.) It should not be used for debugging output. Do not rely on the translucent-on-hover behavior to expect the player to keep playing while the warning is visible.
+<p>
+
 <pre class="Def">
 GlkOte.log(msg)
 </pre>
@@ -1608,6 +1622,8 @@ By the way, in a buffer window, paragraphs of text are separated by blank lines 
 
 <dt>Release 2.2.0 (###)
 <dd>Added support for the Electron.io environment, where we can read and write real files.
+<dd>Added the <code>GlkOte.warning</code> API, to display temporary or non-alarming status messages.
+<dd>Adjusted the error/warning pane to be translucent on hover, so that it cannot completely hide critical game text.
 <dd>Changed the behavior of unicode files in local storage. They are now byte arrays (UTF8 or BE32) instead of unichar arrays. Legacy saved files will not read back correctly. This only affects files created with glk_stream_open_file_uni(), so it does <em>not</em> affect saved games.
 <dd>Fixed a bug where hyperlinks set on images (in text) would not work.
 

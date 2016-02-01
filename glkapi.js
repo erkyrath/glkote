@@ -3482,6 +3482,7 @@ function glk_exit() {
     has_exited = true;
     ui_disabled = true;
     gli_selectref = null;
+    GlkOte.warning('The game session has ended.');
     return DidNotReturn;
 }
 
