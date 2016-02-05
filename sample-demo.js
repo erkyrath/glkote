@@ -27,6 +27,7 @@ game_inputline_right = true;
 game_inputinitial_left = null;
 game_inputinitial_right = null;
 game_timed_timer = null;
+game_simulate_quit = false;
 game_simulate_crash = false;
 game_simulate_timeout = false;
 game_simulate_dialog = false;
@@ -151,19 +152,23 @@ function game_select() {
     if (!game_inputgen_left) {
       game_inputgen_left = game_generation;
       game_print_left = true;
-      if (game_inputline_left)
-        game_print('\n>');
-      else
-        game_print('\nHit a key:>');
+      if (!game_simulate_quit) {
+        if (game_inputline_left)
+          game_print('\n>');
+        else
+          game_print('\nHit a key:>');
+      }
     }
 
     if (game_splitwin && !game_inputgen_right) {
       game_inputgen_right = game_generation;
       game_print_left = false;
-      if (game_inputline_right)
-        game_print('\n>');
-      else
-        game_print('\nHit a key:>');
+      if (!game_simulate_quit) {
+        if (game_inputline_right)
+          game_print('\n>');
+        else
+          game_print('\nHit a key:>');
+      }
     }
   }
   else {
@@ -379,6 +384,10 @@ function game_select() {
   }
 
   var arg = { type:'update', gen:game_generation, windows:argw, content:argc, input:argi };
+
+  if (game_simulate_quit) {
+    arg.disable = true;
+  }
 
   if (game_simulate_timeout) {
     /* If the game were crunching away in another thread, or in another
@@ -741,6 +750,7 @@ function game_parse(val) {
     helpopt('save, load',  'open a file dialog');
     helpopt('script',  'write a fake transcript file');
     helpopt('metrics', 'display the computed window metrics');
+    helpopt('quit',    'simulate the VM stopping');
     helpopt('crash',   'react as if the game had crashed');
     helpopt('slow',    'react as if the game were taking a long time to compute its output');
     helpopt('todo',    'what do I still need to fix in this interface?');
@@ -1273,6 +1283,14 @@ function game_parse(val) {
     for (var ix=0; ix<ls.length; ix++) {
       game_print('  ' + ls[ix] + ': ' + game_metrics[ls[ix]]);
     }
+    return;
+  }
+
+  if (val == 'quit') {
+    /* This simulates the case where the VM has exited cleanly. */
+    game_print('Goodbye, goodbye, goodbye.');
+    GlkOte.warning('The simulated game session has ended.');
+    game_simulate_quit = true;
     return;
   }
 
