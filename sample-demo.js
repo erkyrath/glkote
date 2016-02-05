@@ -751,7 +751,7 @@ function game_parse(val) {
     game_print('To do list:\n');
     game_print('    re-lay out windows correctly after "make font bigger" menu command (or if external script code resizes the gameport)');
     game_print('    support indentation and text-alignment in styles');
-    game_print('    pictures, sound');
+    game_print('    sound');
     return;
   }
 
