@@ -36,8 +36,8 @@ game_mood = 0;
 game_mood_list = [ 'cheery', 'dopey', 'hungry', 'explodey' ];
 
 function game_version() {
-  return ('Release 19; GlkOte library ' + GlkOte.version 
-    + '; last updated 19-Mar-2015');
+  return ('Release 20; GlkOte library ' + GlkOte.version 
+    + '; last updated 5-Feb-2016');
 }
 
 function game_n_spaces(count) {
