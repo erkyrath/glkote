@@ -50,6 +50,7 @@ var has_canvas;
 
 /* Options from the vm_options object. */
 var option_exit_warning;
+var option_do_vm_autosave;
 
 /* Library display state. */
 var has_exited = false;
@@ -87,6 +88,7 @@ function init(vm_options) {
     GlkOte.init(vm_options);
 
     option_exit_warning = vm_options.exit_warning;
+    option_do_vm_autosave = vm_options.do_vm_autosave;
 }
 
 function accept_ui_event(obj) {
@@ -415,6 +417,15 @@ function update() {
                 if (!obj.text) {
                     obj.text = [];
                 }
+                win.reserve.length = 0;
+            }
+            if (obj.text && obj.text.length) {
+                for (ix=0; ix<obj.text.length; ix++) {
+                    win.reserve.push(obj.text[ix]);
+                }
+            }
+            if (win.reserve.length > 100) {
+                win.reserve.splice(0, win.reserve.length-100);
             }
             break;
         case Const.wintype_TextGrid:
@@ -456,6 +467,33 @@ function update() {
                 obj.draw = win.content.slice(0);
                 win.content.length = 0;
                 useobj = true;
+            }
+            /* Copy new drawing commands over to the reserve. Keep track
+               of the last (whole-window) fill command. */
+            var clearedat = -1;
+            if (obj.draw && obj.draw.length) {
+                for (ix=0; ix<obj.draw.length; ix++) {
+                    var drawel = obj.draw[ix];
+                    if (drawel.special == 'fill' 
+                        && drawel.x === undefined && drawel.y === undefined 
+                        && drawel.width === undefined && drawel.height === undefined) {
+                        clearedat = win.reserve.length;
+                    }
+                    win.reserve.push(drawel);
+                }
+            }
+            if (clearedat >= 0) {
+                /* We're going to delete every command before the
+                   fill, except that we save the last setcolor. */
+                var setcol = null;
+                for (ix=0; ix<win.reserve.length && ix<clearedat; ix++) {
+                    var drawel = win.reserve[ix];
+                    if (drawel.special == 'setcolor')
+                        setcol = drawel;
+                }
+                win.reserve.splice(0, clearedat);
+                if (setcol)
+                    win.reserve.unshift(setcol);
             }
             break;
         }
@@ -537,7 +575,458 @@ function update() {
     /* Clean this up; it's only meaningful within one run/update cycle. */
     current_partial_outputs = null;
 
-    GlkOte.update(dataobj);
+    /* If we're doing an autorestore, gli_autorestore_glkstate will 
+       contain additional setup information for the first update()
+       call only. */
+    if (gli_autorestore_glkstate)
+        dataobj.autorestore = gli_autorestore_glkstate;
+    gli_autorestore_glkstate = null;
+
+    GlkOte.update(dataobj, gli_autorestore_glkstate);
+
+    if (option_do_vm_autosave) {
+        if (has_exited) {
+            /* On quit or fatal error, delete the autosave. */
+            VM.do_autosave(-1);
+        }
+        else {
+            /* If this is a good time, autosave. */
+            var eventarg = GiDispa.check_autosave();
+            if (eventarg)
+                VM.do_autosave(eventarg);
+        }
+    }
+}
+
+/* Wrap up the current display state as a (JSONable) object. This is
+   called from Quixe.vm_autosave.
+*/
+function save_allstate() {
+    var res = {};
+
+    if (gli_rootwin)
+        res.rootwin = gli_rootwin.disprock;
+
+    if (gli_currentstr)
+        res.currentstr = gli_currentstr.disprock;
+
+    if (gli_timer_interval)
+        res.timer_interval = gli_timer_interval;
+
+    res.windows = [];
+    for (var win = gli_windowlist; win; win = win.next) {
+        var obj = {
+            type: win.type, rock: win.rock, disprock: win.disprock,
+            style: win.style, hyperlink: win.hyperlink
+        };
+        if (win.parent)
+            obj.parent = win.parent.disprock;
+        obj.str = win.str.disprock;
+        if (win.echostr)
+            obj.echostr = win.echostr.disprock;
+
+        obj.bbox = { 
+            left: win.bbox.left, right: win.bbox.right,
+            top: win.bbox.top, bottom: win.bbox.bottom 
+        };
+
+        if (win.linebuf !== null) {
+            var info = GiDispa.get_retained_array(win.linebuf);
+            obj.linebuf = {
+                addr: info.addr,
+                len: info.len,
+                arr: info.arr.slice(0),
+                arg: info.arg.serialize()
+            };
+        }
+        obj.char_request = win.char_request;
+        obj.line_request = win.line_request;
+        obj.char_request_uni = win.char_request_uni;
+        obj.line_request_uni = win.line_request_uni;
+        obj.hyperlink_request = win.hyperlink_request;
+        obj.mouse_request = win.mouse_request;
+        obj.echo_line_input = win.echo_line_input;
+        obj.request_echo_line_input = win.request_echo_line_input;
+        obj.line_input_terminators = win.line_input_terminators.slice(0);
+        //### should have a request_line_input_terminators as well
+
+        switch (win.type) {
+        case Const.wintype_TextBuffer:
+            obj.reserve = win.reserve.slice(0);
+            break;
+        case Const.wintype_TextGrid:
+            obj.gridwidth = win.gridwidth;
+            obj.gridheight = win.gridheight;
+            obj.lines = [];
+            for (var ix=0; ix<win.lines.length; ix++) {
+                var ln = win.lines[ix];
+                obj.lines.push({
+                        chars: ln.chars.slice(0),
+                        styles: ln.styles.slice(0),
+                        hyperlinks: ln.hyperlinks.slice(0)
+                    });
+            }
+            obj.cursorx = win.cursorx;
+            obj.cursory = win.cursory;
+            break;
+        case Const.wintype_Graphics:
+            obj.graphwidth = win.graphwidth;
+            obj.graphheight = win.graphheight;
+            obj.reserve = win.reserve.slice(0);
+            break;
+        case Const.wintype_Pair:
+            obj.pair_dir = win.pair_dir;
+            obj.pair_division = win.pair_division;
+            obj.pair_key = win.pair_key.disprock;
+            obj.pair_keydamage = false;
+            obj.pair_size = win.pair_size;
+            obj.pair_hasborder = win.pair_hasborder;
+            obj.pair_vertical = win.pair_vertical;
+            obj.pair_backward = win.pair_backward;
+            obj.child1 = win.child1.disprock;
+            obj.child2 = win.child2.disprock;
+            break;
+        }
+
+        res.windows.push(obj);
+    }
+
+    res.streams = [];
+    for (var str = gli_streamlist; str; str = str.next) {
+        var obj = {
+            type: str.type, rock: str.rock, disprock: str.disprock,
+            unicode: str.unicode, isbinary: str.isbinary,
+            readcount: str.readcount, writecount: str.writecount,
+            readable: str.readable, writable: str.writable,
+            streaming: str.streaming
+        };
+
+        switch (str.type) {
+
+        case strtype_Window:
+            if (str.win)
+                obj.win = str.win.disprock;
+            break;
+
+        case strtype_Memory:
+            if (str.buf !== null) {
+                var info = GiDispa.get_retained_array(str.buf);
+                obj.buf = {
+                    addr: info.addr,
+                    len: info.len,
+                    arr: info.arr.slice(0),
+                    arg: info.arg.serialize()
+                };
+            }
+            obj.buflen = str.buflen;
+            obj.bufpos = str.bufpos;
+            obj.bufeof = str.bufeof;
+            break;
+
+        case strtype_Resource:
+            obj.resfilenum = str.resfilenum;
+            // Don't need str.buf
+            obj.buflen = str.buflen;
+            obj.bufpos = str.bufpos;
+            obj.bufeof = str.bufeof;
+            break;
+
+        case strtype_File:
+            obj.origfmode = str.origfmode;
+            if (!Dialog.streaming) {
+                obj.ref = str.ref;
+                gli_stream_flush_file(str);
+                // Don't need str.buf
+                obj.buflen = str.buflen;
+                obj.bufpos = str.bufpos;
+                obj.bufeof = str.bufeof;
+            }
+            else {
+                str.fstream.fflush();
+                obj.ref = str.ref;
+                obj.filepos = str.fstream.ftell();
+            }
+            break;
+
+        }
+
+        res.streams.push(obj);
+    }
+
+    res.filerefs = [];
+    for (var fref = gli_filereflist; fref; fref = fref.next) {
+        var obj = {
+            type: fref.type, rock: fref.rock, disprock: fref.disprock,
+            filename: fref.filename, textmode: fref.textmode,
+            filetype: fref.filetype, filetypename: fref.filetypename
+        };
+
+        obj.ref = fref.ref;
+
+        res.filerefs.push(obj);
+    }
+
+    // Ignore gli_schannellist, as it's currently always empty.
+
+    /* Save GlkOte-level information. This includes the overall metrics. */
+    res.glkote = GlkOte.save_allstate();
+
+    return res;
+}
+
+/* Take display information (created by save_allstate) and set up our
+   state to match it. Called from vm_autorestore.
+*/
+function restore_allstate(res)
+{
+    if (gli_windowlist || gli_streamlist || gli_filereflist)
+        throw('restore_allstate: glkapi module has already been launched');
+
+    /* We build and register all the bare objects first. (In reverse
+       order so that the linked lists come out right way around.) */
+
+    for (var ix=res.windows.length-1; ix>=0; ix--) {
+        var obj = res.windows[ix];
+        var win = {
+            type: obj.type, rock: obj.rock, disprock: obj.disprock,
+            style: obj.style, hyperlink: obj.hyperlink
+        };
+        GiDispa.class_register('window', win, win.disprock);
+
+        win.prev = null;
+        win.next = gli_windowlist;
+        gli_windowlist = win;
+        if (win.next)
+            win.next.prev = win;
+    }
+
+    for (var ix=res.streams.length-1; ix>=0; ix--) {
+        var obj = res.streams[ix];
+        var str = {
+            type: obj.type, rock: obj.rock, disprock: obj.disprock,
+            unicode: obj.unicode, isbinary: obj.isbinary,
+            readcount: obj.readcount, writecount: obj.writecount,
+            readable: obj.readable, writable: obj.writable,
+            streaming: obj.streaming
+        };
+        GiDispa.class_register('stream', str, str.disprock);
+
+        str.prev = null;
+        str.next = gli_streamlist;
+        gli_streamlist = str;
+        if (str.next)
+            str.next.prev = str;
+    }
+
+    for (var ix=res.filerefs.length-1; ix>=0; ix--) {
+        var obj = res.filerefs[ix];
+        var fref = {
+            type: obj.type, rock: obj.rock, disprock: obj.disprock,
+            filename: obj.filename, textmode: obj.textmode,
+            filetype: obj.filetype, filetypename: obj.filetypename
+        };
+        GiDispa.class_register('fileref', fref, fref.disprock);
+
+        fref.prev = null;
+        fref.next = gli_filereflist;
+        gli_filereflist = fref;
+        if (fref.next)
+            fref.next.prev = fref;
+    }
+
+    /* ...Now we fill in the cross-references. */
+
+    for (var ix=0; ix<res.windows.length; ix++) {
+        var obj = res.windows[ix];
+        var win = GiDispa.class_obj_from_id('window', obj.disprock);
+
+        win.parent = GiDispa.class_obj_from_id('window', obj.parent);
+        win.str = GiDispa.class_obj_from_id('stream', obj.str);
+        win.echostr = GiDispa.class_obj_from_id('stream', obj.echostr);
+
+        win.bbox = { 
+            left: obj.bbox.left, right: obj.bbox.right,
+            top: obj.bbox.top, bottom: obj.bbox.bottom 
+        };
+
+        win.input_generation = null;
+        if (obj.char_request || obj.line_request)
+            win.input_generation = event_generation;
+        win.linebuf = null;
+        if (obj.linebuf !== undefined) {
+            // should clone that object
+            win.linebuf = obj.linebuf.arr;
+            GiDispa.retain_array(win.linebuf, obj.linebuf);
+        }
+        win.char_request = obj.char_request;
+        win.line_request = obj.line_request;
+        win.char_request_uni = obj.char_request_uni;
+        win.line_request_uni = obj.line_request_uni;
+        win.hyperlink_request = obj.hyperlink_request;
+        win.mouse_request = obj.mouse_request;
+        win.echo_line_input = obj.echo_line_input;
+        win.request_echo_line_input = obj.request_echo_line_input;
+        win.line_input_terminators = obj.line_input_terminators.slice(0);
+        //### should have a request_line_input_terminators as well
+
+        switch (win.type) {
+        case Const.wintype_TextBuffer:
+            win.accum = [];
+            win.accumstyle = win.style;
+            win.accumhyperlink = win.hyperlink;
+            win.content = obj.reserve.slice(0);
+            win.clearcontent = false;
+            win.reserve = [];
+            break;
+        case Const.wintype_TextGrid:
+            win.gridwidth = obj.gridwidth;
+            win.gridheight = obj.gridheight;
+            win.lines = [];
+            for (var jx=0; jx<obj.lines.length; jx++) {
+                var ln = obj.lines[jx];
+                win.lines.push({
+                        dirty: true,
+                        chars: ln.chars.slice(0),
+                        styles: ln.styles.slice(0),
+                        hyperlinks: ln.hyperlinks.slice(0)
+                    });
+            }
+            win.cursorx = obj.cursorx;
+            win.cursory = obj.cursory;
+            break;
+        case Const.wintype_Graphics:
+            win.graphwidth = obj.graphwidth;
+            win.graphheight = obj.graphheight;
+            win.content = obj.reserve.slice(0);
+            win.reserve = [];
+            break;
+        case Const.wintype_Pair:
+            win.pair_dir = obj.pair_dir;
+            win.pair_division = obj.pair_division;
+            win.pair_key = GiDispa.class_obj_from_id('window', obj.pair_key);
+            win.pair_keydamage = false;
+            win.pair_size = obj.pair_size;
+            win.pair_hasborder = obj.pair_hasborder;
+            win.pair_vertical = obj.pair_vertical;
+            win.pair_backward = obj.pair_backward;
+            win.child1 = GiDispa.class_obj_from_id('window', obj.child1);
+            win.child2 = GiDispa.class_obj_from_id('window', obj.child2);
+            break;
+        }
+    }
+
+    for (var ix=0; ix<res.streams.length; ix++) {
+        var obj = res.streams[ix];
+        var str = GiDispa.class_obj_from_id('stream', obj.disprock);
+
+        /* Defaults first... */
+        str.win = null;
+        str.ref = null;
+        str.file = null;
+
+        str.buf = null;
+        str.bufpos = 0;
+        str.buflen = 0;
+        str.bufeof = 0;
+        str.timer_id = null;
+        str.flush_func = null;
+        str.fstream = null;
+
+        switch (str.type) {
+
+        case strtype_Window:
+            str.win = GiDispa.class_obj_from_id('window', obj.win);
+            break;
+
+        case strtype_Memory:
+            if (obj.buf !== undefined) {
+                // should clone that object
+                str.buf = obj.buf.arr;
+                GiDispa.retain_array(str.buf, obj.buf);
+            }
+            str.buflen = obj.buflen;
+            str.bufpos = obj.bufpos;
+            str.bufeof = obj.bufeof;
+            break;
+
+        case strtype_Resource:
+            str.resfilenum = obj.resfilenum;
+            var el = GiLoad.find_data_chunk(str.resfilenum);
+            if (el) {
+                str.buf = el.data;
+            }
+            str.buflen = obj.buflen;
+            str.bufpos = obj.bufpos;
+            str.bufeof = obj.bufeof;
+            break;
+
+        case strtype_File:
+            str.origfmode = obj.origfmode;
+            if (!Dialog.streaming) {
+                str.ref = obj.ref;
+                str.buflen = obj.buflen;
+                str.bufpos = obj.bufpos;
+                str.bufeof = obj.bufeof;
+
+                var content = Dialog.file_read(str.ref);
+                if (content == null) {
+                    /* The file was somehow deleted. Create an empty
+                       file (even in read mode). */
+                    content = [];
+                    Dialog.file_write(str.ref, '', true);
+                }
+                str.buf = content;
+
+                /* If the file has been shortened, we might have to
+                   trim bufeof to fit within it. The game might see
+                   the file pos mysteriously move; sorry. */
+                str.bufeof = content.length;
+                if (str.bufpos > str.bufeof)
+                    str.bufpos = str.bufeof;
+            }
+            else {
+                str.ref = obj.ref;
+                str.fstream = Dialog.file_fopen(str.origfmode, str.ref);
+                if (!str.fstream) {
+                    /* This is the panic case. We can't reopen the stream,
+                       but the game expects an open stream! We'll just
+                       have to open a temporary file; the user will never
+                       get their data, but at least the game won't crash.
+                       (Better policy would be to prompt the user for
+                       a new file location...) */
+                    var tempref = Dialog.file_construct_temp_ref(str.ref.usage);
+                    str.fstream = Dialog.file_fopen(str.origfmode, tempref);
+                    if (!str.fstream)
+                        throw('restore_allstate: could not reopen even a temp stream for: ' + str.ref.filename);
+                }
+
+                if (str.origfmode != Const.filemode_WriteAppend) {
+                    /* Jump to the last known filepos. */
+                    str.fstream.fseek(obj.filepos, Const.seekmode_Start);
+                }
+
+                str.buffer4 = new str.fstream.BufferClass(4);
+            }
+            break;
+
+        }
+    }
+
+    for (var ix=0; ix<res.filerefs.length; ix++) {
+        var obj = res.filerefs[ix];
+        var fref = GiDispa.class_obj_from_id('fileref', obj.disprock);
+
+        fref.ref = obj.ref; // should deep clone
+    }
+
+    gli_rootwin = GiDispa.class_obj_from_id('window', res.rootwin);
+    gli_currentstr = GiDispa.class_obj_from_id('stream', res.currentstr);
+
+    if (res.timer_interval)
+        glk_request_timer_events(res.timer_interval);
+
+    /* Stash this for the next (first) GlkOte.update call. */
+    gli_autorestore_glkstate = res.glkote;
 }
 
 /* This is the handler for a VM fatal error. (Not for an error in our own
@@ -2164,6 +2653,9 @@ var strtype_Window = 2;
 var strtype_Memory = 3;
 var strtype_Resource = 4;
 
+/* Extra update information -- autorestore only. */
+var gli_autorestore_glkstate = null;
+
 /* Beginning of linked list of windows. */
 var gli_windowlist = null;
 var gli_rootwin = null;
@@ -2481,12 +2973,14 @@ function gli_window_close(win, recurse) {
         case Const.wintype_TextBuffer: 
             win.accum = null;
             win.content = null;
+            win.reserve = null;
             break;
         case Const.wintype_TextGrid: 
             win.lines = null;
             break;
         case Const.wintype_Graphics:
             win.content = null;
+            win.reserve = null;
             break;
     }
     
@@ -2760,6 +3254,9 @@ function gli_stream_open_window(win) {
 
    We do this by setting a ten-second timer (if there isn't one set already).
    The timer calls a flush method on the stream.
+
+   (If autosave is on, we'll wind up flushing on most glk_select calls,
+   which isn't quite as nicely paced. But it's a minor problem.)
 */
 function gli_stream_dirty_file(str) {
     if (str.streaming)
@@ -2778,6 +3275,11 @@ function gli_stream_dirty_file(str) {
    buffer out.
 */
 function gli_stream_flush_file(str) {
+    if (str.streaming)
+        GlkOte.log('### gli_stream_flush_file called for streaming file!');
+    if (!(str.timer_id === null)) {
+        clearTimeout(str.timer_id);
+    }
     str.timer_id = null;
     Dialog.file_write(str.ref, str.buf);
 }
@@ -3706,6 +4208,7 @@ function glk_window_open(splitwin, method, size, wintype, rock) {
         newwin.accumhyperlink = 0;
         newwin.content = [];
         newwin.clearcontent = false;
+        newwin.reserve = []; /* autosave of recent content */
         break;
     case Const.wintype_TextGrid:
         /* lines is a list of line objects. A line looks like
@@ -3724,6 +4227,7 @@ function glk_window_open(splitwin, method, size, wintype, rock) {
             return null;
         }
         newwin.content = [];
+        newwin.reserve = []; /* autosave of recent content */
         break;
     case Const.wintype_Blank:
         break;
@@ -4131,6 +4635,8 @@ function glk_stream_open_file(fref, fmode, rock) {
     }
     else {
         fstream = Dialog.file_fopen(fmode, fref.ref);
+        if (!fstream)
+            return null;
     }
 
     str = gli_new_stream(strtype_File, 
@@ -4140,6 +4646,7 @@ function glk_stream_open_file(fref, fmode, rock) {
     str.unicode = false;
     str.isbinary = !fref.textmode;
     str.ref = fref.ref;
+    str.origfmode = fmode;
 
     if (!Dialog.streaming) {
         str.streaming = false;
@@ -4212,6 +4719,8 @@ function glk_stream_open_resource(filenum, rock) {
     str.unicode = false;
     str.isbinary = isbinary;
 
+    str.resfilenum = filenum;
+
     /* Resource streams always use buffer mode. */
     str.streaming = false;
 
@@ -4248,6 +4757,11 @@ function glk_stream_open_resource_uni(filenum, rock) {
         rock);
     str.unicode = true;
     str.isbinary = isbinary;
+
+    str.resfilenum = filenum;
+
+    /* Resource streams always use buffer mode. */
+    str.streaming = false;
 
     /* We have been handed an array of bytes. (They're big-endian four-byte
        chunks, or perhaps a UTF-8 byte sequence, rather than native-endian
@@ -4345,10 +4859,10 @@ function glk_stream_get_current() {
 }
 
 function glk_fileref_create_temp(usage, rock) {
-    var timestamp = new Date().getTime();
-    var filename = "_temp_" + timestamp + "_" + Math.random();
-    filename = filename.replace('.', '');
-    fref = gli_new_fileref(filename, usage, rock, null);
+    var filetype = (usage & Const.fileusage_TypeMask);
+    var filetypename = FileTypeMap[filetype];
+    var ref = Dialog.file_construct_temp_ref(filetypename);
+    fref = gli_new_fileref(ref.filename, usage, rock, ref);
     return fref;
 }
 
@@ -5379,9 +5893,13 @@ function glk_stream_open_file_uni(fref, fmode, rock) {
                 Dialog.file_write(fref.ref, '', true);
             }
         }
+        if (content.length == null) 
+            throw('glk_stream_open_file_uni: data read had no length');
     }
     else {
         fstream = Dialog.file_fopen(fmode, fref.ref);
+        if (!fstream)
+            return null;
     }
 
     str = gli_new_stream(strtype_File, 
@@ -5391,6 +5909,7 @@ function glk_stream_open_file_uni(fref, fmode, rock) {
     str.unicode = true;
     str.isbinary = !fref.textmode;
     str.ref = fref.ref;
+    str.origfmode = fmode;
 
     if (!Dialog.streaming) {
         str.streaming = false;
@@ -5636,7 +6155,10 @@ return {
     version: '2.2.0', /* GlkOte/GlkApi version */
     init : init,
     update : update,
+    save_allstate : save_allstate,
+    restore_allstate : restore_allstate,
     fatal_error : fatal_error,
+
     byte_array_to_string : ByteArrayToString,
     uni_array_to_string : UniArrayToString,
     Const : Const,

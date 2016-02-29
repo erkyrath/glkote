@@ -33,6 +33,11 @@
  * reply to the request. A proof-of-concept can be found at:
  *     https://github.com/erkyrath/remote-if-demo
  *
+ * (A few calls, or arguments of calls, are marked "for autosave/autorestore
+ * only". These exist for the purpose of getting a game displayed in a known
+ * state, which is rather more complicated than the usual situation of 
+ * letting a game start up and run.)
+ *
  * For full documentation, see the docs.html file in this package.
  */
 
@@ -406,6 +411,14 @@ function measure_window() {
 function glkote_update(arg) {
   hide_loading();
 
+  /* This field is *only* for the autorestore case, and only on the very
+     first update. It contains additional information (from save_allstate)
+     which helps recreate the display. */
+  var autorestore = null;
+  if (arg.autorestore && generation == 0)
+    autorestore = arg.autorestore;
+  delete arg.autorestore; /* keep it out of the recording */
+
   if (recording)
     recording_send(arg);
 
@@ -581,6 +594,44 @@ function glkote_update(arg) {
       }
     };
     defer_func(focusfunc);
+  }
+
+  if (autorestore) {
+    if (autorestore.history) {
+      jQuery.each(autorestore.history, function(winid, ls) {
+          win = windowdic[winid];
+          if (win != null) {
+            win.history = ls.slice(0);
+            win.historypos = win.history.length;
+          }
+        });
+    }
+    if (autorestore.defcolor) {
+      jQuery.each(autorestore.defcolor, function(winid, val) {
+          win = windowdic[winid];
+          if (win != null) {
+            win.defcolor = val;
+          }
+        });
+    }
+    
+
+    /* For the case of autorestore (only), we short-circuit the paging
+       mechanism and assume the player has already seen all the text. */
+    jQuery.each(windowdic, function(winid, win) {
+        if (win.type == 'buffer') {
+          window_scroll_to_bottom(win);
+        }
+      });
+    
+    if (!(autorestore.metrics 
+        && autorestore.metrics.width == current_metrics.width 
+        && autorestore.metrics.height == current_metrics.height)) {
+      /* The window metrics don't match what's recorded in the
+         autosave. Trigger a synthetic resize event. */
+      current_metrics.width += 2;
+      evhan_doc_resize();
+    }
   }
 
   /* Done with the update. Exit and wait for the next input event. */
@@ -1387,6 +1438,30 @@ function glkote_set_dom_context(val) {
 */
 function glkote_get_dom_context() {
   return dom_context;
+}
+
+/* Stash extra information needed for autosave only.
+*/
+function glkote_save_allstate() {
+  var obj = {
+    metrics: {
+      width: current_metrics.width,
+      height: current_metrics.height
+    },
+    history: {}
+  };
+
+  jQuery.each(windowdic, function(winid, win) {
+      if (win.history && win.history.length)
+        obj.history[winid] = win.history.slice(0);
+      if (win.defcolor) {
+        if (obj.defcolor === undefined)
+          obj.defcolor = {};
+        obj.defcolor[winid] = win.defcolor;
+      }
+    });
+  
+  return obj;
 }
 
 /* Log the message in the browser's error log, if it has one. (This shows
@@ -2477,6 +2552,8 @@ function evhan_input_blur(ev) {
   currently_focussed = false;
 }
 
+/* Event handler: scrolling in buffer window 
+*/
 function evhan_window_scroll(ev) {
   var winid = ev.data;
   var win = windowdic[winid];
@@ -2502,6 +2579,34 @@ function evhan_window_scroll(ev) {
       moreel.remove();
     readjust_paging_focus(true);
     return;
+  }
+}
+
+/* Scroll a buffer window all the way down, removing the MORE prompt.
+   This is only used in the autorestore case.
+*/
+function window_scroll_to_bottom(win) {
+  var frameel = win.frameel;
+
+  var frameheight = frameel.outerHeight();
+  frameel.scrollTop(frameel.get(0).scrollHeight - frameheight);
+
+  var realbottom = last_line_top_offset(frameel);
+  var newtopunseen = frameel.scrollTop() + frameheight;
+  if (newtopunseen > realbottom)
+    newtopunseen = realbottom;
+  if (win.topunseen < newtopunseen)
+    win.topunseen = newtopunseen;
+  if (win.needspaging) {
+    /* The scroll-down might have cleared needspaging already. But 
+       if not... */
+    if (frameel.scrollTop() + frameheight + moreprompt_margin >= frameel.get(0).scrollHeight) {
+      win.needspaging = false;
+      var moreel = $('#win'+win.id+'_moreprompt', dom_context);
+      if (moreel.length)
+        moreel.remove();
+      readjust_paging_focus(true);
+    }
   }
 }
 
@@ -2536,6 +2641,7 @@ return {
   getinterface: glkote_get_interface,
   getdomcontext: glkote_get_dom_context,
   setdomcontext: glkote_set_dom_context,
+  save_allstate : glkote_save_allstate,
   log:      glkote_log,
   warning:  glkote_warning,
   error:    glkote_error

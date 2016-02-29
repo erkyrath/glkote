@@ -32,6 +32,7 @@
  *
  * Dialog.file_clean_fixed_name(filename, usage) -- clean up a filename
  * Dialog.file_construct_ref(filename, usage, gameid) -- create a fileref
+ * Dialog.file_construct_temp_ref(usage) -- create a temporary fileref
  * Dialog.file_write(ref, content, israw) -- write data to the file
  * Dialog.file_read(ref, israw) -- read data from the file
  * Dialog.file_ref_exists(ref) -- returns whether the file exists
@@ -831,6 +832,18 @@ function file_construct_ref(filename, usage, gameid) {
     return ref;
 }
 
+/* Dialog.file_construct_temp_ref(usage)
+ *
+ * Create a fileref in a temporary directory. Every time this is called
+ * it should create a completely new fileref.
+ */
+function file_construct_temp_ref(usage) {
+    var timestamp = new Date().getTime();
+    var filename = "_temp_" + timestamp + "_" + Math.random();
+    filename = filename.replace('.', '');
+    return file_construct_ref(filename, usage);
+}
+
 /* Create a fileref from a browser storage key (string). If the key does not
    begin with "dirent:" (ie, this key does not represent a directory entry),
    this returns null.
@@ -1056,6 +1069,36 @@ function format_date(date) {
     return day + ' ' + time;
 }
 
+/* Store a snapshot (a JSONable object) in a signature-dependent location.
+   If snapshot is null, delete the snapshot instead.
+
+   We rely on JSON.stringify() and JSON.parse(); autosave is primarily
+   for the Electron environment.
+*/
+function autosave_write(signature, snapshot) {
+    var key = 'autosave:' + signature;
+    if (!snapshot) {
+        localStorage.removeItem(key);
+    }
+    else {
+        localStorage.setItem(key, JSON.stringify(snapshot));
+    }
+}
+
+/* Load a snapshot (a JSONable object) from a signature-dependent location.
+*/
+function autosave_read(signature) {
+    var key = 'autosave:' + signature;
+    var val = localStorage.getItem(key);
+    if (val) {
+        try {
+            return JSON.parse(val);
+        }
+        catch (ex) { }
+    }
+    return null;
+}
+
 /* Define encode_array() and decode_array() functions. These would be
    JSON.stringify() and JSON.parse(), except not all browsers support those.
 */
@@ -1145,13 +1188,18 @@ return {
 
     file_clean_fixed_name: file_clean_fixed_name,
     file_construct_ref: file_construct_ref,
+    file_construct_temp_ref: file_construct_temp_ref,
     file_ref_exists: file_ref_exists,
     file_remove_ref: file_remove_ref,
     file_write: file_write,
     file_read: file_read,
 
     /* stubs for not-implemented functions */
-    file_fopen: file_notimplemented
+    file_fopen: file_notimplemented,
+
+    /* support for the autosave hook */
+    autosave_write: autosave_write,
+    autosave_read: autosave_read
 };
 
 }();

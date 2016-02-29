@@ -168,6 +168,22 @@ function file_construct_ref(filename, usage, gameid)
     return ref;
 }
 
+/* Dialog.file_construct_temp_ref(usage)
+ *
+ * Create a fileref in a temporary directory. Every time this is called
+ * it should create a completely new fileref.
+ */
+function file_construct_temp_ref(usage)
+{
+    var timestamp = new Date().getTime();
+    var filename = "_temp_" + timestamp + "_" + Math.random();
+    filename = filename.replace('.', '');
+    var temppath = require('electron').remote.app.getPath('temp');
+    var path = path_mod.join(temppath, filename);
+    var ref = { filename:path, usage:usage };
+    return ref;
+}
+
 /* Dialog.file_ref_exists(ref) -- returns whether the file exists
  */
 function file_ref_exists(ref)
@@ -452,6 +468,94 @@ function file_fopen(fmode, ref)
     return fstream;
 }
 
+/* Store a snapshot (a JSONable object) in a signature-dependent location.
+   If snapshot is null, delete the snapshot instead.
+*/
+function autosave_write(signature, snapshot)
+{
+    var gamedirpath = path_mod.join(userpath, 'games', signature);
+
+    /* Make sure the gamedirpath exists. */
+    var stat = null;
+    try {
+        stat = fs.statSync(gamedirpath);
+    }
+    catch (ex) {};
+    if (!stat || !stat.isDirectory()) {
+        try {
+            fs.mkdirSync(path_mod.join(userpath, 'games'));
+        }
+        catch (ex) {};
+        try {
+            fs.mkdirSync(gamedirpath);
+        }
+        catch (ex) {};
+        stat = null;
+        try {
+            stat = fs.statSync(gamedirpath);
+        }
+        catch (ex) {};
+        if (!stat || !stat.isDirectory()) {
+            /* Can't create the directory; give up. */
+            GlkOte.log('Unable to create gamedirpath: ' + gamedirpath);
+            return;
+        }
+    }
+
+    /* We'll save the snapshot in two files: a .ram file (snapshot.ram
+       as raw bytes) and a .json file (the rest of snapshot, stringified).
+    */
+
+    var pathj = path_mod.join(gamedirpath, 'autosave.json');
+    var pathr = path_mod.join(gamedirpath, 'autosave.ram');
+
+    if (!snapshot) {
+        try {
+            fs.unlinkSync(pathj);
+        }
+        catch (ex) {};
+        try {
+            fs.unlinkSync(pathr);
+        }
+        catch (ex) {};
+        return;
+    }
+
+    /* Pull snapshot.ram out. (It's okay to munge the snapshot object,
+       the caller doesn't want it back.) */
+    var ram = snapshot.ram;
+    snapshot.ram = undefined;
+
+    var str = JSON.stringify(snapshot);
+    fs.writeFileSync(pathj, str, { encoding:'utf8' });
+
+    var buf = new buffer_mod.Buffer(ram);
+    fs.writeFileSync(pathr, buf);
+}
+
+/* Load a snapshot (a JSONable object) from a signature-dependent location.
+*/
+function autosave_read(signature)
+{
+    var gamedirpath = path_mod.join(userpath, 'games', signature);
+    var pathj = path_mod.join(gamedirpath, 'autosave.json');
+    var pathr = path_mod.join(gamedirpath, 'autosave.ram');
+
+    try {
+        var str = fs.readFileSync(pathj, { encoding:'utf8' });
+        var snapshot = JSON.parse(str);
+
+        var buf = fs.readFileSync(pathr, { encoding:null });
+        var ram = Array.from(buf.values());
+
+        snapshot.ram = ram;
+        return snapshot;
+    }
+    catch (ex) {
+        return null;
+    };
+}
+
 /* Dialog.file_write(dirent, content, israw) -- write data to the file
  *
  * This call is intended for the non-streaming API, so it does not
@@ -480,13 +584,18 @@ return {
 
     file_clean_fixed_name: file_clean_fixed_name,
     file_construct_ref: file_construct_ref,
+    file_construct_temp_ref: file_construct_temp_ref,
     file_ref_exists: file_ref_exists,
     file_remove_ref: file_remove_ref,
     file_fopen: file_fopen,
 
     /* stubs for not-implemented functions */
     file_write: file_write,
-    file_read: file_read
+    file_read: file_read,
+
+    /* support for the autosave hook */
+    autosave_write: autosave_write,
+    autosave_read: autosave_read
 };
 
 }();
