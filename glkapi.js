@@ -51,6 +51,8 @@ var has_canvas;
 /* Options from the vm_options object. */
 var option_exit_warning;
 var option_do_vm_autosave;
+var option_before_select_hook;
+var option_extevent_hook;
 
 /* Library display state. */
 var has_exited = false;
@@ -89,6 +91,12 @@ function init(vm_options) {
 
     option_exit_warning = vm_options.exit_warning;
     option_do_vm_autosave = vm_options.do_vm_autosave;
+    option_before_select_hook = vm_options.before_select_hook;
+    option_extevent_hook = vm_options.extevent_hook;
+
+    if (option_before_select_hook) {
+        option_before_select_hook();
+    }
 }
 
 function accept_ui_event(obj) {
@@ -119,8 +127,15 @@ function accept_ui_event(obj) {
         break;
 
     case 'external':
-        if (obj.value == 'timer') {
-            handle_timer_input();
+        var res = null;
+        if (option_extevent_hook) {
+            res = option_extevent_hook(obj.value);
+        }
+        if (!res && obj.value == 'timer') {
+            res = { type: Const.evtype_Timer };
+        }
+        if (res && res.type) {
+            handle_external_input(res);
         }
         break;
 
@@ -195,14 +210,21 @@ function handle_redraw_input() {
     VM.resume();
 }
 
-function handle_timer_input() {
+function handle_external_input(res) {
     if (!gli_selectref)
         return;
 
-    gli_selectref.set_field(0, Const.evtype_Timer);
+    var val1 = 0;
+    var val2 = 0;
+    if (res.val1)
+        val1 = res.val1;
+    if (res.val2)
+        val2 = res.val2;
+
+    gli_selectref.set_field(0, res.type);
     gli_selectref.set_field(1, null);
-    gli_selectref.set_field(2, 0);
-    gli_selectref.set_field(3, 0);
+    gli_selectref.set_field(2, val1);
+    gli_selectref.set_field(3, val2);
 
     if (window.GiDispa)
         GiDispa.prepare_resume(gli_selectref);
@@ -584,6 +606,9 @@ function update() {
 
     GlkOte.update(dataobj, gli_autorestore_glkstate);
 
+    if (option_before_select_hook) {
+        option_before_select_hook();
+    }
     if (option_do_vm_autosave) {
         if (has_exited) {
             /* On quit or fatal error, delete the autosave. */
