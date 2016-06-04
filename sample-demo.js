@@ -1112,6 +1112,32 @@ function game_parse(val) {
     return;
   }
 
+  if (val == 'bothtall' || val == 'tallboth' || val == 'bothpage' || val == 'pageboth') {
+    if (!game_splitwin) {
+      game_print('The story window is not currently split.');
+      return;
+    }
+
+    var arr = [];
+    for (var ix=0; ix<100; ix++)
+        arr.push('Line ' + ix + '...');
+    var msg1 = arr.join('\n') + '\nThat is all for the primary window.';
+    var msg2 = arr.join('\n') + '\nThat is all for the secondary window.';
+
+    game_inputgen_left = 0;
+    game_inputgen_right = 0;
+    game_inputline_left = true;
+    game_inputline_right = true;
+    /* leave game_inputinitial_left/right as set */
+    var printtmp = game_print_left;
+    game_print_left = true;
+    game_print(printtmp ? msg1 : msg2);
+    game_print_left = false;
+    game_print(printtmp ? msg2 : msg1);
+    game_print_left = printtmp;
+    return;
+  }
+
   if (val == 'clear') {
     game_print('This text appears before the window is cleared. You shouldn\'t see it at all.');
     game_clear_window();
