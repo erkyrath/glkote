@@ -1411,7 +1411,7 @@ function last_line_top_offset(el) {
    window. (jQuery-wrapped.) If none, return null.
 */
 function buffer_last_line(win) {
-  var divel = last_child_of(win.frameel);
+  var divel = last_child_of(win.frameel); /* not wrapped */
   if (divel == null)
     return null;
   /* If the sole child is the PreviousMark, there are no BufferLines. */
