@@ -727,6 +727,7 @@ function accept_one_window(arg) {
     win.needscroll = false;
     win.needspaging = false;
     win.topunseen = 0;
+    win.pagefrommark = 0;
     win.coords = { left:null, top:null, right:null, bottom:null };
     win.history = new Array();
     win.historypos = 0;
@@ -995,6 +996,7 @@ function accept_one_content(arg) {
     if (arg.clear) {
       win.frameel.empty();
       win.topunseen = 0;
+      win.pagefrommark = 0;
     }
 
     /* Accept a missing text field as doing nothing. */
@@ -1146,16 +1148,20 @@ function accept_one_content(arg) {
     /* Trim the scrollback. If there are more than max_buffer_length
        paragraphs, delete some. (It would be better to limit by
        character count, rather than paragraph count. But this is
-       easier.) (Yeah, the prev-mark can wind up included in the count.
-       It's only slightly wrong.) */
+       easier.) (Yeah, the prev-mark can wind up included in the count --
+       and trimmed out. It's only slightly wrong.) */
     var parals = win.frameel.children();
     if (parals.length) {
       var totrim = parals.length - max_buffer_length;
       if (totrim > 0) {
         var ix, obj;
-        win.topunseen -= parals.get(totrim).offsetTop;
+        var offtop = parals.get(totrim).offsetTop;
+        win.topunseen -= offtop;
         if (win.topunseen < 0)
           win.topunseen = 0;
+        win.pagefrommark -= offtop;
+        if (win.pagefrommark < 0)
+          win.pagefrommark = 0;
         for (ix=0; ix<totrim; ix++) {
           $(parals.get(ix)).remove();
         }
