@@ -522,6 +522,7 @@ function glkote_update(arg) {
           /* Scroll the unseen content to the top. */
           frameel.scrollTop(win.topunseen - current_metrics.buffercharheight);
           /* Compute the new topunseen value. */
+          win.pagefrommark = win.topunseen;
           var frameheight = frameel.outerHeight();
           var realbottom = last_line_top_offset(frameel);
           var newtopunseen = frameel.scrollTop() + frameheight;
@@ -539,11 +540,17 @@ function glkote_update(arg) {
           }
         }
 
-        /* Add or remove the more prompt, based on the new needspaging flag. */
+        /* Add or remove the more prompt and previous mark, based on the
+           new needspaging flag. Note that the more-prompt will be
+           removed when the user scrolls down; but the prev-mark
+           stays until we get back here. */
         var moreel = $('#win'+win.id+'_moreprompt', dom_context);
+        var prevel = $('#win'+win.id+'_prevmark', dom_context);
         if (!win.needspaging) {
           if (moreel.length)
             moreel.remove();
+          if (prevel.length)
+            prevel.remove();
         }
         else {
           if (!moreel.length) {
@@ -556,6 +563,12 @@ function glkote_update(arg) {
             moreel.css({ bottom:morey+'px', right:morex+'px' });
             $('#'+windowport_id, dom_context).append(moreel);
           }
+          if (!prevel.length) {
+            prevel = $('<div>',
+              { id: 'win'+win.id+'_prevmark', 'class': 'PreviousMark' } );
+            frameel.prepend(prevel);
+          }
+          prevel.css('top', (win.pagefrommark+'px'));
         }
       }
     }
@@ -1012,7 +1025,7 @@ function accept_one_content(arg) {
           continue;
         divel = last_child_of(win.frameel);
       }
-      if (divel == null) {
+      if (divel == null || divel.className != 'BufferLine') {
         /* Create a new paragraph div */
         divel = $('<div>', { 'class': 'BufferLine' });
         divel.data('blankpara', true);
@@ -1133,7 +1146,8 @@ function accept_one_content(arg) {
     /* Trim the scrollback. If there are more than max_buffer_length
        paragraphs, delete some. (It would be better to limit by
        character count, rather than paragraph count. But this is
-       easier.) */
+       easier.) (Yeah, the prev-mark can wind up included in the count.
+       It's only slightly wrong.) */
     var parals = win.frameel.children();
     if (parals.length) {
       var totrim = parals.length - max_buffer_length;
@@ -1148,10 +1162,10 @@ function accept_one_content(arg) {
       }
     }
 
-    /* Stick the invisible cursor-marker at the end. We use this to
-       position the input box. */
+    /* Stick the invisible cursor-marker inside (at the end of) the last
+       paragraph div. We use this to position the input box. */
     var divel = last_child_of(win.frameel);
-    if (divel) {
+    if (divel && divel.className == 'BufferLine') {
       cursel = $('<span>',
         { id: 'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
       cursel.append(NBSP);
