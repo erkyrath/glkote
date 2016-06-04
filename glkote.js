@@ -524,7 +524,7 @@ function glkote_update(arg) {
           /* Compute the new topunseen value. */
           win.pagefrommark = win.topunseen;
           var frameheight = frameel.outerHeight();
-          var realbottom = last_line_top_offset(frameel);
+          var realbottom = buffer_last_line_top_offset(win);
           var newtopunseen = frameel.scrollTop() + frameheight;
           if (newtopunseen > realbottom)
             newtopunseen = realbottom;
@@ -1395,18 +1395,6 @@ function accept_specialinput(arg) {
   }
 }
 
-/* Return the vertical offset (relative to the parent) of the top of the 
-   last child of the parent. We use the raw DOM "offsetTop" property;
-   jQuery doesn't have an accessor for it.
-   (Possibly broken in MSIE7? It worked in the old version, though.)
-*/
-function last_line_top_offset(el) {
-  var ls = el.children();
-  if (!ls || !ls.length)
-    return 0;
-  return ls.get(ls.length-1).offsetTop;
-}
-
 /* Return the element which is the last BufferLine element of the
    window. (jQuery-wrapped.) If none, return null.
 */
@@ -1418,6 +1406,18 @@ function buffer_last_line(win) {
   if (divel.className != 'BufferLine')
     return null;
   return $(divel);
+}
+
+/* Return the vertical offset (relative to the parent) of the top of the 
+   last child of the parent. We use the raw DOM "offsetTop" property;
+   jQuery doesn't have an accessor for it.
+   (Possibly broken in MSIE7? It worked in the old version, though.)
+*/
+function buffer_last_line_top_offset(win) {
+  var divel = buffer_last_line(win);
+  if (!divel || !divel.length)
+    return 0;
+  return divel.get(0).offsetTop;
 }
 
 /* Set windows_paging_count to the number of windows that need paging.
@@ -2292,7 +2292,7 @@ function evhan_doc_keypress(ev) {
       frameel.scrollTop(win.topunseen - current_metrics.buffercharheight);
       /* Compute the new topunseen value. */
       var frameheight = frameel.outerHeight();
-      var realbottom = last_line_top_offset(frameel);
+      var realbottom = buffer_last_line_top_offset(win);
       var newtopunseen = frameel.scrollTop() + frameheight;
       if (newtopunseen > realbottom)
         newtopunseen = realbottom;
@@ -2673,7 +2673,7 @@ function evhan_window_scroll(ev) {
 
   var frameel = win.frameel;
   var frameheight = frameel.outerHeight();
-  var realbottom = last_line_top_offset(frameel);
+  var realbottom = buffer_last_line_top_offset(win);
   var newtopunseen = frameel.scrollTop() + frameheight;
   if (newtopunseen > realbottom)
     newtopunseen = realbottom;
@@ -2699,7 +2699,7 @@ function window_scroll_to_bottom(win) {
   var frameheight = frameel.outerHeight();
   frameel.scrollTop(frameel.get(0).scrollHeight - frameheight);
 
-  var realbottom = last_line_top_offset(frameel);
+  var realbottom = buffer_last_line_top_offset(win);
   var newtopunseen = frameel.scrollTop() + frameheight;
   if (newtopunseen > realbottom)
     newtopunseen = realbottom;
