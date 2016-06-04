@@ -1025,18 +1025,14 @@ function accept_one_content(arg) {
       if (textarg.append) {
         if (!content || !content.length)
           continue;
-        divel = last_child_of(win.frameel);
+        divel = buffer_last_line(win);
       }
-      if (divel == null || divel.className != 'BufferLine') {
+      if (divel == null) {
         /* Create a new paragraph div */
         divel = $('<div>', { 'class': 'BufferLine' });
         divel.data('blankpara', true);
         divel.data('endswhite', true);
         win.frameel.append(divel);
-      }
-      else {
-        /* jquery-wrap the element. */
-        divel = $(divel);
       }
       if (textarg.flowbreak)
         divel.addClass('FlowBreak');
@@ -1170,12 +1166,12 @@ function accept_one_content(arg) {
 
     /* Stick the invisible cursor-marker inside (at the end of) the last
        paragraph div. We use this to position the input box. */
-    var divel = last_child_of(win.frameel);
-    if (divel && divel.className == 'BufferLine') {
+    var divel = buffer_last_line(win);
+    if (divel) {
       cursel = $('<span>',
         { id: 'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
       cursel.append(NBSP);
-      $(divel).append(cursel);
+      divel.append(cursel);
 
       if (win.inputel) {
         /* Put back the inputel that we found earlier. */
@@ -1409,6 +1405,19 @@ function last_line_top_offset(el) {
   if (!ls || !ls.length)
     return 0;
   return ls.get(ls.length-1).offsetTop;
+}
+
+/* Return the element which is the last BufferLine element of the
+   window. (jQuery-wrapped.) If none, return null.
+*/
+function buffer_last_line(win) {
+  var divel = last_child_of(win.frameel);
+  if (divel == null)
+    return null;
+  /* If the sole child is the PreviousMark, there are no BufferLines. */
+  if (divel.className != 'BufferLine')
+    return null;
+  return $(divel);
 }
 
 /* Set windows_paging_count to the number of windows that need paging.
