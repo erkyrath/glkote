@@ -1,6 +1,6 @@
 GlkOte -- a Javascript display library for IF interfaces
 
-GlkOte Library: version 2.2.1.
+GlkOte Library: version 2.2.2.
 Designed by Andrew Plotkin <erkyrath@eblong.com>
 <http://eblong.com/zarf/glk/glkote.html>
 
