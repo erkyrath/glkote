@@ -2132,8 +2132,12 @@ function recording_standard_handler(state) {
 /* DOM event handlers. */
 
 /* Detect the browser window being resized.
+
    Unfortunately, this doesn't catch "make font bigger/smaller" changes,
-   which ought to trigger the same reaction.)
+   which ought to trigger the same reaction. Nor does it catch CSS
+   changes which affect the gameport dimensions. (There's no DOM event
+   for div resizing, and I don't want to run a polling loop to watch
+   for it.)
 */
 function evhan_doc_resize(ev) {
   /* We don't want to send a whole flurry of these events, just because
