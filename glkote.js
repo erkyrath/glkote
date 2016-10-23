@@ -479,15 +479,17 @@ function create_resize_sensors() {
     expanddom.scrollTop = 100000;
   }
 
+  gameport.append(shrinkel);
+  gameport.append(expandel);
+  reset();
+
   var evhan = function(ev) {
     evhan_doc_resize(ev);
     reset();
   }
 
-  gameport.append(shrinkel);
-  gameport.append(expandel);
-  reset();
-
+  /* These events fire copiously when the window is being resized.
+     This is one reason evhan_doc_resize() has debouncing logic. */
   shrinkel.on('scroll', evhan);
   expandel.on('scroll', evhan);
 }
@@ -2219,7 +2221,7 @@ function recording_standard_handler(state) {
    - The magic gameport resize sensors created in create_resize_sensors().
 */
 function evhan_doc_resize(ev) {
-  console.log('### evhan resize' + (ev ? ev.target.id : '###'));
+  console.log('### evhan resize: ' + (ev ? ev.target.id : '###'));
   /* We don't want to send a whole flurry of these events, just because
      the user is dragging the window-size around. So we set up a short
      timer, and don't do anything until the flurry has calmed down. */
