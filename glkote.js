@@ -2221,7 +2221,6 @@ function recording_standard_handler(state) {
    - The magic gameport resize sensors created in create_resize_sensors().
 */
 function evhan_doc_resize(ev) {
-  console.log('### evhan resize: ' + (ev ? ev.target.id : '###'));
   /* We don't want to send a whole flurry of these events, just because
      the user is dragging the window-size around. So we set up a short
      timer, and don't do anything until the flurry has calmed down. */
@@ -2250,7 +2249,6 @@ function evhan_doc_resize(ev) {
    resize events) from shutting down the UI (ignore resize events).
  */
 function doc_resize_real() {
-    console.log('### ! really resize!');
   resize_timer = null;
 
   if (disabled) {
