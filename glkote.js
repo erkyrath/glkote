@@ -181,6 +181,8 @@ function glkote_init(iface) {
     $(document).on('keypress', evhan_doc_keypress);
   $(window).on('resize', evhan_doc_resize);
 
+  /* Note the pixel ratio (resolution level; this is greater than 1 for
+     high-res displays. */
   current_devpixelratio = window.devicePixelRatio || 1;
 
   /* We can get callbacks on any *boolean* change in the resolution level.
@@ -192,6 +194,7 @@ function glkote_init(iface) {
     window.matchMedia('screen and (min-resolution: 4dppx)').addListener(evhan_doc_pixelreschange);
   }
 
+  /* Figure out the window size and font metrics. */
   var res = measure_window();
   if (jQuery.type(res) === 'string') {
     glkote_error(res);
