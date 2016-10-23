@@ -443,22 +443,46 @@ function create_resize_sensors() {
     width:'200%', height:'200%'
   }));
 
+  var expandel = $('<div>', {
+    id: 'resize-sensor-expand'
+  }).css({
+    position:'absolute',
+    left:'0', right:'0', top:'0', bottom:'0',
+    overflow:'hidden', visibility:'hidden',
+    'z-index':'-1'
+  });
+  expandel.append($('<div>', {
+    id: 'resize-sensor-expand-child'
+  }).css({
+    position:'absolute',
+    left:'0', right:'0'
+  }));
+
   var shrinkdom = shrinkel.get(0);
+  var expanddom = expandel.get(0);
+  var expandchilddom = expanddom.childNodes[0];
 
   var reset = function() {
     shrinkdom.scrollLeft = 100000;
     shrinkdom.scrollTop = 100000;
+
+    expandchilddom.style.width = '100000px';
+    expandchilddom.style.height = '100000px';
+    expanddom.scrollLeft = 100000;
+    expanddom.scrollTop = 100000;
   }
 
-  var evhan = function() {
-    console.log('### shrink');
+  var evhan = function(ev) {
+    console.log('### event ' + ev.target.id);
     reset();
   }
 
   gameport.append(shrinkel);
+  gameport.append(expandel);
   reset();
 
   shrinkel.on('scroll', evhan);
+  expandel.on('scroll', evhan);
 }
 
 /* This function becomes GlkOte.update(). The game calls this to update
