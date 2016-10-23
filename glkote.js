@@ -422,6 +422,13 @@ function measure_window() {
   return metrics;
 }
 
+/* Create invisible divs in the gameport which will fire events if the
+   gameport changes size. (For any reason, including document CSS changes.
+   We need this to detect Lectrote's margin change, for example.)
+
+   This code is freely adapted from CSS Element Queries by Marc J. Schmidt.
+   https://github.com/marcj/css-element-queries
+*/
 function create_resize_sensors() {
   var gameport = $('#'+gameport_id, dom_context);
   if (!gameport.length)
@@ -473,7 +480,7 @@ function create_resize_sensors() {
   }
 
   var evhan = function(ev) {
-    console.log('### event ' + ev.target.id);
+    evhan_doc_resize(ev);
     reset();
   }
 
@@ -2203,13 +2210,16 @@ function recording_standard_handler(state) {
 
 /* Detect the browser window being resized.
 
-   Unfortunately, this doesn't catch "make font bigger/smaller" changes,
-   which ought to trigger the same reaction. Nor does it catch CSS
-   changes which affect the gameport dimensions. (There's no DOM event
-   for div resizing, and I don't want to run a polling loop to watch
-   for it.)
+   This event is triggered by several causes:
+
+   - A real window DOM resize event. (This should include "make font
+   bigger/smaller".)
+   - Autorestore. (The window might be a different size than the autosave
+   data expects, so we trigger this.)
+   - The magic gameport resize sensors created in create_resize_sensors().
 */
 function evhan_doc_resize(ev) {
+  console.log('### evhan resize' + (ev ? ev.target.id : '###'));
   /* We don't want to send a whole flurry of these events, just because
      the user is dragging the window-size around. So we set up a short
      timer, and don't do anything until the flurry has calmed down. */
@@ -2238,6 +2248,7 @@ function evhan_doc_resize(ev) {
    resize events) from shutting down the UI (ignore resize events).
  */
 function doc_resize_real() {
+    console.log('### ! really resize!');
   resize_timer = null;
 
   if (disabled) {
