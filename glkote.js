@@ -202,6 +202,10 @@ function glkote_init(iface) {
   }
   current_metrics = res;
 
+  /* Add some elements which will give us notifications if the gameport
+     size changes. */
+  create_resize_sensors();
+
   /* Check the options that control whether URL-like strings in the output
      are displayed as hyperlinks. */
   detect_external_links = iface.detect_external_links;
@@ -416,6 +420,45 @@ function measure_window() {
     metrics.outspacingy = game_interface.outspacingy;
 
   return metrics;
+}
+
+function create_resize_sensors() {
+  var gameport = $('#'+gameport_id, dom_context);
+  if (!gameport.length)
+    return 'Cannot find gameport element #'+gameport_id+' in this document.';
+
+  var shrinkel = $('<div>', {
+    id: 'resize-sensor-shrink'
+  }).css({
+    position:'absolute',
+    left:'0', right:'0', top:'0', bottom:'0',
+    overflow:'hidden', visibility:'hidden',
+    'z-index':'-1'
+  });
+  shrinkel.append($('<div>', {
+    id: 'resize-sensor-shrink-child'
+  }).css({
+    position:'absolute',
+    left:'0', right:'0',
+    width:'200%', height:'200%'
+  }));
+
+  var shrinkdom = shrinkel.get(0);
+
+  var reset = function() {
+    shrinkdom.scrollLeft = 100000;
+    shrinkdom.scrollTop = 100000;
+  }
+
+  var evhan = function() {
+    console.log('### shrink');
+    reset();
+  }
+
+  gameport.append(shrinkel);
+  reset();
+
+  shrinkel.on('scroll', evhan);
 }
 
 /* This function becomes GlkOte.update(). The game calls this to update
