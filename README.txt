@@ -24,8 +24,8 @@ What you need:
 - glkapi.js       -- a Glk API layer
 - dialog.js       -- a library for loading and saving game data
 - electrofs.js    -- replacement for dialog.js for Electron.atom.io
-- jquery-1.11.2.js     -- the jQuery library
-- jquery-1.11.2.min.js -- the jQuery library, compressed
+- jquery-1.12.4.js     -- the jQuery library
+- jquery-1.12.4.min.js -- the jQuery library, compressed
 - glkote.css      -- the GlkOte default stylesheet
 - dialog.css      -- the stylesheet for the dialog library
 - waiting.gif     -- an animated "loading" image
@@ -51,7 +51,7 @@ The GlkOte documentation is licensed under a Creative Commons
 Attribution-Noncommercial-Share Alike 3.0 Unported License.
 See <http://creativecommons.org/licenses/by-nc-sa/3.0>
 
-This package includes the jQuery JavaScript framework, version 1.11.2
-Copyright 2005, 2014 jQuery Foundation, Inc. and other contributors
+This package includes the jQuery JavaScript framework, version 1.12.4
+Copyright jQuery Foundation and other contributors
 Released under the MIT license <http://jquery.org/license>
 For details, see the jQuery web site: <http://jquery.com/>
