@@ -136,6 +136,7 @@ function accept_ui_event(obj) {
         if (!res && obj.value == 'timer') {
             /* Timer events no longer come in this way, but we'll still
                accept them. */
+            gli_timer_started = Date.now();
             res = { type: Const.evtype_Timer };
         }
         if (res && res.type) {
@@ -144,6 +145,7 @@ function accept_ui_event(obj) {
         break;
 
     case 'timer':
+        gli_timer_started = Date.now();
         var res = { type: Const.evtype_Timer };
         handle_external_input(res);
         break;
@@ -5101,24 +5103,23 @@ function glk_select(eventref) {
 }
 
 function glk_select_poll(eventref) {
-    /* Because the Javascript interpreter is single-threaded, the
-       gli_timer_callback function cannot have run since the last
-       glk_select call. */
+    /* Because the Javascript interpreter is single-threaded, we cannot
+       have gotten a timer event since the last glk_select call. */
 
     eventref.set_field(0, Const.evtype_None);
     eventref.set_field(1, null);
     eventref.set_field(2, 0);
     eventref.set_field(3, 0);
 
-    if (gli_timer_interval && !(gli_timer_id === null)) {
+    if (gli_timer_interval) {
         var now = Date.now();
         if (now - gli_timer_started > gli_timer_interval) {
-            /* We're past the timer interval, even though the callback
-               hasn't run. Let's pretend it has, reset it, and return
-               a timer event. */
-            clearTimeout(gli_timer_id);
-            gli_timer_id = setTimeout(gli_timer_callback, gli_timer_interval);
+            /* We're past the timer interval, even though we got no
+               event. Let's pretend we did, reset it, and return a
+               timer event. */
             gli_timer_started = Date.now();
+            /* Resend timer request at next update. */
+            gli_timer_lastsent = null;
 
             eventref.set_field(0, Const.evtype_Timer);
         }
@@ -5289,6 +5290,7 @@ function glk_cancel_mouse_event(win) {
 function glk_request_timer_events(msec) {
     if (!msec) {
         gli_timer_interval = null;
+        gli_timer_started = null;
     }
     else {
         gli_timer_interval = msec;
