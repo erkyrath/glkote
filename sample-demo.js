@@ -26,7 +26,8 @@ game_inputline_left = true;
 game_inputline_right = true;
 game_inputinitial_left = null;
 game_inputinitial_right = null;
-game_timed_timer = null;
+game_timer_request = null;
+game_timer_lastrequest = null;
 game_simulate_quit = false;
 game_simulate_crash = false;
 game_simulate_timeout = false;
@@ -385,6 +386,11 @@ function game_select() {
 
   var arg = { type:'update', gen:game_generation, windows:argw, content:argc, input:argi };
 
+  if (game_timer_lastrequest != game_timer_request) {
+      arg.timer = game_timer_request;
+      game_timer_lastrequest = game_timer_request;
+  }
+
   if (game_simulate_quit) {
     arg.disable = true;
   }
@@ -465,9 +471,8 @@ function game_accept(res) {
   else if (res.type == 'mouse') {
     game_submit_mouse_input(res.window, res.x, res.y);
   }
-  else if (res.type == 'external') {
-    if (res.value == 'timer')
-      game_submit_timer_input();
+  else if (res.type == 'timer') {
+    game_submit_timer_input();
   }
   else if (res.type == 'arrange') {
     game_metrics = res.metrics;
@@ -610,6 +615,7 @@ function game_submit_mouse_input(winid, xpos, ypos) {
 }
 
 function game_submit_timer_input() {
+  game_timer_request = null;
   game_inputgen_left = 0;
   game_inputline_left = true;
   game_print_left = true;
@@ -1217,16 +1223,12 @@ function game_parse(val) {
   }
 
   if (val == 'timer') {
-    if (game_timed_timer) {
+    if (game_timer_request) {
       game_print('One at a time, please.');
       return;
     }
     game_print('Waiting two seconds...');
-    var delayfunc = function() {
-      game_timed_timer = null;
-      GlkOte.extevent('timer');
-    };
-    game_timed_timer = window.setTimeout(delayfunc, 2*1000);
+    game_timer_request = 2000;
     return;
   }
 
