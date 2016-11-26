@@ -1087,6 +1087,9 @@ The <code>timer</code> property of the update must be null or a positive number.
 Note that a positive <code>timer</code> will restart the repeating timer from zero, even if the previous interval was the same as the new one. To allow the timer to continue running across updates, omit the <code>timer</code> property entirely.
 <p>
 
+Also note that older versions of GlkOte did not support the <code>timer</code> property. Therefore, older game code had to set up its own timeouts and call <code>GlkOte.extevent</code> to trigger a timer event. This remains a valid approach.
+<p>
+
 <h2><a name="specialrequests">Special Input Requests</a></h2>
 
 Currently, the only supported special input is a request for a file. This will disable the UI and post a dialog box for the user to select (or create) a file.
