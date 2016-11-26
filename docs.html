@@ -155,6 +155,7 @@ Commons Attribution-Noncommercial-Share Alike 3.0 Unported License</a>.
     <li><a href="#linedata">The Line Data Array</a>
     <li><a href="#imagedata">Image Entries in Line Data</a>
   </ul>
+  <li><a href="#timerupdate">The Timer Update</a>
 </ul>
 <li><a href="#specialrequests">Special Input Requests</a>
 <li><a href="#disabling">Disabling the UI</a>
@@ -802,7 +803,7 @@ A pure Javascript game will not use this. RemGlk uses it if the server is runnin
 <pre class="Def">
 { type: 'update', gen: GENERATION,
   windows: WINDOWS_ARRAY, content: CONTENT_ARRAY, input: INPUT_ARRAY,
-  disable: BOOLEAN, specialinput: OBJ }
+  timer: INTERVAL, disable: BOOLEAN, specialinput: OBJ }
 </pre>
 <p>
 
@@ -815,10 +816,13 @@ The <code>windows</code>, <code>content</code>, and <code>input</code> fields ar
 The order of the values in the <code>windows</code>, <code>content</code>, and <code>input</code> arrays is not significant.
 <p>
 
-The <code>disable</code> flag (if present and true) places the entire game into a disabled state. See "<a href="#disabling">Disabling the UI</a>". If the flag is absent or false, the UI will be enabled (or re-enabled).
+The <code>timer</code> value (if present and not null) sets a repeating timer. See "<a href="#timerupdate">The Timer Update</a>". If the flag is null, the timer is cleared. If the flag is absent, the timer not affected.
 <p>
 
 The <code>specialinput</code> value (if present and not null) indicates that the game should stop and display a special input request. See "<a href="#specialrequests">Special Input Requests</a>". The game is otherwise disabled, just as if the <code>disable</code> flag were set.
+<p>
+
+The <code>disable</code> flag (if present and true) places the entire game into a disabled state. See "<a href="#disabling">Disabling the UI</a>". If the flag is absent or false, the UI will be enabled (or re-enabled).
 <p>
 
 <h3><a name="windowsupdate">The Windows Update Array</a></h3>
@@ -1074,6 +1078,8 @@ An image entry in a graphics content array is similar:
 
 Here the <code>x</code>, <code>y</code>,  <code>width</code>,  <code>height</code> fields are all required. The <code>x</code> and <code>y</code> fields give the position of (the top left corner of) the image. There is no <code>alignment</code>, <code>hyperlink</code>, or <code>alttext</code>.
 <p>
+
+<h3><a name="timerupdate">The Timer Update</a></h3>
 
 <h2><a name="specialrequests">Special Input Requests</a></h2>
 
