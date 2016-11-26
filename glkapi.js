@@ -597,7 +597,7 @@ function update() {
     dataobj.input = inputarray;
 
     if (gli_timer_lastsent != gli_timer_interval) {
-        qlog("### timer update: " + gli_timer_interval);
+        //qlog("### timer update: " + gli_timer_interval);
         dataobj.timer = gli_timer_interval;
         gli_timer_lastsent = gli_timer_interval;
     }
