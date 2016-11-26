@@ -102,7 +102,7 @@ dt {
 
 <h1>GlkOte: a Javascript library for IF interfaces</h1>
 
-<em>GlkOte version 2.2.3</em><br>
+<em>GlkOte version 2.2.3###</em><br>
 
 <em>Designed by Andrew Plotkin (erkyrath@eblong.com)<br>
 <a href="http://eblong.com/zarf/glk/glkote.html">(GlkOte home page</a>
@@ -1081,6 +1081,12 @@ Here the <code>x</code>, <code>y</code>,  <code>width</code>,  <code>height</cod
 
 <h3><a name="timerupdate">The Timer Update</a></h3>
 
+The <code>timer</code> property of the update must be null or a positive number. If a number, it sets a repeating timer; the game will receive a <code>timer</code> input event every N milliseconds from now on. If the <code>timer</code> property is null, the timer is cancelled (if it is running).
+<p>
+
+Note that a positive <code>timer</code> will restart the repeating timer from zero, even if the previous interval was the same as the new one. To allow the timer to continue running across updates, omit the <code>timer</code> property entirely.
+<p>
+
 <h2><a name="specialrequests">Special Input Requests</a></h2>
 
 Currently, the only supported special input is a request for a file. This will disable the UI and post a dialog box for the user to select (or create) a file.
@@ -1627,7 +1633,7 @@ By the way, in a buffer window, paragraphs of text are separated by blank lines 
 <dl>
 
 <dt>Release 2.### (###)
-<dd>Added a way to request timer events through the protocol.
+<dd>Added a way to request timer events. (In previous versions, the game had to manage its own timers.)
 
 <dt>Release 2.2.3 (Oct 26, 2016)
 <dd>Support the case of autosaving a game format with no <code>ram</code> array. (For Ink/Lectrote.)
