@@ -1075,20 +1075,6 @@ An image entry in a graphics content array is similar:
 Here the <code>x</code>, <code>y</code>,  <code>width</code>,  <code>height</code> fields are all required. The <code>x</code> and <code>y</code> fields give the position of (the top left corner of) the image. There is no <code>alignment</code>, <code>hyperlink</code>, or <code>alttext</code>.
 <p>
 
-<h2><a name="disabling">Disabling the UI</a></h2>
-
-If you want to temporarily suspend all UI activity, call <code>GlkOte.update</code> with an update that includes the <code>disable</code> flag. The display will be updated as you request, but it will also be disabled. All input fields will be disabled (given the HTML <code>disabled</code> attribute). All input events, including keyboard input and hyperlinks, will be suppressed. Scrolling will work normally.
-<p>
-
-If the user resizes the window while the UI is disabled, you will not get an <code>arrange</code> event immediately. The event will arrive after you re-enable the UI.
-<p>
-
-(You might disable the UI to block game activity while prompting for input outside the GlkOte library. For example, while prompting for a save-game location using the dialog.js library. It is also reasonable to disable the UI when the game is over, on the final game update.)
-<p>
-
-The UI will remain disabled until the next <code>GlkOte.update</code> call which lacks the <code>disable</code> flag.
-<p>
-
 <h2><a name="specialrequests">Special Input Requests</a></h2>
 
 Currently, the only supported special input is a request for a file. This will disable the UI and post a dialog box for the user to select (or create) a file.
@@ -1130,6 +1116,20 @@ If the <code>value</code> is missing or null, the user hit Cancel. Otherwise, th
 <p>
 
 Note that if GlkOte is connected to a server-side library (such as RemGlk), browser storage is not an appropriate solution. In that case, you would not use dialog.js, but an alternative library (not yet implemented). The user would simply be prompted for a filename, and <code>value</code> would contain this filename as a string.
+<p>
+
+<h2><a name="disabling">Disabling the UI</a></h2>
+
+If you want to temporarily suspend all UI activity, call <code>GlkOte.update</code> with an update that includes the <code>disable</code> flag. The display will be updated as you request, but it will also be disabled. All input fields will be disabled (given the HTML <code>disabled</code> attribute). All input events, including keyboard input and hyperlinks, will be suppressed. Scrolling will work normally.
+<p>
+
+If the user resizes the window while the UI is disabled, you will not get an <code>arrange</code> event immediately. The event will arrive after you re-enable the UI.
+<p>
+
+(You might disable the UI to block game activity while prompting for input outside the GlkOte library. For example, while prompting for a save-game location using the dialog.js library. It is also reasonable to disable the UI when the game is over, on the final game update.)
+<p>
+
+The UI will remain disabled until the next <code>GlkOte.update</code> call which lacks the <code>disable</code> flag.
 <p>
 
 <h2><a name="gameinterface">The Game Interface Object</a></h2>
