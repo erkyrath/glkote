@@ -134,11 +134,18 @@ function accept_ui_event(obj) {
             res = option_extevent_hook(obj.value);
         }
         if (!res && obj.value == 'timer') {
+            /* Timer events no longer come in this way, but we'll still
+               accept them. */
             res = { type: Const.evtype_Timer };
         }
         if (res && res.type) {
             handle_external_input(res);
         }
+        break;
+
+    case 'timer':
+        var res = { type: Const.evtype_Timer };
+        handle_external_input(res);
         break;
 
     case 'hyperlink':
@@ -216,6 +223,7 @@ function handle_external_input(res) {
     if (!gli_selectref)
         return;
 
+    /* This also handles timer input. */
     var val1 = 0;
     var val2 = 0;
     if (res.val1)
@@ -585,6 +593,12 @@ function update() {
     dataobj.windows = winarray;
     dataobj.content = contentarray;
     dataobj.input = inputarray;
+
+    if (gli_timer_lastsent != gli_timer_interval) {
+        qlog("### timer update: " + gli_timer_interval);
+        dataobj.timer = gli_timer_interval;
+        gli_timer_lastsent = gli_timer_interval;
+    }
 
     if (ui_specialinput) {
         //qlog("### special input: " + ui_specialinput.type);
@@ -2711,8 +2725,8 @@ var gli_api_display_rocks = 1;
 
 /* A positive number if the timer is set. */
 var gli_timer_interval = null; 
-var gli_timer_id = null; /* Currently active setTimeout ID */
-var gli_timer_started = null; /* When the setTimeout began */
+var gli_timer_started = null; /* when the setTimeout began */
+var gli_timer_lastsent = null; /* last interval sent to GlkOte */
 
 function gli_new_window(type, rock) {
     var win = {};
@@ -3987,26 +4001,6 @@ function gli_set_hyperlink(str, val) {
         if (str.win.echostr)
             gli_set_hyperlink(str.win.echostr, val);
     }
-}
-
-function gli_timer_callback() {
-    if (ui_disabled) {
-        if (has_exited) {
-            /* The game shut down and left us hanging. */
-            GlkOte.log("### dropping timer event...");
-            gli_timer_id = null;
-            return;
-        }
-        else {
-            /* Put off dealing with this for a half-second. */
-            GlkOte.log("### procrastinating timer event...");
-            gli_timer_id = setTimeout(gli_timer_callback, 500);
-            return;
-        }
-    }
-    gli_timer_id = setTimeout(gli_timer_callback, gli_timer_interval);
-    gli_timer_started = Date.now();
-    GlkOte.extevent('timer');
 }
 
 /* The catalog of Glk API functions. */
@@ -5293,18 +5287,11 @@ function glk_cancel_mouse_event(win) {
 }
 
 function glk_request_timer_events(msec) {
-    if (!(gli_timer_id === null)) {
-        clearTimeout(gli_timer_id);
-        gli_timer_id = null;
-        gli_timer_started = null;
-    }
-
     if (!msec) {
         gli_timer_interval = null;
     }
     else {
         gli_timer_interval = msec;
-        gli_timer_id = setTimeout(gli_timer_callback, gli_timer_interval);
         gli_timer_started = Date.now();
     }
 }
