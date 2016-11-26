@@ -2872,6 +2872,12 @@ function evhan_timer_event() {
   /* It's a repeating timer, so set it again. */
   request_timer = window.setTimeout(evhan_timer_event, request_timer_interval);
   
+  if (disabled) {
+    /* Can't handle the timer while the UI is disabled, so we punt.
+       It will fire again someday. */
+    return;
+  }
+
   send_response('timer');
 }
 
