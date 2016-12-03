@@ -427,13 +427,18 @@ The first thing <code>GlkOte.init</code> does is measure things; the <code>gamep
 <p>
 
 <pre class="Sample">
-Game.accept({ type: 'init', gen: 0, metrics: METRICS_OBJECT });
+Game.accept({ type: 'init', gen: 0,
+    support: ['timer', 'graphics', 'hyperlinks'],
+    metrics: METRICS_OBJECT });
 </pre>
 <p>
 
 The <code>type:'init'</code> property indicates that this is the <em>first</em> call to <code>Game.accept</code> -- it says that the GlkOte library has just started up, and has no windows visible. The <code>gen</code> field will always be 0 for this first call. The <code>metrics</code> are as described above. (Your function should store a reference to this metrics object. You'll need it later to create windows. 
 See "<a href="#layout">Laying Out Windows</a>"
 for the details.)
+<p>
+
+The <code>support</code> field is an array of strings representing the capabilities of the GlkOte library. If you are packaging your game with the library, you don't have to worry about this -- you can just use the capabilities of the version you've got. However, RemGlk needs to know the display capabilities in order to set its gestalt flags correctly; the <code>support</code> list lets it do this.
 <p>
 
 The goal of your <code>Game.accept</code>, on this first call, is to create the initial windows, fill them with the initial text, and then set up the initial input fields.
@@ -638,12 +643,16 @@ The argument will always have <code>type</code> and <code>gen</code> properties.
 <p>
 
 <pre class="Def">
-{ type: 'init', gen: 0, metrics: METRICS_OBJECT }
+{ type: 'init', gen: 0, 
+    support: ['timer', 'graphics', 'hyperlinks'],
+    metrics: METRICS_OBJECT }
 </pre>
 <p>
 
-Game initialization. This includes the window metrics 
-(see "<a href="#metrics">The Metrics Object</a>"). 
+Game initialization. This includes a capabilities list
+(see "<a href="#lifecycle">The Application's Life Story</a>")
+and the window metrics 
+(see "<a href="#metrics">The Metrics Object</a>").
 Since this arrives before you do any updates, the generation number will be zero.
 <p>
 
@@ -1636,6 +1645,7 @@ By the way, in a buffer window, paragraphs of text are separated by blank lines 
 <dl>
 
 <dt>Release 2.### (###)
+<dd>Added the <code>support</code> array to the initial (<code>'init'</code>) update request. (Earlier versions of GlkOte supported graphics and hyperlinks -- see below -- but omitted the <code>support</code> field.)
 <dd>Added a way to request timer events. (In previous versions, the game had to manage its own timers.)
 
 <dt>Release 2.2.3 (Oct 26, 2016)
