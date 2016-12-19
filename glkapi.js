@@ -4054,6 +4054,7 @@ function glk_exit() {
     gli_selectref = null;
     if (option_exit_warning)
         GlkOte.warning(option_exit_warning);
+    GlkOte.update({ type: 'exit' });
     return DidNotReturn;
 }
 
@@ -6211,7 +6212,7 @@ function glk_date_to_simple_time_local(dateref, factor) {
 
 /* End of Glk namespace function. Return the object which will
    become the Glk global. */
-return {
+var api = {
     version: '2.2.3', /* GlkOte/GlkApi version */
     init : init,
     update : update,
@@ -6353,6 +6354,12 @@ return {
     glk_stream_open_resource : glk_stream_open_resource,
     glk_stream_open_resource_uni : glk_stream_open_resource_uni
 };
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = api;
+}
+
+return api;
 
 }();
 
