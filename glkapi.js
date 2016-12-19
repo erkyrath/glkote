@@ -51,8 +51,8 @@ var GiDispa;
 var GiLoad;
 var GlkOte;
 
-/* Environment capabilities. (Checked at init time.) */
-var has_canvas;
+/* Environment capabilities */
+var support = {};
 
 /* Options from the vm_options object. */
 var option_exit_warning;
@@ -85,9 +85,6 @@ var current_partial_outputs = null;
    library sets that up for you.)
 */
 function init(vm_options) {
-    /* Check for canvas support. We don't rely on jquery here. */
-    has_canvas = (document.createElement('canvas').getContext != undefined);
-
     /* Set references to external libraries */
     if (vm_options.Dialog) {
         Dialog = vm_options.Dialog;
@@ -166,8 +163,10 @@ function accept_ui_event(obj) {
     switch (obj.type) {
     case 'init':
         content_metrics = obj.metrics;
-        /* We ignore the support array. This library is updated in sync
-           with GlkOte, so we know what it supports. */
+        /* Process the support array */
+        if (obj.support) {
+            obj.support.forEach(function(item) {support[item] = 1;});
+        }
         VM.init();
         break;
 
@@ -4111,22 +4110,20 @@ function glk_gestalt_ext(sel, val, arr) {
         return 2; // gestalt_CharOutput_ExactPrint
 
     case 4: // gestalt_MouseInput
-        if (val == Const.wintype_TextBuffer)
+        if (val == Const.wintype_TextGrid)
             return 1;
-        if (val == Const.wintype_Graphics && has_canvas)
+        if (support.graphics && val == Const.wintype_Graphics)
             return 1;
         return 0;
 
     case 5: // gestalt_Timer
-        return 1;
+        return support.timer || 0;
 
     case 6: // gestalt_Graphics
-        return 1;
+        return support.graphics || 0;
 
     case 7: // gestalt_DrawImage
-        if (val == Const.wintype_TextBuffer)
-            return 1;
-        if (val == Const.wintype_Graphics && has_canvas)
+        if (support.graphics && (val == Const.wintype_TextBuffer || val == Const.wintype_Graphics))
             return 1;
         return 0;
 
@@ -4140,10 +4137,10 @@ function glk_gestalt_ext(sel, val, arr) {
         return 0;
 
     case 11: // gestalt_Hyperlinks
-        return 1;
+        return support.hyperlinks || 0;
 
     case 12: // gestalt_HyperlinkInput
-        if (val == 3 || val == 4) // TextBuffer or TextGrid
+        if (support.hyperlinks && (val == Const.wintype_TextBuffer || val == Const.wintype_TextGrid))
             return 1;
         else
             return 0;
@@ -4152,7 +4149,7 @@ function glk_gestalt_ext(sel, val, arr) {
         return 0;
 
     case 14: // gestalt_GraphicsTransparency
-        return 1;
+        return support.graphics || 0;
 
     case 15: // gestalt_Unicode
         return 1;
@@ -4291,7 +4288,7 @@ function glk_window_open(splitwin, method, size, wintype, rock) {
         newwin.cursory = 0;
         break;
     case Const.wintype_Graphics:
-        if (!has_canvas) {
+        if (!support.graphics) {
             /* Graphics windows not supported; silently return null */
             gli_delete_window(newwin);
             return null;
