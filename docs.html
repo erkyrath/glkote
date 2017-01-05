@@ -718,6 +718,14 @@ Resize event. The <code>gameport</code> has changed size, and so the game window
 <p>
 
 <pre class="Def">
+{ type: 'redraw', gen: GENERATION, window: WINDOW_ID }
+</pre>
+<p>
+
+Redraw event. The contents of a graphics window have been lost and must be redrawn. If the <code>window</code> field is absent, all graphics windows must be redrawn. The affected windows are already cleared to their current background color.
+<p>
+
+<pre class="Def">
 { type: 'specialresponse', gen: GENERATION, response: TYPE, value: VALUE }
 </pre>
 <p>
@@ -1737,7 +1745,7 @@ terminator keys, line input echo control, Unicode normalization.
 </dl>
 
 <hr>
-Last updated November 26, 2016.
+Last updated January 5, 2017.
 <p>
 
 <em><a href="http://eblong.com/zarf/glk/glkote.html">GlkOte home page</a>
