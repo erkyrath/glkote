@@ -1152,37 +1152,47 @@ try {
     }
 
     if (htmlLocalStorage) {
-        Storage = {
-            getItem: function(key) {
-                try {
-                    return htmlLocalStorage.getItem(key);
+        /* First, test to make sure we can write at all. (In a private
+           window, localStorage quota may be zero.) */
+        try {
+            htmlLocalStorage.setItem('dialogtest', 'xyzzy');
+            htmlLocalStorage.removeItem('dialogtest');
+
+            Storage = {
+                getItem: function(key) {
+                    try {
+                        return htmlLocalStorage.getItem(key);
+                    }
+                    catch (ex) {
+                        return null;
+                    }
+                },
+                removeItem: function(key) {
+                    try {
+                        htmlLocalStorage.removeItem(key);
+                    }
+                    catch (ex) { }
+                },
+                setItem: function(key, val) {
+                    try {
+                        htmlLocalStorage.setItem(key, val);
+                    }
+                    catch (ex) {
+                        GlkOte.log('Dialog: localStorage failed! ' + ex);
+                        return true; /* error */
+                    }
+                },
+                getKeys: function() {
+                    var ls = [];
+                    for (var ix=0; ix<htmlLocalStorage.length; ix++)
+                        ls.push(htmlLocalStorage.key(ix));
+                    return ls;
                 }
-                catch (ex) {
-                    return null;
-                }
-            },
-            removeItem: function(key) {
-                try {
-                    htmlLocalStorage.removeItem(key);
-                }
-                catch (ex) { }
-            },
-            setItem: function(key, val) {
-                try {
-                    htmlLocalStorage.setItem(key, val);
-                }
-                catch (ex) {
-                    GlkOte.log('Dialog: localStorage failed! ' + ex);
-                    return true; /* error */
-                }
-            },
-            getKeys: function() {
-                var ls = [];
-                for (var ix=0; ix<htmlLocalStorage.length; ix++)
-                    ls.push(htmlLocalStorage.key(ix));
-                return ls;
-            }
-        };
+            };
+        }
+        catch (ex) {
+            GlkOte.log('Dialog: localStorage not available, falling back to window memory');
+        }
     }
 }
 catch (ex) { }
