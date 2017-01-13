@@ -1186,8 +1186,9 @@ if (Storage == null) {
             Storage.data[key] = val;
         },
         removeItem: function(key) {
-            if (Storage.keys.indexOf(key) >= 0) {
-                Storage.keys = Storage.keys.without(key);
+            var pos = Storage.keys.indexOf(key);
+            if (pos >= 0) {
+                Storage.keys.splice(pos, 1);
                 delete Storage.data[key];
             }
         },
