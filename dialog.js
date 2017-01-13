@@ -947,6 +947,7 @@ function file_remove_ref(ref) {
  */
 function file_write(dirent, content, israw) {
     var val, ls;
+    var err1, err2;
 
     var file = file_load_dirent(dirent);
     if (!file) {
@@ -970,8 +971,11 @@ function file_write(dirent, content, israw) {
     //### game name?
 
     val = ls.join(',');
-    Storage.setItem(file.dirent.dirent, val);
-    Storage.setItem(file.dirent.content, content);
+    err1 = Storage.setItem(file.dirent.dirent, val);
+    err2 = Storage.setItem(file.dirent.content, content);
+
+    if (err1 || err2)
+        return false;
 
     return true;
 }
@@ -1150,13 +1154,27 @@ try {
     if (htmlLocalStorage) {
         Storage = {
             getItem: function(key) {
-                return htmlLocalStorage.getItem(key);
+                try {
+                    return htmlLocalStorage.getItem(key);
+                }
+                catch (ex) {
+                    return null;
+                }
             },
             removeItem: function(key) {
-                htmlLocalStorage.removeItem(key);
+                try {
+                    htmlLocalStorage.removeItem(key);
+                }
+                catch (ex) { }
             },
             setItem: function(key, val) {
-                htmlLocalStorage.setItem(key, val);
+                try {
+                    htmlLocalStorage.setItem(key, val);
+                }
+                catch (ex) {
+                    GlkOte.log('Dialog: localStorage failed! ' + ex);
+                    return true; /* error */
+                }
             },
             getKeys: function() {
                 var ls = [];
