@@ -1155,8 +1155,10 @@ try {
         /* First, test to make sure we can write at all. (In a private
            window, localStorage quota may be zero.) */
         try {
-            htmlLocalStorage.setItem('dialogtest', 'xyzzy');
-            htmlLocalStorage.removeItem('dialogtest');
+            htmlLocalStorage.setItem('_dialogtest', 'xyzzy');
+            if (htmlLocalStorage.getItem('_dialogtest') != 'xyzzy')
+                throw new Error('localStorage test did not match');
+            htmlLocalStorage.removeItem('_dialogtest');
 
             Storage = {
                 getItem: function(key) {
@@ -1191,7 +1193,8 @@ try {
             };
         }
         catch (ex) {
-            GlkOte.log('Dialog: localStorage not available, falling back to window memory');
+            GlkOte.log('Dialog: localStorage not available: ' + ex);
+            GlkOte.log('Dialog: falling back to window memory');
         }
     }
 }
