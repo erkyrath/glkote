@@ -1,0 +1,39 @@
+
+#gidebug {
+  position: absolute;
+  left: 40px;
+  top: 40px;
+  width: 200px;
+  height: 200px;
+  background: white;
+  border: 4px solid #AAA;
+  -webkit-box-shadow: 1px 1px 15px #222;
+  -moz-box-shadow: 1px 1px 15px #222;
+}
+
+#gidebug .GiDebugHeader {
+  position: absolute;
+  width: 100%;
+  top: 0px;
+  height: 20px;
+  background: green;
+}
+
+#gidebug .GiDebugFooter {
+  position: absolute;
+  width: 100%;
+  bottom: 0px;
+  height: 20px;
+  background: red;
+}
+
+#gidebug .GiDebugBody {
+  position: absolute;
+  width: 100%;
+  top: 20px;
+  bottom: 20px;
+  background: yellow;
+  overflow: scroll;   /* vertical scrollbar is mandatory */
+  overflow-x: hidden; /* but horizontal scrollbar is forbidden */
+}
+
