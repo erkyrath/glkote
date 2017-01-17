@@ -5,8 +5,7 @@
   top: 40px;
   width: 200px;
   height: 200px;
-  background: white;
-  border: 4px solid #AAA;
+  background: #AAA;
   -webkit-box-shadow: 1px 1px 15px #222;
   -moz-box-shadow: 1px 1px 15px #222;
 }
@@ -16,7 +15,7 @@
   width: 100%;
   top: 0px;
   height: 20px;
-  background: green;
+  background: #BBB;
 }
 
 #gidebug .GiDebugFooter {
@@ -24,7 +23,7 @@
   width: 100%;
   bottom: 0px;
   height: 20px;
-  background: red;
+  background: #BBB;
 }
 
 #gidebug .GiDebugRightButton {
@@ -33,14 +32,16 @@
   bottom: 0px;
   right: 0px;
   width: 40px;
-  background: purple;
+  background: #AAA;
 }
 
 #gidebug .GiDebugBody {
   position: absolute;
-  width: 100%;
+  left: 2px;
+  right: 2px;
   top: 20px;
   bottom: 20px;
+  background: white;
   overflow: scroll;   /* vertical scrollbar is mandatory */
   overflow-x: hidden; /* but horizontal scrollbar is forbidden */
 }
