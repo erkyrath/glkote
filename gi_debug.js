@@ -41,22 +41,22 @@ function debug_open()
             el.on('touchstart', { tag:tag }, evhan_dragstart);
     };
 
-    el = $('<div>', { class: 'GiDebugHeader' });
+    el = $('<div>', { class: 'GiDebugHeader GiDebugRoundNE GiDebugRoundNW' });
     dia.append(el);
     el.css({ cursor:'move' });
     set_drag_effect(el, 'position');
 
-    subel = $('<div>', { class: 'GiDebugRightButton' });
+    subel = $('<div>', { class: 'GiDebugRightButton GiDebugRoundNE' });
     subel.css({ cursor:'e-resize' });
     el.append(subel);
     set_drag_effect(subel, 'width');
 
-    el = $('<div>', { class: 'GiDebugFooter' });
+    el = $('<div>', { class: 'GiDebugFooter GiDebugRoundSE GiDebugRoundSW' });
     dia.append(el);
     el.css({ cursor:'s-resize' });
     set_drag_effect(el, 'height');
 
-    subel = $('<div>', { class: 'GiDebugRightButton' });
+    subel = $('<div>', { class: 'GiDebugRightButton GiDebugRoundSE' });
     subel.css({ cursor:'se-resize' });
     el.append(subel);
     set_drag_effect(subel, 'size');

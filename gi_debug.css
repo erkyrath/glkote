@@ -8,6 +8,7 @@
   background: #AAA;
   -webkit-box-shadow: 1px 1px 15px #222;
   -moz-box-shadow: 1px 1px 15px #222;
+  border-radius: 10px;
 }
 
 #gidebug .GiDebugHeader {
@@ -44,5 +45,21 @@
   background: white;
   overflow: scroll;   /* vertical scrollbar is mandatory */
   overflow-x: hidden; /* but horizontal scrollbar is forbidden */
+}
+
+#gidebug .GiDebugRoundSE {
+  border-bottom-right-radius: 10px;
+}
+
+#gidebug .GiDebugRoundNE {
+  border-top-right-radius: 10px;
+}
+
+#gidebug .GiDebugRoundSW {
+  border-bottom-left-radius: 10px;
+}
+
+#gidebug .GiDebugRoundNW {
+  border-top-left-radius: 10px;
 }
 
