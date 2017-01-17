@@ -9,6 +9,8 @@
   -webkit-box-shadow: 1px 1px 15px #222;
   -moz-box-shadow: 1px 1px 15px #222;
   border-radius: 10px;
+
+  font-size: 15px;
 }
 
 #gidebug .GiDebugHeader {
@@ -17,6 +19,12 @@
   top: 0px;
   height: 20px;
   background: #BBB;
+
+  color: #666;
+  text-align: center;
+  font-family: sans-serif;
+  padding-top: 3px;
+  font-size: 11px;
 }
 
 #gidebug .GiDebugFooter {

@@ -42,6 +42,7 @@ function debug_open()
     };
 
     el = $('<div>', { class: 'GiDebugHeader GiDebugRoundNE GiDebugRoundNW' });
+    el.text('Debugging');
     dia.append(el);
     el.css({ cursor:'move' });
     set_drag_effect(el, 'position');
