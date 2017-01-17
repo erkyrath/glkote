@@ -27,12 +27,20 @@
   background: red;
 }
 
+#gidebug .GiDebugRightButton {
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  right: 0px;
+  width: 40px;
+  background: purple;
+}
+
 #gidebug .GiDebugBody {
   position: absolute;
   width: 100%;
   top: 20px;
   bottom: 20px;
-  background: yellow;
   overflow: scroll;   /* vertical scrollbar is mandatory */
   overflow-x: hidden; /* but horizontal scrollbar is forbidden */
 }

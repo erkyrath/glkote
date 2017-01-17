@@ -7,6 +7,7 @@ var debug_el_id = 'gidebug';
 var is_open = false;
 var use_touch_ui;
 var drag_mode = null;
+var min_width = 200;
 
 function debug_open()
 {
@@ -31,7 +32,7 @@ function debug_open()
         throw new Error('GiDebug: unable to find root element #' + root_el_id + '.');
 
     dia = $('<div>', { id: debug_el_id });
-    var el;
+    var el, subel;
 
     function set_drag_effect(el, tag) {
         if (!use_touch_ui)
@@ -42,11 +43,23 @@ function debug_open()
 
     el = $('<div>', { class: 'GiDebugHeader' });
     dia.append(el);
+    el.css({ cursor:'move' });
     set_drag_effect(el, 'position');
+
+    subel = $('<div>', { class: 'GiDebugRightButton' });
+    subel.css({ cursor:'e-resize' });
+    el.append(subel);
+    set_drag_effect(subel, 'width');
 
     el = $('<div>', { class: 'GiDebugFooter' });
     dia.append(el);
+    el.css({ cursor:'s-resize' });
     set_drag_effect(el, 'height');
+
+    subel = $('<div>', { class: 'GiDebugRightButton' });
+    subel.css({ cursor:'se-resize' });
+    el.append(subel);
+    set_drag_effect(subel, 'size');
 
     el = $('<div>', { id: debug_el_id+'_body', class: 'GiDebugBody' });
     dia.append(el);
@@ -120,17 +133,18 @@ function evhan_dragdrag(ev, ui)
 
     switch (drag_mode) {
     case 'position':
+        pos.top = Math.max(0, pos.top);
         dia.offset(pos);
         break;
     case 'size':
-        dia.width(Math.max(200, pos.left));
-        dia.height(Math.max(200, pos.top));
+        dia.width(Math.max(min_width, pos.left));
+        dia.height(Math.max(min_width, pos.top));
         break;
     case 'width':
-        dia.width(Math.max(200, pos.left));
+        dia.width(Math.max(min_width, pos.left));
         break;
     case 'height':
-        dia.height(Math.max(200, pos.top));
+        dia.height(Math.max(min_width, pos.top));
         break;
     }
 }
