@@ -1,9 +1,9 @@
 
 #gidebug {
   position: absolute;
-  left: 40px;
+  right: 40px;
   top: 40px;
-  width: 200px;
+  width: 300px;
   height: 200px;
   background: #AAA;
   -webkit-box-shadow: 1px 1px 15px #222;
@@ -38,11 +38,12 @@
 
 #gidebug .GiDebugBody {
   position: absolute;
-  left: 2px;
-  right: 2px;
+  left: 4px;
+  right: 4px;
   top: 20px;
   bottom: 20px;
   background: white;
+  padding: 8px;
   overflow: scroll;   /* vertical scrollbar is mandatory */
   overflow-x: hidden; /* but horizontal scrollbar is forbidden */
 }
