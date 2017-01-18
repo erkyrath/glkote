@@ -69,10 +69,6 @@ function debug_open()
     el.append(subel);
     subel.append($('<div>').text('### This is a line of text.'));
     subel.append($('<div>').text('### This is a very long line of line of line of text.'));
-    subel.append($('<div>').text('### This is a line of text.'));
-    subel.append($('<div>').text('### This is a very long line of line of line of text.'));
-    subel.append($('<div>').text('### This is a line of text.'));
-    subel.append($('<div>').text('### This is a very long line of line of line of text.'));
 
     subel = $('<div>', { class: 'GiDebugPrompt' });
     subel.text('>');
@@ -91,6 +87,21 @@ function debug_open()
     is_open = true;
 }
 
+function add_lines(ls)
+{
+    var textel = $('#'+debug_el_id+'_text');
+    if (!textel.length)
+        return;
+
+    for (var ix=0; ix<ls.length; ix++) {
+        var el = $('<div>');
+        el.text(ls[ix]);
+        textel.append(el);
+    }
+
+    textel.scrollTop(textel.height());
+}
+
 function evhan_input(ev)
 {
     var inputel = $('#'+debug_el_id+'_input');
@@ -104,6 +115,7 @@ function evhan_input(ev)
         return;
 
     console.log('### got:', val);
+    add_lines(['> '+val]);
 }
 
 function event_pos(ev)
