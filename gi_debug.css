@@ -10,6 +10,7 @@
   -moz-box-shadow: 1px 1px 15px #222;
   border-radius: 10px;
 
+  font-family: "Source Serif Pro", "Cambria", "Georgia", serif;
   font-size: 15px;
 }
 
@@ -22,7 +23,6 @@
 
   color: #666;
   text-align: center;
-  font-family: sans-serif;
   padding-top: 3px;
   font-size: 11px;
 }
@@ -50,10 +50,46 @@
   right: 4px;
   top: 20px;
   bottom: 20px;
+  background: #EEE;
+}
+
+#gidebug .GiDebugText {
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  top: 0px;
+  bottom: 24px;
   background: white;
   padding: 8px;
   overflow: scroll;   /* vertical scrollbar is mandatory */
   overflow-x: hidden; /* but horizontal scrollbar is forbidden */
+}
+
+#gidebug .GiDebugPrompt {
+  position: absolute;
+  left: 8px;
+  bottom: -4px;
+  height: 24px;
+  font-weight: bold;
+}
+
+#gidebug .GiDebugInput {
+  position: absolute;
+  left: 20px;
+  right: 0px;
+  height: 24px;
+  bottom: 0px;
+
+  background: none;
+  border: none;
+  margin: 0px;
+  padding: 0px;
+  outline-width: 0px;
+  outline-style: none;
+
+  font-family: "Source Serif Pro", "Cambria", "Georgia", serif;
+  font-size: 15px;
+  font-weight: bold;
 }
 
 #gidebug .GiDebugRoundSE {

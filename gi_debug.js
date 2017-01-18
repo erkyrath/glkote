@@ -64,8 +64,23 @@ function debug_open()
 
     el = $('<div>', { id: debug_el_id+'_body', class: 'GiDebugBody' });
     dia.append(el);
-    el.append($('<div>').text('### This is a line of text.'));
-    el.append($('<div>').text('### This is a very long line of line of line of text.'));
+
+    subel = $('<div>', { id: debug_el_id+'_text', class: 'GiDebugText' });
+    el.append(subel);
+    subel.append($('<div>').text('### This is a line of text.'));
+    subel.append($('<div>').text('### This is a very long line of line of line of text.'));
+    subel.append($('<div>').text('### This is a line of text.'));
+    subel.append($('<div>').text('### This is a very long line of line of line of text.'));
+    subel.append($('<div>').text('### This is a line of text.'));
+    subel.append($('<div>').text('### This is a very long line of line of line of text.'));
+
+    subel = $('<div>', { class: 'GiDebugPrompt' });
+    subel.text('>');
+    el.append(subel);
+
+    subel = $('<input>', { id: debug_el_id+'_input', type: 'text', class: 'GiDebugInput' });
+    subel.attr({ autocapitalize:'off', 'aria-live':'off' });
+    el.append(subel);
 
     rootel.append(dia);
     is_open = true;
