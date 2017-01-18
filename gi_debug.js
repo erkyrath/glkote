@@ -80,10 +80,30 @@ function debug_open()
 
     subel = $('<input>', { id: debug_el_id+'_input', type: 'text', class: 'GiDebugInput' });
     subel.attr({ autocapitalize:'off', 'aria-live':'off' });
+    subel.on('keypress', function(ev) {
+        if (ev.keyCode == 13) {
+            evhan_input(ev);
+        }
+    });
     el.append(subel);
 
     rootel.append(dia);
     is_open = true;
+}
+
+function evhan_input(ev)
+{
+    var inputel = $('#'+debug_el_id+'_input');
+    if (!inputel.length)
+        return;
+
+    var val = inputel.val().trim();
+    inputel.val('');
+
+    if (!val.length)
+        return;
+
+    console.log('### got:', val);
 }
 
 function event_pos(ev)
@@ -100,7 +120,7 @@ function evhan_dragstart(ev)
         return;
 
     var dia = $('#'+debug_el_id);
-    if (!dia)
+    if (!dia.length)
         return;
 
     drag_mode = ev.data.tag;
@@ -140,7 +160,7 @@ function evhan_dragdrag(ev, ui)
         return;
 
     var dia = $('#'+debug_el_id);
-    if (!dia)
+    if (!dia.length)
         return;
 
     var pos = event_pos(ev);
