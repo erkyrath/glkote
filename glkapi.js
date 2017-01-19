@@ -431,8 +431,8 @@ function handle_line_input(disprock, input, termkey) {
     VM.resume();
 }
 
-function update() {
-    var dataobj = { type: 'update', gen: event_generation };
+function update(type) {
+    var dataobj = { type: type || 'update', gen: event_generation };
     var winarray = null;
     var contentarray = null;
     var inputarray = null;
@@ -4054,7 +4054,7 @@ function glk_exit() {
     gli_selectref = null;
     if (option_exit_warning)
         GlkOte.warning(option_exit_warning);
-    GlkOte.update({ type: 'exit' });
+    update('exit');
     return DidNotReturn;
 }
 
