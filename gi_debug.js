@@ -1,3 +1,34 @@
+/* GiDebug -- a debug overlay interface for GlkOte
+ * Designed by Andrew Plotkin <erkyrath@eblong.com>
+ * <http://eblong.com/zarf/glk/glkote.html>
+ * 
+ * This Javascript library is copyright 2017 by Andrew Plotkin.
+ * It is distributed under the MIT license; see the "LICENSE" file.
+ *
+ * This library adds a simple debug console, overlaid onto the GlkOte
+ * UI. Or it can be used with any HTML interface, really. GlkOte is set
+ * up to activate the debug console if you set the "debug_commands" option
+ * in the GlkOte game interface object.
+ *
+ * The library has these APIs:
+ *
+ * GiDebug.init(handler) -- activate the console
+ *
+ * Call this during initialization to set up the debug console. The
+ * handler should be a function that accepts debug command strings.
+ *
+ * GiDebug.open() -- make the console visible
+ *
+ * The console is not initially visible, unless it generates output
+ * on startup. Call this to make it visible.
+ *
+ * GiDebug.output(ls) -- display a list of text lines in the console
+ *
+ * Your command handler (and perhaps other parts of the game) calls this
+ * to display output in the console. The argument is a *list* of lines of
+ * text. (Don't call this with a bare string!)
+ */
+
 /* Put everything inside the GiDebug namespace. */
 
 GiDebug = function() {
