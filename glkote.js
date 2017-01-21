@@ -283,6 +283,8 @@ function glkote_init(iface) {
     else {
       debugmod.init(evhan_debug_command);
       debug_out_handler = debugmod.output;
+      if (iface.debug_console_open)
+        debugmod.open();
     }
   }
 
