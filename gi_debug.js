@@ -92,6 +92,11 @@ function debug_open()
     is_open = true;
 }
 
+function debug_output(ls)
+{
+    add_lines(ls);
+}
+
 function add_lines(ls)
 {
     var textel = $('#'+debug_el_id+'_text');
@@ -225,7 +230,8 @@ function evhan_dragstop(ev, ui)
    become the GiDebug global. */
 return {
     init: debug_init,
-    open: debug_open
+    open: debug_open,
+    output: debug_output
 };
 
 }();
