@@ -73,7 +73,6 @@ function debug_open()
 
     subel = $('<div>', { id: debug_el_id+'_text', class: 'GiDebugText' });
     el.append(subel);
-    subel.append($('<div>').text('### This is a line of text.'));
 
     subel = $('<div>', { class: 'GiDebugPrompt' });
     subel.text('>');
@@ -105,11 +104,26 @@ function add_lines(ls)
 
     for (var ix=0; ix<ls.length; ix++) {
         var el = $('<div>');
-        el.text(ls[ix]);
+        var val = ls[ix];
+        val = val.replace(regex_long_whitespace, func_long_whitespace);
+        el.text(val);
         textel.append(el);
     }
 
     textel.scrollTop(textel.height());
+}
+
+var regex_long_whitespace = new RegExp('  +', 'g'); /* two or more spaces */
+
+/* Given a run of N spaces (N >= 2), return N-1 non-breaking spaces plus
+   a normal one. */
+function func_long_whitespace(match) {
+  var len = match.length;
+  if (len == 1)
+    return ' ';
+  /* Evil trick I picked up from Prototype. Gives len-1 copies of NBSP. */
+  var res = new Array(len).join('\xa0');
+  return res + ' ';
 }
 
 function evhan_input(ev)
