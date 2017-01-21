@@ -110,7 +110,7 @@ function add_lines(ls)
         textel.append(el);
     }
 
-    textel.scrollTop(textel.height());
+    textel.scrollTop(textel.get(0).scrollHeight);
 }
 
 var regex_long_whitespace = new RegExp('  +', 'g'); /* two or more spaces */
