@@ -65,6 +65,10 @@
   overflow-x: hidden; /* but horizontal scrollbar is forbidden */
 }
 
+#gidebug .GiDebugTextLineBold {
+  font-weight: bold;
+}
+
 #gidebug .GiDebugPrompt {
   position: absolute;
   left: 8px;

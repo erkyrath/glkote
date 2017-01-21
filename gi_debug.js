@@ -127,14 +127,18 @@ function debug_output(ls)
     add_lines(ls);
 }
 
-function add_lines(ls)
+function add_lines(ls, style)
 {
     var textel = $('#'+debug_el_id+'_text');
     if (!textel.length)
         return;
 
+    var cla = 'GiDebugTextLine';
+    if (style)
+        cla = cla + ' ' + style;
+
     for (var ix=0; ix<ls.length; ix++) {
-        var el = $('<div>');
+        var el = $('<div>', { class:cla });
         var val = ls[ix];
         val = val.replace(regex_long_whitespace, func_long_whitespace);
         el.text(val);
@@ -169,7 +173,7 @@ function evhan_input(ev)
     if (!val.length)
         return;
 
-    add_lines(['> '+val]);
+    add_lines(['> '+val], 'GiDebugTextLineBold');
 
     if (cmd_handler)
         cmd_handler(val);
