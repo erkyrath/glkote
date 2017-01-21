@@ -8,6 +8,12 @@ var is_open = false;
 var use_touch_ui;
 var drag_mode = null;
 var min_width = 200;
+var cmd_handler = null;
+
+function debug_init(handler)
+{
+    cmd_handler = handler;
+}
 
 function debug_open()
 {
@@ -68,7 +74,6 @@ function debug_open()
     subel = $('<div>', { id: debug_el_id+'_text', class: 'GiDebugText' });
     el.append(subel);
     subel.append($('<div>').text('### This is a line of text.'));
-    subel.append($('<div>').text('### This is a very long line of line of line of text.'));
 
     subel = $('<div>', { class: 'GiDebugPrompt' });
     subel.text('>');
@@ -114,8 +119,12 @@ function evhan_input(ev)
     if (!val.length)
         return;
 
-    console.log('### got:', val);
     add_lines(['> '+val]);
+
+    if (cmd_handler)
+        cmd_handler(val);
+    else
+        add_lines(['There is no debug command handler.']);
 }
 
 function event_pos(ev)
@@ -215,6 +224,7 @@ function evhan_dragstop(ev, ui)
 /* End of GiDebug namespace function. Return the object which will
    become the GiDebug global. */
 return {
+    init: debug_init,
     open: debug_open
 };
 
