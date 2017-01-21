@@ -124,6 +124,9 @@ function debug_open()
 
 function debug_output(ls)
 {
+    if (!is_open)
+        debug_open();
+
     add_lines(ls);
 }
 
