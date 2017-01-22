@@ -86,9 +86,9 @@ function debug_open()
     set_drag_effect(el, 'position');
 
     subel = $('<div>', { class: 'GiDebugRightButton GiDebugRoundNE' });
-    subel.css({ cursor:'e-resize' });
+    subel.css({ cursor:'ne-resize' });
     el.append(subel);
-    set_drag_effect(subel, 'width');
+    set_drag_effect(subel, 'size-ne');
 
     el = $('<div>', { class: 'GiDebugFooter GiDebugRoundSE GiDebugRoundSW' });
     dia.append(el);
@@ -216,9 +216,16 @@ function evhan_dragstart(ev)
     case 'height':
         drag_context = { width:dia.width(), height:dia.height() };
         break;
+    case 'size-ne':
+        drag_context = dia.offset();
+        drag_context.width = dia.width();
+        drag_context.height = dia.height();
+        drag_context.ymax = drag_context.top + drag_context.height;
+        break;
     }
 
     drag_context.basepos = event_pos(ev);
+    drag_context.porttop = $('#gidebug').parent().offset().top + 4;
 
     if (!use_touch_ui) {
         $('body').on('mousemove', evhan_dragdrag);
@@ -247,7 +254,7 @@ function evhan_dragdrag(ev, ui)
     switch (drag_mode) {
     case 'position':
         pos.left = drag_context.left + deltax;
-        pos.top = Math.max(0, drag_context.top + deltay);
+        pos.top = Math.max(drag_context.porttop, drag_context.top + deltay);
         dia.offset(pos);
         break;
     case 'size':
@@ -259,6 +266,14 @@ function evhan_dragdrag(ev, ui)
         break;
     case 'height':
         dia.height(Math.max(min_width, drag_context.height + deltay));
+        break;
+    case 'size-ne':
+        var ypos = Math.max(drag_context.porttop, drag_context.top + deltay);
+        pos.left = drag_context.left;
+        pos.top = Math.min(drag_context.ymax-min_width, ypos);
+        dia.offset(pos);
+        dia.width(Math.max(min_width, drag_context.width + deltax));
+        dia.height(drag_context.ymax - pos.top);
         break;
     }
 }
