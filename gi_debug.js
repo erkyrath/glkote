@@ -38,7 +38,7 @@ var debug_el_id = 'gidebug';
 var is_open = false;
 var use_touch_ui;
 var drag_mode = null;
-var drag_offset = null;
+var drag_context = null;
 var min_width = 200;
 var cmd_handler = null;
 
@@ -209,18 +209,16 @@ function evhan_dragstart(ev)
 
     switch (drag_mode) {
     case 'position':
-        drag_offset = dia.offset();
+        drag_context = dia.offset();
         break;
     case 'size':
     case 'width':
     case 'height':
-        drag_offset = { left:dia.width(), top:dia.height() };
+        drag_context = { width:dia.width(), height:dia.height() };
         break;
     }
 
-    var pos = event_pos(ev);
-    drag_offset.left = pos.left - drag_offset.left;
-    drag_offset.top = pos.top - drag_offset.top;
+    drag_context.basepos = event_pos(ev);
 
     if (!use_touch_ui) {
         $('body').on('mousemove', evhan_dragdrag);
@@ -243,23 +241,24 @@ function evhan_dragdrag(ev, ui)
         return;
 
     var pos = event_pos(ev);
-    pos.left -= drag_offset.left;
-    pos.top -= drag_offset.top;
+    var deltax = pos.left - drag_context.basepos.left;
+    var deltay = pos.top - drag_context.basepos.top;
 
     switch (drag_mode) {
     case 'position':
-        pos.top = Math.max(0, pos.top);
+        pos.left = drag_context.left + deltax;
+        pos.top = Math.max(0, drag_context.top + deltay);
         dia.offset(pos);
         break;
     case 'size':
-        dia.width(Math.max(min_width, pos.left));
-        dia.height(Math.max(min_width, pos.top));
+        dia.width(Math.max(min_width, drag_context.width + deltax));
+        dia.height(Math.max(min_width, drag_context.height + deltay));
         break;
     case 'width':
-        dia.width(Math.max(min_width, pos.left));
+        dia.width(Math.max(min_width, drag_context.width + deltax));
         break;
     case 'height':
-        dia.height(Math.max(min_width, pos.top));
+        dia.height(Math.max(min_width, drag_context.height + deltay));
         break;
     }
 }
@@ -277,7 +276,7 @@ function evhan_dragstop(ev, ui)
     }
 
     drag_mode = null;
-    drag_offset = null;
+    drag_context = null;
 }
 
 /* End of GiDebug namespace function. Return the object which will
