@@ -1,3 +1,10 @@
+/* Debug overlay default stylesheet
+ * Designed by Andrew Plotkin <erkyrath@eblong.com>
+ * <http://eblong.com/zarf/glk/glkote.html>
+ * 
+ * This CSS stylesheet is in the public domain. Do whatever you want
+ * with it.
+ */
 
 #gidebug {
   position: absolute;
