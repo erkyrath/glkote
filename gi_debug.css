@@ -51,6 +51,15 @@
   background: #AAA;
 }
 
+#gidebug .GiDebugLeftButton {
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  width: 40px;
+  background: #AAA;
+}
+
 #gidebug .GiDebugBody {
   position: absolute;
   left: 4px;
