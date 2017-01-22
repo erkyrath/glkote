@@ -38,6 +38,7 @@ var debug_el_id = 'gidebug';
 var is_open = false;
 var use_touch_ui;
 var drag_mode = null;
+var drag_offset = null;
 var min_width = 200;
 var cmd_handler = null;
 
@@ -276,6 +277,7 @@ function evhan_dragstop(ev, ui)
     }
 
     drag_mode = null;
+    drag_offset = null;
 }
 
 /* End of GiDebug namespace function. Return the object which will
