@@ -158,6 +158,7 @@ Commons Attribution-Noncommercial-Share Alike 3.0 Unported License</a>.
   <li><a href="#timerupdate">The Timer Update</a>
 </ul>
 <li><a href="#specialrequests">Special Input Requests</a>
+<li><a href="#debug">Debug Commands</a>
 <li><a href="#disabling">Disabling the UI</a>
 <li><a href="#gameinterface">The Game Interface Object</a>
 <li><a href="#layout">Laying Out Windows</a>
@@ -742,6 +743,13 @@ An external event, which you triggered by calling <code>GlkOte.extevent</code>. 
 <p>
 
 <pre class="Def">
+{ type: 'debuginput', gen: GENERATION, value: STRING }
+</pre>
+<p>
+
+A debug command. See "<a href="#debug">Debug Commands</a>".
+
+<pre class="Def">
 { type: 'refresh', gen: GENERATION }
 </pre>
 <p>
@@ -1105,6 +1113,30 @@ Note that a positive <code>timer</code> will restart the repeating timer from ze
 <p>
 
 Also note that older versions of GlkOte did not support the <code>timer</code> property. Therefore, older game code had to set up its own timeouts and call <code>GlkOte.extevent</code> to trigger a timer event. This remains a valid approach.
+<p>
+
+<h2><a name="debug">Debug Commands</a></h2>
+
+The UI may provide a side channel to send debug commands to the game. (If you include the gi_debug.js library, this appears as a floating pane above the GlkOte UI.)
+<p>
+
+Commands sent from this channel arrive as user events of this form:
+<p>
+
+<pre class="Sample">
+{ type: 'debuginput', gen: GENERATION, value: STRING }
+</pre>
+<p>
+
+When the game generates debug output, include a <code>debugoutput</code> list in your <code>GlkOte.update</code> call:
+<p>
+
+<pre class="Sample">
+debugoutput: [ TEXT, TEXT, ... ]
+</pre>
+<p>
+
+Note that the value must be a list of strings, each representing one line of debug output. (It may be an empty list, but do not use a string with no list around it.) Any update may include a <code>debugoutput</code> list, not just responses to <code>debuginput</code>.
 <p>
 
 <h2><a name="specialrequests">Special Input Requests</a></h2>
