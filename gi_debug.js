@@ -228,6 +228,7 @@ function evhan_dragstart(ev)
         break;
     case 'size-ne':
     case 'size-sw':
+    case 'size-nw':
         drag_context = dia.offset();
         drag_context.width = dia.width();
         drag_context.height = dia.height();
@@ -297,6 +298,15 @@ function evhan_dragdrag(ev, ui)
         dia.offset(pos);
         dia.height(Math.max(min_width, drag_context.height + deltay));
         dia.width(drag_context.xmax - pos.left);
+        break;
+    case 'size-nw':
+        var xpos = drag_context.left + deltax;
+        var ypos = Math.max(drag_context.porttop, drag_context.top + deltay);
+        pos.left = Math.min(drag_context.xmax-min_width, xpos);
+        pos.top = Math.min(drag_context.ymax-min_width, ypos);
+        dia.offset(pos);
+        dia.width(drag_context.xmax - pos.left);
+        dia.height(drag_context.ymax - pos.top);
         break;
     }
 }
