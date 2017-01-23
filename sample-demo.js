@@ -37,8 +37,8 @@ game_mood = 0;
 game_mood_list = [ 'cheery', 'dopey', 'hungry', 'explodey' ];
 
 function game_version() {
-  return ('Release 21; GlkOte library ' + GlkOte.version 
-    + '; last updated 26-Nov-2016');
+  return ('Release 22; GlkOte library ' + GlkOte.version 
+    + '; last updated 22-Jan-2017');
 }
 
 function game_n_spaces(count) {
@@ -480,6 +480,10 @@ function game_accept(res) {
   }
   else if (res.type == 'redraw') {
     game_submit_redraw_input(res.window);
+  }
+  else if (res.type == 'debuginput') {
+    if (window.GiDebug)
+      window.GiDebug.output(['There is no debugger in this demo, but you typed "'+res.value+'".']);
   }
   else if (res.type == 'init') {
     game_metrics = res.metrics;
