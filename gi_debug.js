@@ -22,6 +22,10 @@
  * The console is not initially visible, unless it generates output
  * on startup. Call this to make it visible.
  *
+ * GiDebug.input(ls) -- perform a debugger command
+ *
+ * Perform a command as if it had been typed in the console.
+ *
  * GiDebug.output(ls) -- display a list of text lines in the console
  *
  * Your command handler (and perhaps other parts of the game) calls this
@@ -141,6 +145,16 @@ function debug_output(ls)
     add_lines(ls);
 }
 
+function debug_input(val)
+{
+    add_lines(['> '+val], 'GiDebugTextLineBold');
+
+    if (cmd_handler)
+        cmd_handler(val);
+    else
+        add_lines(['There is no debug command handler.']);
+}
+
 function add_lines(ls, style)
 {
     var textel = $('#'+debug_el_id+'_text');
@@ -187,12 +201,7 @@ function evhan_input(ev)
     if (!val.length)
         return;
 
-    add_lines(['> '+val], 'GiDebugTextLineBold');
-
-    if (cmd_handler)
-        cmd_handler(val);
-    else
-        add_lines(['There is no debug command handler.']);
+    debug_input(val);
 }
 
 function event_pos(ev)
@@ -332,6 +341,7 @@ function evhan_dragstop(ev, ui)
 return {
     init: debug_init,
     open: debug_open,
+    input: debug_input,
     output: debug_output
 };
 
