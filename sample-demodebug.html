@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>GlkOte: Not A Real Game</title>
+
+<meta name="viewport" content="width=device-width, user-scalable=no">
+
+<link rel="stylesheet" href="glkote.css" type="text/css">
+<link rel="stylesheet" href="dialog.css" type="text/css">
+<link rel="stylesheet" href="gi_debug.css" type="text/css">
+
+<style type="text/css">
+
+body {
+  margin: 0px;
+  height: 100%;
+}
+
+#banner {
+  position: absolute;
+  top: 0px;
+  height: 45px;
+  width: 100%;
+  background: #DDDDFF;
+  border-bottom: 4px;
+  border-top: 0px;
+  border-left: 0px;
+  border-right: 0px;
+  border-color: #E8E8FF;
+  border-style: solid;
+}
+
+#bannertitle {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 8px;
+  margin-left: 16px;
+}
+
+#bannerhowto {
+  text-align: right;
+  margin-right: 16px;
+}
+
+#gameport {
+  position: absolute;
+  overflow: hidden;
+  left: 0px;
+  right: 0px;
+  top: 54px;
+  bottom: 0px;
+  background: #CCAA88;
+  margin: 0px;
+}
+
+@media screen and (max-device-width: 480px) {
+  /* This stanza simplifies the layout on small (iPhone-sized) screens.
+     The top blue banner is removed, so that the gameport can fill the
+     whole screen. */
+  #banner {
+    display: none;
+  }
+  #gameport {
+    top: 0px;
+  }
+}
+
+</style>
+
+<script src="jquery-1.12.4.min.js" type="text/javascript"></script>
+<script src="glkote.js" type="text/javascript"></script>
+<script src="dialog.js" type="text/javascript"></script>
+<script src="gi_debug.js" type="text/javascript"></script>
+
+<script src="sample-demo.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+
+/* The game interface object. */
+Game = {
+  accept: game_accept,
+  debug_commands: true,
+  debug_console_open: true,
+  detect_external_links: 'match',
+  spacing: 4
+};
+
+</script>
+
+</head>
+<body onLoad="GlkOte.init();">
+<div id="banner">
+<div id="bannertitle">Not A Real Game</div>
+<div id="bannerhowto"><em><a target="_blank" href="sample-help.html">How do I play?</a></em></div>
+</div>
+<div id="gameport">
+<div id="windowport">
+<noscript><hr>
+<p>You'll need to turn on Javascript in your web browser to play this game.</p>
+<hr></noscript>
+</div>
+<div id="loadingpane">
+<img src="waiting.gif" alt="LOADING"><br>
+<em>&nbsp;&nbsp;&nbsp;Loading...</em>
+</div>
+<div id="errorpane" style="display:none;"><div id="errorcontent">...</div></div>
+</div>
+
+</body>
+</html>
