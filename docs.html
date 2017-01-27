@@ -1684,6 +1684,9 @@ By the way, in a buffer window, paragraphs of text are separated by blank lines 
 
 <dl>
 
+<dt>Release 2.2.### (###)
+<dd>Added a check to prevent the library from sending two events from the same generation. (Unless it's a <code>'refresh'</code>.)
+
 <dt>Release 2.2.4 (Jan 23, 2017)
 <dd>Added the <code>support</code> array to the initial (<code>'init'</code>) update request. (Earlier versions of GlkOte supported graphics and hyperlinks -- see below -- but omitted the <code>support</code> field.)
 <dd>Added a way to request timer events. (In previous versions, the game had to manage its own timers.)
