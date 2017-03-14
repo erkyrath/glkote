@@ -61,10 +61,10 @@
   font-family: Palatino, Georgia, serif;
   font-size: 14px;
   padding: 6px 10px 6px 10px;
-  white-space: pre-wrap; /* make sure whitespace doesn't collapse */
 }
 
 .BufferLine {
+  white-space: pre-wrap; /* required for spaces to work right */
 }
 
 .GridWindow {
