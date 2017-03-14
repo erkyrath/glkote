@@ -61,6 +61,7 @@
   font-family: Palatino, Georgia, serif;
   font-size: 14px;
   padding: 6px 10px 6px 10px;
+  white-space: pre-wrap; /* make sure whitespace doesn't collapse */
 }
 
 .BufferLine {
