@@ -1685,6 +1685,7 @@ By the way, in a buffer window, paragraphs of text are separated by blank lines 
 <dl>
 
 <dt>Release 2.2.### (###)
+<dd>Changed the whitespace handling in buffer windows to use CSS (<code>white-space:pre-wrap</code>) instead of <code>&amp;nbsp;</code>. This will break on very old versions of IE, but we're not fussed about them any more.
 <dd>Added a check to prevent the library from sending two events from the same generation. (Unless it's a <code>'refresh'</code>.)
 
 <dt>Release 2.2.4 (Jan 23, 2017)
