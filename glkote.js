@@ -441,6 +441,27 @@ function measure_window() {
   return metrics;
 }
 
+/* Compare two metrics objects; return whether they're "roughly"
+   similar. (We only care about window size and some of the font
+   metrics, because those are the fields likely to change out
+   from under the library.)
+*/
+function metrics_match(met1, met2) {
+  if (met1.width != met2.width)
+    return false;
+  if (met1.height != met2.height)
+    return false;
+  if (met1.gridcharwidth != met2.gridcharwidth)
+    return false;
+  if (met1.gridcharheight != met2.gridcharheight)
+    return false;
+  if (met1.buffercharwidth != met2.buffercharwidth)
+    return false;
+  if (met1.buffercharheight != met2.buffercharheight)
+    return false;
+  return true;
+}
+
 /* Create invisible divs in the gameport which will fire events if the
    gameport changes size. (For any reason, including document CSS changes.
    We need this to detect Lectrote's margin change, for example.)
@@ -2294,15 +2315,10 @@ function doc_resize_real() {
   }
 
   var new_metrics = measure_window();
-  if (new_metrics.width == current_metrics.width
-    && new_metrics.height == current_metrics.height) {
+  if (metrics_match(new_metrics, current_metrics)) {
     /* If the metrics haven't changed, skip the arrange event. Necessary on
        mobile webkit, where the keyboard popping up and down causes a same-size
-       resize event.
-
-       This is not ideal; it means we'll miss metrics changes caused by
-       font-size changes. (Admittedly, we don't have any code to detect those
-       anyhow, so small loss.) */
+       resize event. */
     return;
   }
   current_metrics = new_metrics;
