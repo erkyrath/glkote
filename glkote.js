@@ -315,8 +315,9 @@ function measure_window() {
   if (!gameport.length)
     return 'Cannot find gameport element #'+gameport_id+' in this document.';
 
-  /* Backwards compatibility grace note: if the HTML file includes an
-     old-style #layouttestpane div, we discard it. */
+  /* If the HTML file includes an #layouttestpane div, we discard it.
+     We used to do metrics measurements from a predefined div with
+     that name. Nowadays, it's sometimes used as a hidden font-preloader. */
   $('#layouttestpane', dom_context).remove();
 
   /* Exclude padding and border. */
