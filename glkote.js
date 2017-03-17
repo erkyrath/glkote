@@ -289,7 +289,22 @@ function glkote_init(iface) {
     }
   }
 
-  send_response('init', null, current_metrics);
+  if (!iface.font_load_delay) {
+    /* Normal case: start the game (interpreter) immediately. */
+    send_response('init', null, current_metrics);
+  }
+  else {
+    /* Delay case: wait a tiny interval, then re-check the window metrics
+       and *then* start the game. We might need to do this if the window
+       fonts were not cached or loaded with the DOM. (Lectrote, for example,
+       because of the way it loads font preferences.) */
+    disabled = true;
+    defer_func(function() {
+      disabled = false;
+      current_metrics = measure_window();
+      send_response('init', null, current_metrics);
+    });
+  }
 }
 
 /* Work out various pixel measurements used to compute window sizes:
