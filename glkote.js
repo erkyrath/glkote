@@ -1435,7 +1435,6 @@ function accept_inputset(arg) {
       inputel.on('focus', win.id, evhan_input_focus);
       inputel.on('blur', win.id, evhan_input_blur);
       inputel.data('winid', win.id);
-      win.inputel = inputel;
       win.historypos = win.history.length;
       win.needscroll = true;
     }
@@ -1456,7 +1455,8 @@ function accept_inputset(arg) {
         width = maxwidth;
       inputel.css({ position: 'absolute',
         left: xpos+'px', top: pos.top+'px', width: width+'px' });
-      win.frameel.append(inputel);
+      if (!win.inputel)
+        win.frameel.append(inputel);
     }
 
     if (win.type == 'buffer') {
@@ -1479,8 +1479,11 @@ function accept_inputset(arg) {
       /* ### opera absolute positioning failure? */
       inputel.css({ position: 'absolute',
         left: '0px', top: '0px', width: width+'px' });
-      cursel.append(inputel);
+      if (!win.inputel)
+        cursel.append(inputel);
     }
+
+    win.inputel = inputel;
   });
 }
 
