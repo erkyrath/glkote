@@ -1689,6 +1689,7 @@ By the way, in a buffer window, paragraphs of text are separated by blank lines 
 <dd>Added a check to prevent the library from sending two events from the same generation. (Unless it's a <code>'refresh'</code>.)
 <dd>Added an option to delay game launch by a tiny fraction, giving fonts time to load. (In general you don't need this. Lectrote does, because of the way it handles font preferences.)
 <dd>Changed the transcript display pane to a <code>&lt;pre&gt;</code> tag, to work around a Firefox copy-paste bug.
+<dd>The glk_stream_open_file() function now silently returns null on file-not-found. (This is the documented behavior, but my interpreters have historically wrongly thrown an error.)
 
 <dt>Release 2.2.4 (Jan 23, 2017)
 <dd>Added the <code>support</code> array to the initial (<code>'init'</code>) update request. (Earlier versions of GlkOte supported graphics and hyperlinks -- see below -- but omitted the <code>support</code> field.)
