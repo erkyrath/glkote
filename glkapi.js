@@ -40,7 +40,7 @@
 
 /* Put everything inside the Glk namespace. */
 
-Glk = function() {
+var Glk = function() {
 
 /* The VM interface object. */
 var VM = null;
