@@ -4893,7 +4893,7 @@ function glk_fileref_create_temp(usage, rock) {
     var filetype = (usage & Const.fileusage_TypeMask);
     var filetypename = FileTypeMap[filetype];
     var ref = Dialog.file_construct_temp_ref(filetypename);
-    fref = gli_new_fileref(ref.filename, usage, rock, ref);
+    var fref = gli_new_fileref(ref.filename, usage, rock, ref);
     return fref;
 }
 
@@ -4901,7 +4901,7 @@ function glk_fileref_create_by_name(usage, filename, rock) {
     /* Filenames that do not come from the user must be cleaned up. */
     filename = Dialog.file_clean_fixed_name(filename, (usage & Const.fileusage_TypeMask));
 
-    fref = gli_new_fileref(filename, usage, rock, null);
+    var fref = gli_new_fileref(filename, usage, rock, null);
     return fref;
 }
 
