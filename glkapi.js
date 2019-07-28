@@ -2852,7 +2852,7 @@ function gli_window_put_string(win, val) {
                 continue;
             }
 
-            lineobj = win.lines[win.cursory];
+            var lineobj = win.lines[win.cursory];
             lineobj.dirty = true;
             lineobj.chars[win.cursorx] = ch;
             lineobj.styles[win.cursorx] = win.style;
@@ -3034,7 +3034,7 @@ function gli_window_close(win, recurse) {
 
 function gli_window_rearrange(win, box) {
     var width, height, oldwidth, oldheight;
-    var min, max, diff, splitwid, ix, cx, lineobj;
+    var min, max, diff, split, splitwid, ix, cx, lineobj;
     var box1, box2, ch1, ch2;
 
     geometry_changed = true;
