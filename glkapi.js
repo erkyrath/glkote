@@ -3450,7 +3450,7 @@ function gli_put_char(str, ch) {
                 var len = arr.length;
                 if (len > str.buflen-str.bufpos)
                     len = str.buflen-str.bufpos;
-                for (ix=0; ix<len; ix++)
+                for (var ix=0; ix<len; ix++)
                     str.buf[str.bufpos+ix] = arr[ix];
                 str.bufpos += len;
                 if (str.bufpos > str.bufeof)
