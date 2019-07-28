@@ -3753,6 +3753,7 @@ function gli_get_line(str, buf, want_unicode) {
         return 0;
 
     var len = buf.length;
+    var lx, ch;
     var gotnewline;
 
     switch (str.type) {
