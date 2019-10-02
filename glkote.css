@@ -64,8 +64,6 @@
 }
 
 .BufferLine {
-  display: flex;
-  flex-direction: row;
   white-space: pre-wrap; /* required for spaces to work right */
 }
 
@@ -139,6 +137,11 @@
 .GridWindow .Input {
   font-family: monospace; /* necessary! */
   font-size: 14px;
+}
+
+.InputLine {
+  display: flex;
+  flex-direction: row;
 }
 
 /* The following are used for image alignment (in buffer windows). */

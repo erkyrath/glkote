@@ -1119,8 +1119,11 @@ function accept_one_content(arg) {
     }
 
     var cursel = $('#win'+win.id+'_cursor', dom_context);
-    if (cursel.length)
+    if (cursel.length) {
+      // remove input line class marker
+      cursel.parent().removeClass('InputLine');
       cursel.remove();
+    }
     cursel = null;
 
     if (arg.clear) {
@@ -1283,7 +1286,7 @@ function accept_one_content(arg) {
     if (divel) {
       cursel = $('<span>',
         { id: 'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
-      divel.append(cursel);
+      divel.append(cursel).addClass('InputLine');
 
       if (win.inputel) {
         /* Put back the inputel that we found earlier. */
@@ -1454,7 +1457,7 @@ function accept_inputset(arg) {
       if (!cursel.length) {
         cursel = $('<span>',
           { id: 'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
-        win.frameel.append(cursel);
+        win.frameel.append(cursel).addClass('InputLine');
       }
       cursel.append(inputel);
     }
@@ -1517,7 +1520,7 @@ function buffer_last_line(win) {
   if (divel == null)
     return null;
   /* If the sole child is the PreviousMark, there are no BufferLines. */
-  if (divel.className != 'BufferLine')
+  if (divel.className.indexOf('BufferLine') > -1)
     return null;
   return $(divel);
 }
