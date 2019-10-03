@@ -1520,7 +1520,7 @@ function buffer_last_line(win) {
   if (divel == null)
     return null;
   /* If the sole child is the PreviousMark, there are no BufferLines. */
-  if (divel.className.indexOf('BufferLine') > -1)
+  if (divel.className.indexOf('BufferLine') === -1)
     return null;
   return $(divel);
 }
