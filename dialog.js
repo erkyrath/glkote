@@ -1255,4 +1255,7 @@ return {
 
 }();
 
+// Node-compatible behavior
+try { exports.Dialog = Dialog; } catch (ex) {};
+
 /* End of Dialog library. */
