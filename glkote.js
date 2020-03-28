@@ -2926,4 +2926,7 @@ return {
 
 }();
 
+// Node-compatible behavior
+try { exports.GlkOte = GlkOte; } catch (ex) {};
+
 /* End of GlkOte library. */

@@ -1050,7 +1050,7 @@ function restore_allstate(res)
                     str.fstream.fseek(obj.filepos, Const.seekmode_Start);
                 }
 
-                str.buffer4 = new str.fstream.BufferClass(4);
+                str.buffer4 = str.fstream.BufferClass.alloc(4);
             }
             break;
 
@@ -3419,7 +3419,7 @@ function gli_put_char(str, ch) {
                         /* String.fromCharCode chokes on astral characters;
                            do it the hard way */
                         var arr8 = UniArrayToUTF8([ch]);
-                        var buf = new str.fstream.BufferClass(arr8);
+                        var buf = str.fstream.BufferClass.from(arr8);
                         str.fstream.fwrite(buf);
                     }
                 }
@@ -3498,19 +3498,19 @@ function gli_put_array(str, arr, allbytes) {
     case strtype_File:
         if (str.streaming) {
             if (!str.unicode) {
-                var buf = new str.fstream.BufferClass(arr);
+                var buf = str.fstream.BufferClass.from(arr);
                 str.fstream.fwrite(buf);
             }
             else {
                 if (!str.isbinary) {
                     /* cheap UTF-8 stream */
                     var arr8 = UniArrayToUTF8(arr);
-                    var buf = new str.fstream.BufferClass(arr8);
+                    var buf = str.fstream.BufferClass.from(arr8);
                     str.fstream.fwrite(buf);
                 }
                 else {
                     /* cheap big-endian stream */
-                    var buf = new str.fstream.BufferClass(4*arr.length);
+                    var buf = str.fstream.BufferClass.alloc(4*arr.length);
                     for (ix=0; ix<arr.length; ix++) {
                         buf.writeUInt32BE(arr[ix], 4*ix, true);
                     }
@@ -3908,18 +3908,18 @@ function glk_put_jstring_stream(str, val, allbytes) {
         if (str.streaming) {
             if (!str.unicode) {
                 // if !allbytes, we just give up on non-Latin-1 characters
-                var buf = new str.fstream.BufferClass(val, 'binary');
+                var buf = str.fstream.BufferClass.from(val, 'binary');
                 str.fstream.fwrite(buf);
             }
             else {
                 if (!str.isbinary) {
                     /* cheap UTF-8 stream */
-                    var buf = new str.fstream.BufferClass(val); // utf8
+                    var buf = str.fstream.BufferClass.from(val); // utf8
                     str.fstream.fwrite(buf);
                 }
                 else {
                     /* cheap big-endian stream */
-                    var buf = new str.fstream.BufferClass(4*val.length);
+                    var buf = str.fstream.BufferClass.alloc(4*val.length);
                     for (ix=0; ix<val.length; ix++) {
                         buf.writeUInt32BE(val.charCodeAt(ix), 4*ix, true);
                     }
@@ -4697,7 +4697,7 @@ function glk_stream_open_file(fref, fmode, rock) {
         str.streaming = true;
         str.fstream = fstream;
         /* We'll want a Buffer object around for short and writes. */
-        str.buffer4 = new fstream.BufferClass(4);
+        str.buffer4 = fstream.BufferClass.alloc(4);
     }
 
     return str;
@@ -5953,7 +5953,7 @@ function glk_stream_open_file_uni(fref, fmode, rock) {
         str.streaming = true;
         str.fstream = fstream;
         /* We'll want a Buffer object around for short and writes. */
-        str.buffer4 = new fstream.BufferClass(4);
+        str.buffer4 = fstream.BufferClass.alloc(4);
     }
 
     return str;
@@ -6320,5 +6320,8 @@ return {
 };
 
 }();
+
+// Node-compatible behavior
+try { exports.Glk = Glk; } catch (ex) {};
 
 /* End of Glk library. */
