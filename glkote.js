@@ -1396,8 +1396,11 @@ function accept_inputset(arg) {
     if (argi.type == 'line')
       maxlen = argi.maxlen;
 
+    var newinputel = false;
     var inputel = win.inputel;
+    
     if (inputel == null) {
+      newinputel = true;
       var classes = 'Input';
       if (argi.type == 'line') {
         classes += ' LineInput';
@@ -1434,6 +1437,7 @@ function accept_inputset(arg) {
       inputel.on('focus', win.id, evhan_input_focus);
       inputel.on('blur', win.id, evhan_input_blur);
       inputel.data('winid', win.id);
+      win.inputel = inputel;
       win.historypos = win.history.length;
       win.needscroll = true;
     }
@@ -1454,7 +1458,7 @@ function accept_inputset(arg) {
         width = maxwidth;
       inputel.css({ position: 'absolute',
         left: xpos+'px', top: pos.top+'px', width: width+'px' });
-      if (!win.inputel)
+      if (newinputel)
         win.frameel.append(inputel);
     }
 
@@ -1477,11 +1481,9 @@ function accept_inputset(arg) {
         width = 1;
       inputel.css({ position: 'absolute',
         left: '0px', top: '0px', width: width+'px' });
-      if (!win.inputel)
+      if (newinputel)
         cursel.append(inputel);
     }
-
-    win.inputel = inputel;
   });
 }
 
