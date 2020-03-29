@@ -35,7 +35,7 @@
 
 /* Put everything inside the GiDebug namespace. */
 
-GiDebug = function() {
+var GiDebug = function() {
 
 var debug_el_id = 'gidebug';
 

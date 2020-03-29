@@ -19,7 +19,7 @@
  * dialog.js.
  */
 
-Dialog = function() {
+var Dialog = function() {
 
 const fs = require('fs');
 const path_mod = require('path');
@@ -219,7 +219,7 @@ function FStream(fmode, filename)
     this.mark = 0; /* read-write position in the file (or buffer start pos) */
 
     /* We buffer input or output (but never both at the same time). */
-    this.buffer = new buffer_mod.Buffer(BUFFER_SIZE);
+    this.buffer = buffer_mod.Buffer.alloc(BUFFER_SIZE);
     /* bufuse is filemode_Read or filemode_Write, if the buffer is being used
        for reading or writing. For writing, the buffer starts at mark and
        covers buflen bytes. For reading, the buffer starts at mark amd runs
@@ -530,7 +530,7 @@ function autosave_write(signature, snapshot)
     fs.writeFileSync(pathj, str, { encoding:'utf8' });
 
     if (ram) {
-        var buf = new buffer_mod.Buffer(ram);
+        var buf = buffer_mod.Buffer.from(ram);
         fs.writeFileSync(pathr, buf);
     }
 }
@@ -604,5 +604,8 @@ return {
 };
 
 }();
+
+// Node-compatible behavior
+try { exports.Dialog = Dialog; } catch (ex) {};
 
 /* End of Dialog library. */

@@ -26,6 +26,7 @@ game_inputline_left = true;
 game_inputline_right = true;
 game_inputinitial_left = null;
 game_inputinitial_right = null;
+game_longprompt = false;
 game_timer_request = null;
 game_timer_lastrequest = null;
 game_simulate_quit = false;
@@ -154,8 +155,10 @@ function game_select() {
       game_inputgen_left = game_generation;
       game_print_left = true;
       if (!game_simulate_quit) {
-        if (game_inputline_left)
+        if (game_inputline_left && !game_longprompt)
           game_print('\n>');
+        else if (game_inputline_left)
+          game_print('\nThis is a very long prompt, long enough to be wrapped around to a new line. At least, that\'s the idea. Enter your command:>');
         else
           game_print('\nHit a key:>');
       }
@@ -510,6 +513,7 @@ function game_submit_line_input(winid, val) {
     game_inputinitial_right = null;
     game_print_left = false;
   }
+  game_longprompt = false;
 
   if (!jQuery.trim(val)) {
     return;
@@ -756,6 +760,7 @@ function game_parse(val) {
     helpopt2('gimage', '[number] [X,Y] [WxH]', 'draw image in graphics window');
     helpopt('both',    'print output in both story windows');
     helpopt('bothlong','print long output in both story windows');
+    helpopt('longprompt','try an unusually long input prompt');
     helpopt('timer',   'set a timed event to fire in two seconds');
     helpopt('save, load',  'open a file dialog');
     helpopt('script',  'write a fake transcript file');
@@ -1145,6 +1150,11 @@ function game_parse(val) {
     game_print_left = false;
     game_print(printtmp ? msg2 : msg1);
     game_print_left = printtmp;
+    return;
+  }
+
+  if (val == 'longprompt') {
+    game_longprompt = true;
     return;
   }
 

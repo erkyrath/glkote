@@ -59,7 +59,7 @@
 
 /* Put everything inside the Dialog namespace. */
 
-Dialog = function() {
+var Dialog = function() {
 
 var dialog_el_id = 'dialog';
 
@@ -1254,5 +1254,8 @@ return {
 };
 
 }();
+
+// Node-compatible behavior
+try { exports.Dialog = Dialog; } catch (ex) {};
 
 /* End of Dialog library. */

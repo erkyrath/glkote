@@ -40,7 +40,7 @@
 
 /* Put everything inside the Glk namespace. */
 
-Glk = function() {
+var Glk = function() {
 
 /* The VM interface object. */
 var VM = null;
@@ -1050,7 +1050,7 @@ function restore_allstate(res)
                     str.fstream.fseek(obj.filepos, Const.seekmode_Start);
                 }
 
-                str.buffer4 = new str.fstream.BufferClass(4);
+                str.buffer4 = str.fstream.BufferClass.alloc(4);
             }
             break;
 
@@ -2852,7 +2852,7 @@ function gli_window_put_string(win, val) {
                 continue;
             }
 
-            lineobj = win.lines[win.cursory];
+            var lineobj = win.lines[win.cursory];
             lineobj.dirty = true;
             lineobj.chars[win.cursorx] = ch;
             lineobj.styles[win.cursorx] = win.style;
@@ -3034,7 +3034,7 @@ function gli_window_close(win, recurse) {
 
 function gli_window_rearrange(win, box) {
     var width, height, oldwidth, oldheight;
-    var min, max, diff, splitwid, ix, cx, lineobj;
+    var min, max, diff, split, splitwid, ix, cx, lineobj;
     var box1, box2, ch1, ch2;
 
     geometry_changed = true;
@@ -3419,7 +3419,7 @@ function gli_put_char(str, ch) {
                         /* String.fromCharCode chokes on astral characters;
                            do it the hard way */
                         var arr8 = UniArrayToUTF8([ch]);
-                        var buf = new str.fstream.BufferClass(arr8);
+                        var buf = str.fstream.BufferClass.from(arr8);
                         str.fstream.fwrite(buf);
                     }
                 }
@@ -3450,7 +3450,7 @@ function gli_put_char(str, ch) {
                 var len = arr.length;
                 if (len > str.buflen-str.bufpos)
                     len = str.buflen-str.bufpos;
-                for (ix=0; ix<len; ix++)
+                for (var ix=0; ix<len; ix++)
                     str.buf[str.bufpos+ix] = arr[ix];
                 str.bufpos += len;
                 if (str.bufpos > str.bufeof)
@@ -3498,19 +3498,19 @@ function gli_put_array(str, arr, allbytes) {
     case strtype_File:
         if (str.streaming) {
             if (!str.unicode) {
-                var buf = new str.fstream.BufferClass(arr);
+                var buf = str.fstream.BufferClass.from(arr);
                 str.fstream.fwrite(buf);
             }
             else {
                 if (!str.isbinary) {
                     /* cheap UTF-8 stream */
                     var arr8 = UniArrayToUTF8(arr);
-                    var buf = new str.fstream.BufferClass(arr8);
+                    var buf = str.fstream.BufferClass.from(arr8);
                     str.fstream.fwrite(buf);
                 }
                 else {
                     /* cheap big-endian stream */
-                    var buf = new str.fstream.BufferClass(4*arr.length);
+                    var buf = str.fstream.BufferClass.alloc(4*arr.length);
                     for (ix=0; ix<arr.length; ix++) {
                         buf.writeUInt32BE(arr[ix], 4*ix, true);
                     }
@@ -3753,6 +3753,7 @@ function gli_get_line(str, buf, want_unicode) {
         return 0;
 
     var len = buf.length;
+    var lx, ch;
     var gotnewline;
 
     switch (str.type) {
@@ -3907,18 +3908,18 @@ function glk_put_jstring_stream(str, val, allbytes) {
         if (str.streaming) {
             if (!str.unicode) {
                 // if !allbytes, we just give up on non-Latin-1 characters
-                var buf = new str.fstream.BufferClass(val, 'binary');
+                var buf = str.fstream.BufferClass.from(val, 'binary');
                 str.fstream.fwrite(buf);
             }
             else {
                 if (!str.isbinary) {
                     /* cheap UTF-8 stream */
-                    var buf = new str.fstream.BufferClass(val); // utf8
+                    var buf = str.fstream.BufferClass.from(val); // utf8
                     str.fstream.fwrite(buf);
                 }
                 else {
                     /* cheap big-endian stream */
-                    var buf = new str.fstream.BufferClass(4*val.length);
+                    var buf = str.fstream.BufferClass.alloc(4*val.length);
                     for (ix=0; ix<val.length; ix++) {
                         buf.writeUInt32BE(val.charCodeAt(ix), 4*ix, true);
                     }
@@ -4645,7 +4646,7 @@ function glk_stream_open_file(fref, fmode, rock) {
         throw('glk_stream_open_file: illegal filemode');
 
     if (fmode == Const.filemode_Read && !Dialog.file_ref_exists(fref.ref))
-        throw('glk_stream_open_file: file not found for reading: ' + fref.ref.filename);
+        return null;
 
     if (!Dialog.streaming) {
         var content = null;
@@ -4696,7 +4697,7 @@ function glk_stream_open_file(fref, fmode, rock) {
         str.streaming = true;
         str.fstream = fstream;
         /* We'll want a Buffer object around for short and writes. */
-        str.buffer4 = new fstream.BufferClass(4);
+        str.buffer4 = fstream.BufferClass.alloc(4);
     }
 
     return str;
@@ -4893,7 +4894,7 @@ function glk_fileref_create_temp(usage, rock) {
     var filetype = (usage & Const.fileusage_TypeMask);
     var filetypename = FileTypeMap[filetype];
     var ref = Dialog.file_construct_temp_ref(filetypename);
-    fref = gli_new_fileref(ref.filename, usage, rock, ref);
+    var fref = gli_new_fileref(ref.filename, usage, rock, ref);
     return fref;
 }
 
@@ -4901,7 +4902,7 @@ function glk_fileref_create_by_name(usage, filename, rock) {
     /* Filenames that do not come from the user must be cleaned up. */
     filename = Dialog.file_clean_fixed_name(filename, (usage & Const.fileusage_TypeMask));
 
-    fref = gli_new_fileref(filename, usage, rock, null);
+    var fref = gli_new_fileref(filename, usage, rock, null);
     return fref;
 }
 
@@ -5901,7 +5902,7 @@ function glk_stream_open_file_uni(fref, fmode, rock) {
         throw('glk_stream_open_file_uni: illegal filemode');
 
     if (fmode == Const.filemode_Read && !Dialog.file_ref_exists(fref.ref))
-        throw('glk_stream_open_file_uni: file not found for reading: ' + fref.ref.filename);
+        return null;
 
     if (!Dialog.streaming) {
         var content = null;
@@ -5952,7 +5953,7 @@ function glk_stream_open_file_uni(fref, fmode, rock) {
         str.streaming = true;
         str.fstream = fstream;
         /* We'll want a Buffer object around for short and writes. */
-        str.buffer4 = new fstream.BufferClass(4);
+        str.buffer4 = fstream.BufferClass.alloc(4);
     }
 
     return str;
@@ -6319,5 +6320,8 @@ return {
 };
 
 }();
+
+// Node-compatible behavior
+try { exports.Glk = Glk; } catch (ex) {};
 
 /* End of Glk library. */
