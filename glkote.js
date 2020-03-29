@@ -1396,6 +1396,7 @@ function accept_inputset(arg) {
     if (argi.type == 'line')
       maxlen = argi.maxlen;
 
+    /* We're only going to emplace the inputel when it's freshly created. If it's lingering from a previous input, we leave it in place in the DOM. This *should* reduce soft-keyboard flashing problems without screwing up the DOM semantics. */
     var newinputel = false;
     var inputel = win.inputel;
     
