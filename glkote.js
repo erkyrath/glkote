@@ -1298,7 +1298,6 @@ function accept_one_content(arg) {
         var width = win.frameel.width() - (current_metrics.buffermarginx + pos.left + 2);
         if (width < 1)
           width = 1;
-        /* ### opera absolute positioning failure? */
         inputel.css({ position: 'absolute',
           left: '0px', top: '0px', width: width+'px' });
         cursel.append(inputel);
@@ -1476,7 +1475,6 @@ function accept_inputset(arg) {
       var width = win.frameel.width() - (current_metrics.buffermarginx + pos.left + 2);
       if (width < 1)
         width = 1;
-      /* ### opera absolute positioning failure? */
       inputel.css({ position: 'absolute',
         left: '0px', top: '0px', width: width+'px' });
       cursel.append(inputel);
@@ -2424,16 +2422,6 @@ function evhan_doc_keypress(ev) {
        test, since option-key combos are ordinary (accented) characters
        on Mac keyboards, but it's close enough. */
     return;
-  }
-
-  if (0) { /*### opera browser?*/
-    /* Opera inexplicably generates keypress events for the shift, option,
-       and command keys. The keycodes are 16...18. We don't want those
-       to focus-and-scroll-down. */
-    if (!keycode)
-      return;
-    if (keycode < 32 && keycode != 13)
-      return;
   }
 
   var win;
