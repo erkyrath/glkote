@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE html>
 <html>
 <head>
 <title>GlkOte: Extremely Minimal</title>
@@ -23,10 +23,11 @@ body {
 
 </style>
 
-<script src="jquery-1.12.4.min.js" type="text/javascript"></script>
-<script src="glkote.js" type="text/javascript"></script>
+<script src="jquery.min.js" type="text/javascript"></script>
 
-<script type="text/javascript">
+<script type="module">
+
+import GlkOte from './glkote.js';
 
 var generation = 0;
 
@@ -36,14 +37,16 @@ function accept() {
   GlkOte.update(arg);
 }
 
-Game = {
+const Game = {
   accept: accept,
 };
+
+$('document').ready(() => GlkOte.init(Game));
 
 </script>
 
 </head>
-<body onLoad="GlkOte.init();">
+<body>
 <div id="gameport">
 <div id="windowport">
 <noscript><hr>
