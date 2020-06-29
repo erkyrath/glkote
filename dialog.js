@@ -455,19 +455,19 @@ function evhan_edit_button(ev) {
             /* Cancel the confirmation, first */
             confirming = false;
             set_caption(null, false);
-            var fel = $('#'+dialog_el_id+'_infield');
+            const fel = $('#'+dialog_el_id+'_infield');
             fel.prop('disabled', false);
-            var butel = $('#'+dialog_el_id+'_accept');
+            const butel = $('#'+dialog_el_id+'_accept');
             butel.prop('disabled', false);
             butel.text('Save');
         }
 
-        var fel = $('#'+dialog_el_id+'_input');
+        const fel = $('#'+dialog_el_id+'_input');
         if (fel.length) {
             fel.hide();
         }
 
-        var butel = $('#'+dialog_el_id+'_edit');
+        let butel = $('#'+dialog_el_id+'_edit');
         butel.text('Done');
 
         butel = $('#'+dialog_el_id+'_delete');
@@ -484,12 +484,12 @@ function evhan_edit_button(ev) {
         editing = false;
         editing_dirent = null;
 
-        var fel = $('#'+dialog_el_id+'_input');
+        const fel = $('#'+dialog_el_id+'_input');
         if (fel.length) {
             fel.show();
         }
 
-        var butel = $('#'+dialog_el_id+'_edit');
+        let butel = $('#'+dialog_el_id+'_edit');
         butel.text('Edit');
 
         butel = $('#'+dialog_el_id+'_delete');
@@ -509,7 +509,7 @@ function evhan_edit_button(ev) {
 
         $('#'+dialog_el_id+'_buttonrow').show();
 
-        var butel = $('#'+dialog_el_id+'_edit');
+        const butel = $('#'+dialog_el_id+'_edit');
         butel.text('Done');
 
         evhan_storage_changed();
@@ -615,15 +615,15 @@ function evhan_cancel_button(ev) {
    when switching in and out of edit mode -- it's the easiest way to redraw
    everything.
 */
-function evhan_storage_changed(ev) {
+function evhan_storage_changed(/*ev*/) {
     if (!is_open)
         return false;
 
     var el, bodyel, butel, ls, lastusage;
 
-    var changedkey = null;
-    if (ev)
-        changedkey = ev.key;
+    //var changedkey = null;
+    //if (ev)
+    //    changedkey = ev.key;
     //GlkOte.log('### noticed storage: key ' + changedkey);
     /* We could use the changedkey to decide whether it's worth redrawing 
        the field here. */
@@ -707,7 +707,7 @@ function evhan_storage_changed(ev) {
 
         cur_filelist = [];
         lastusage = '';
-        for (ix=0; ix<ls.length; ix++) {
+        for (let ix=0; ix<ls.length; ix++) {
             file = ls[ix];
             if (file.dirent.usage != lastusage) {
                 lastusage = file.dirent.usage;
@@ -719,11 +719,11 @@ function evhan_storage_changed(ev) {
 
         bodyel.empty();
         
-        var selel = $('<select>', { id: dialog_el_id+'_select', name:'files' });
+        const selel = $('<select>', { id: dialog_el_id+'_select', name:'files' });
         selel.prop('size', '5'); /* firefox doesn't like this being set in the constructor */
-        var ix, file, datestr;
+        let file, datestr;
         var anyselected = false;
-        for (ix=0; ix<ls.length; ix++) {
+        for (let ix=0; ix<ls.length; ix++) {
             file = ls[ix];
             if (!file.dirent) {
                 el = $('<option>', { name:'f'+ix } );
@@ -767,10 +767,10 @@ function evhan_storage_changed(ev) {
     else {
         bodyel.empty();
         
-        var selel = $('<select>', { id: dialog_el_id+'_select', name:'files' });
+        const selel = $('<select>', { id: dialog_el_id+'_select', name:'files' });
         selel.prop('size', '5'); /* firefox doesn't like this being set in the constructor */
-        var ix, file, datestr;
-        for (ix=0; ix<ls.length; ix++) {
+        let file, datestr;
+        for (let ix=0; ix<ls.length; ix++) {
             file = ls[ix];
             el = $('<option>', { name:'f'+ix } );
             if (ix == 0)
@@ -814,7 +814,7 @@ function evhan_storage_changed(ev) {
  * Because we store everything in browser local storage, we have no
  * filename restrictions.
  */
-function file_clean_fixed_name(filename, usage) {
+function file_clean_fixed_name(filename /*, usage*/) {
     return filename;
 }
 
@@ -1104,7 +1104,9 @@ function autosave_read(signature) {
         try {
             return JSON.parse(val);
         }
-        catch (ex) { }
+        catch (ex) {
+            return null;
+        }
     }
     return null;
 }
@@ -1178,14 +1180,16 @@ try {
                     try {
                         htmlLocalStorage.removeItem(key);
                     }
-                    catch (ex) { }
+                    catch (ex) {
+                        return null;
+                    }
                 },
                 setItem: function(key, val) {
                     try {
                         htmlLocalStorage.setItem(key, val);
                     }
                     catch (ex) {
-                        GlkOte.log('Dialog: localStorage failed! ' + ex);
+                        //GlkOte.log('Dialog: localStorage failed! ' + ex);
                         return true; /* error */
                     }
                 },
@@ -1198,11 +1202,12 @@ try {
             };
         }
         catch (ex) {
-            GlkOte.log('Dialog: localStorage not available: ' + ex);
-            GlkOte.log('Dialog: falling back to window memory');
+            //GlkOte.log('Dialog: localStorage not available: ' + ex);
+            //GlkOte.log('Dialog: falling back to window memory');
         }
     }
 }
+/*eslint no-empty: "off"*/
 catch (ex) { }
 
 if (Storage == null) {
@@ -1260,7 +1265,6 @@ return {
 
 }();
 
-// Node-compatible behavior
-try { exports.Dialog = Dialog; } catch (ex) {};
+export default Dialog;
 
 /* End of Dialog library. */
