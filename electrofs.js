@@ -33,14 +33,16 @@ var extfilepath = path_mod.join(userpath, 'quixe-files');
 try {
     fs.mkdirSync(extfilepath);
 }
-catch (ex) {}
+catch (ex) {
+    void 0;
+}
 
 /* Constants -- same as in glkapi.js. */
 const filemode_Write = 0x01;
 const filemode_Read = 0x02;
 const filemode_ReadWrite = 0x03;
 const filemode_WriteAppend = 0x05;
-const seekmode_Start = 0;
+//const seekmode_Start = 0;
 const seekmode_Current = 1;
 const seekmode_End = 2;
 const fileusage_Data = 0x00;
@@ -204,7 +206,9 @@ function file_remove_ref(ref)
     try {
         fs.unlinkSync(ref.filename);
     }
-    catch (ex) { }
+    catch (ex) {
+        return;
+    }
 }
 
 /* FStream -- constructor for a file stream. This is what file_fopen()
@@ -238,7 +242,8 @@ FStream.prototype = {
      */
     fclose : function() {
         if (this.fd === null) {
-            GlkOte.log('file_fclose: file already closed: ' + this.filename);
+            //GlkOte.log('file_fclose: file already closed: ' + this.filename);
+            console.log('file_fclose: file already closed: ' + this.filename);
             return;
         }
         /* flush any unwritten data */
@@ -420,7 +425,8 @@ function file_fopen(fmode, ref)
             fs.closeSync(tempfd);
         }
         catch (ex) {
-            GlkOte.log('file_fopen: failed to open ' + fstream.filename + ': ' + ex);
+            //GlkOte.log('file_fopen: failed to open ' + fstream.filename + ': ' + ex);
+            console.log('file_fopen: failed to open ' + fstream.filename + ': ' + ex);
             return null;
         }
     }
@@ -452,7 +458,8 @@ function file_fopen(fmode, ref)
         fstream.fd = fs.openSync(fstream.filename, modestr);
     }
     catch (ex) {
-        GlkOte.log('file_fopen: failed to open ' + fstream.filename + ': ' + ex);
+        //GlkOte.log('file_fopen: failed to open ' + fstream.filename + ': ' + ex);
+        console.log('file_fopen: failed to open ' + fstream.filename + ': ' + ex);
         return null;
     }
 
@@ -462,7 +469,9 @@ function file_fopen(fmode, ref)
             var stats = fs.fstatSync(fstream.fd);
             fstream.mark = stats.size;
         }
-        catch (ex) {}
+        catch (ex) {
+            void 0;
+        }
     }
 
     return fstream;
@@ -480,24 +489,33 @@ function autosave_write(signature, snapshot)
     try {
         stat = fs.statSync(gamedirpath);
     }
-    catch (ex) {};
+    catch (ex) {
+        void 0;
+    }
     if (!stat || !stat.isDirectory()) {
         try {
             fs.mkdirSync(path_mod.join(userpath, 'games'));
         }
-        catch (ex) {};
+        catch (ex) {
+            void 0;
+        }
         try {
             fs.mkdirSync(gamedirpath);
         }
-        catch (ex) {};
+        catch (ex) {
+            void 0;
+        }
         stat = null;
         try {
             stat = fs.statSync(gamedirpath);
         }
-        catch (ex) {};
+        catch (ex) {
+            void 0;
+        }
         if (!stat || !stat.isDirectory()) {
             /* Can't create the directory; give up. */
-            GlkOte.log('Unable to create gamedirpath: ' + gamedirpath);
+            //GlkOte.log('Unable to create gamedirpath: ' + gamedirpath);
+            console.log('Unable to create gamedirpath: ' + gamedirpath);
             return;
         }
     }
@@ -513,11 +531,15 @@ function autosave_write(signature, snapshot)
         try {
             fs.unlinkSync(pathj);
         }
-        catch (ex) {};
+        catch (ex) {
+            return;
+        }
         try {
             fs.unlinkSync(pathr);
         }
-        catch (ex) {};
+        catch (ex) {
+            return;
+        }
         return;
     }
 
@@ -552,13 +574,15 @@ function autosave_read(signature)
             var ram = Array.from(buf.values());
             snapshot.ram = ram;
         }
-        catch (ex) {};
+        catch (ex) {
+            return null;
+        }
 
         return snapshot;
     }
     catch (ex) {
         return null;
-    };
+    }
 }
 
 /* Dialog.file_write(dirent, content, israw) -- write data to the file
@@ -566,7 +590,7 @@ function autosave_read(signature)
  * This call is intended for the non-streaming API, so it does not
  * exist in this version of Dialog.
  */
-function file_write(dirent, content, israw)
+function file_write(/*dirent, content, israw*/)
 {
     throw new Error('file_write not implemented in electrofs');
 }
@@ -576,7 +600,7 @@ function file_write(dirent, content, israw)
  * This call is intended for the non-streaming API, so it does not
  * exist in this version of Dialog.
  */
-function file_read(dirent, israw)
+function file_read(/*dirent, israw*/)
 {
     throw new Error('file_read not implemented in electrofs');
 }
@@ -605,7 +629,6 @@ return {
 
 }();
 
-// Node-compatible behavior
-try { exports.Dialog = Dialog; } catch (ex) {};
+export default Dialog;
 
 /* End of Dialog library. */

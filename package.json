@@ -20,6 +20,6 @@
     "eslint": "^7.3.1"
   },
   "scripts": {
-    "lint": "eslint glkote.js sample-demo.js dialog.js"
+    "lint": "eslint ."
   }
 }
