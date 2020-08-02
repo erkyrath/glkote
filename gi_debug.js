@@ -73,7 +73,7 @@ function debug_open()
     if (!rootel.length)
         throw new Error('GiDebug: unable to find root element #' + root_el_id + '.');
 
-    dia = $('<div>', { id: debug_el_id });
+    const dia = $('<div>', { id: debug_el_id });
     var el, subel;
 
     function set_drag_effect(el, tag) {
@@ -81,7 +81,7 @@ function debug_open()
             el.on('mousedown', { tag:tag }, evhan_dragstart);
         else
             el.on('touchstart', { tag:tag }, evhan_dragstart);
-    };
+    }
 
     el = $('<div>', { class: 'GiDebugHeader GiDebugRoundNE GiDebugRoundNW' });
     el.text('Debugging');
@@ -189,7 +189,7 @@ function func_long_whitespace(match) {
   return res + ' ';
 }
 
-function evhan_input(ev)
+function evhan_input(/*ev*/)
 {
     var inputel = $('#'+debug_el_id+'_input');
     if (!inputel.length)
@@ -263,7 +263,7 @@ function evhan_dragstart(ev)
     }
 }
 
-function evhan_dragdrag(ev, ui)
+function evhan_dragdrag(ev/*, ui*/)
 {
     if (!drag_mode)
         return;
@@ -292,25 +292,27 @@ function evhan_dragdrag(ev, ui)
     case 'height':
         dia.height(Math.max(min_width, drag_context.height + deltay));
         break;
-    case 'size-ne':
-        var ypos = Math.max(drag_context.porttop, drag_context.top + deltay);
+    case 'size-ne': {
+        const ypos = Math.max(drag_context.porttop, drag_context.top + deltay);
         pos.left = drag_context.left;
         pos.top = Math.min(drag_context.ymax-min_width, ypos);
         dia.offset(pos);
         dia.width(Math.max(min_width, drag_context.width + deltax));
         dia.height(drag_context.ymax - pos.top);
         break;
-    case 'size-sw':
-        var xpos = drag_context.left + deltax;
+    }
+    case 'size-sw': {
+        const xpos = drag_context.left + deltax;
         pos.top = drag_context.top;
         pos.left = Math.min(drag_context.xmax-min_width, xpos);
         dia.offset(pos);
         dia.height(Math.max(min_width, drag_context.height + deltay));
         dia.width(drag_context.xmax - pos.left);
         break;
-    case 'size-nw':
-        var xpos = drag_context.left + deltax;
-        var ypos = Math.max(drag_context.porttop, drag_context.top + deltay);
+    }
+    case 'size-nw': {
+        const xpos = drag_context.left + deltax;
+        const ypos = Math.max(drag_context.porttop, drag_context.top + deltay);
         pos.left = Math.min(drag_context.xmax-min_width, xpos);
         pos.top = Math.min(drag_context.ymax-min_width, ypos);
         dia.offset(pos);
@@ -318,9 +320,10 @@ function evhan_dragdrag(ev, ui)
         dia.height(drag_context.ymax - pos.top);
         break;
     }
+    }
 }
 
-function evhan_dragstop(ev, ui)
+function evhan_dragstop(/*ev, ui*/)
 {
     if (!use_touch_ui) {
         $('body').off('mousemove');
@@ -346,5 +349,7 @@ return {
 };
 
 }();
+
+export default GiDebug;
 
 /* End of GiDebug library. */

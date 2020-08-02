@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE html>
 <html>
 <head>
 <title>GlkOte: Not A Real Game</title>
@@ -66,17 +66,18 @@ body {
 
 </style>
 
-<script src="jquery-1.12.4.min.js" type="text/javascript"></script>
-<script src="glkote.js" type="text/javascript"></script>
-<script src="dialog.js" type="text/javascript"></script>
+<script src="jquery.min.js" type="text/javascript"></script>
 
-<script type="text/javascript">
+<script type="module">
 
-game_generation = 1;
-game_metrics = null;
-game_streamout = new Array();
+import GlkOte from './glkote.js';
+import Dialog from './dialog.js';
 
-prompt = '\n>';
+let game_generation = 1;
+let game_metrics = null;
+const game_streamout = new Array();
+
+const prompt = '\n>';
 
 /* Put your game-startup text here. 
 */
@@ -107,8 +108,8 @@ function respond(val) {
 function say(val, style, runon) {
   if (style == undefined)
     style = 'normal';
-  var ls = val.split('\n');
-  for (ix=0; ix<ls.length; ix++) {
+  const ls = val.split('\n');
+  for (let ix=0; ix<ls.length; ix++) {
     if (runon) {
       if (ls[ix])
         game_streamout.push({ content: [style, ls[ix]], append: 'true' });
@@ -188,15 +189,18 @@ function game_select() {
 }
 
 /* The game interface object. */
-Game = {
+const Game = {
+  Dialog: Dialog,
   accept: game_accept,
-  spacing: 0
+  spacing: 0,
 };
+
+$('document').ready(() => GlkOte.init(Game));
 
 </script>
 
 </head>
-<body onLoad="GlkOte.init();">
+<body>
 <div id="banner">
 <div id="bannertitle">Not A Real Game</div>
 <div id="bannerhowto"><em><a target="_blank" href="sample-help.html">How do I play?</a></em></div>

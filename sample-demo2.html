@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE html>
 <html>
 <head>
 <title>GlkOte: Not A Real Game</title>
@@ -83,27 +83,11 @@ body {
 
 </style>
 
-<script src="jquery-1.12.4.min.js" type="text/javascript"></script>
-<script src="glkote.js" type="text/javascript"></script>
-<script src="dialog.js" type="text/javascript"></script>
-
-<script src="sample-demo.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-
-/* The game interface object. */
-Game = {
-  accept: game_accept,
-  detect_external_links: 'search',
-  outspacingx: 8,
-  outspacingy: 0,
-  spacing: 4
-};
-
-</script>
+<script src="jquery.min.js" type="text/javascript"></script>
+<script src="sample-demo.js" type="module"></script>
 
 </head>
-<body onLoad="GlkOte.init();">
+<body>
 <div id="mainpage">
 <div id="banner">
 <div id="bannertitle">Not A Real Game</div>

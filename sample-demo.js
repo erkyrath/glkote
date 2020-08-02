@@ -4,38 +4,42 @@
 
 /* Define a whole lot of global variables, representing game state. */
 
-game_metrics = null;
-game_streamout_left = new Array();
-game_streamout_right = new Array();
-game_streamout_graph = new Array();
-game_streamclear_left = false;
-game_streamclear_right = false;
-game_generation = 1;
-game_moves = 1;
-game_quotemove = 0;
-game_quotehaslink = false;
-game_splitwin = false;
-game_graphwin = false;
-game_statusmenu = false;
-game_statusmenu_from_left = true;
-game_print_left = true;
-game_inputgen_left = 0;
-game_inputgen_right = 0;
-game_inputgen_top = 0;
-game_inputline_left = true;
-game_inputline_right = true;
-game_inputinitial_left = null;
-game_inputinitial_right = null;
-game_longprompt = false;
-game_timer_request = null;
-game_timer_lastrequest = null;
-game_simulate_quit = false;
-game_simulate_crash = false;
-game_simulate_timeout = false;
-game_simulate_dialog = false;
+import GlkOte from './glkote.js';
+import Dialog from './dialog.js';
 
-game_mood = 0;
-game_mood_list = [ 'cheery', 'dopey', 'hungry', 'explodey' ];
+let game_metrics = null;
+const game_streamout_left = new Array();
+const game_streamout_right = new Array();
+const game_streamout_graph = new Array();
+let game_streamclear_left = false;
+let game_streamclear_right = false;
+let game_generation = 1;
+let game_moves = 1;
+let game_quotemove = 0;
+let game_quotehaslink = false;
+let game_splitwin = false;
+let game_graphwin = false;
+let game_hyperlink = true;
+let game_statusmenu = false;
+let game_statusmenu_from_left = true;
+let game_print_left = true;
+let game_inputgen_left = 0;
+let game_inputgen_right = 0;
+let game_inputgen_top = 0;
+let game_inputline_left = true;
+let game_inputline_right = true;
+let game_inputinitial_left = null;
+let game_inputinitial_right = null;
+let game_longprompt = false;
+let game_timer_request = null;
+let game_timer_lastrequest = null;
+let game_simulate_quit = false;
+let game_simulate_crash = false;
+let game_simulate_timeout = false;
+let game_simulate_dialog = false;
+
+let game_mood = 0;
+const game_mood_list = [ 'cheery', 'dopey', 'hungry', 'explodey' ];
 
 function game_version() {
   return ('Release 22; GlkOte library ' + GlkOte.version 
@@ -63,7 +67,7 @@ function game_generate_long_text(count, label) {
   return msg;
 }
 
-function game_clear_window(val) {
+function game_clear_window(/*val*/) {
   if (game_print_left) {
     game_streamout_left.length = 0;
     game_streamclear_left = true;
@@ -84,7 +88,7 @@ function game_print(val, lineflags) {
     stream = game_streamout_right;
 
   if (val == null) {
-    var obj = {};
+    let obj = {};
     if (lineflags)
       jQuery.extend(obj, lineflags);
     stream.push(obj);
@@ -94,7 +98,7 @@ function game_print(val, lineflags) {
   /* If val is a string, it is added. If the string contains newlines, this
      will require several content entries. */
   if (jQuery.type(val) === 'string') {
-    var obj;
+    let obj;
     var ls = val.split('\n');
     for (ix=0; ix<ls.length; ix++) {
       if (ls[ix])
@@ -111,7 +115,7 @@ function game_print(val, lineflags) {
 
   /* If val is an array, it must contain valid line_array_data entries. */
   if (jQuery.type(val) === 'array') {
-    var obj = { content: val };
+    let obj = { content: val };
     if (lineflags)
       jQuery.extend(obj, lineflags);
     stream.push(obj);
@@ -121,7 +125,7 @@ function game_print(val, lineflags) {
   /* If val is an object with a special field, it is added as a singleton
      line_array_data entry. */
   if (val.special !== undefined) {
-    var obj = { content: [ val ] };
+    let obj = { content: [ val ] };
     if (lineflags)
       jQuery.extend(obj, lineflags);
     stream.push(obj);
@@ -295,7 +299,7 @@ function game_select() {
   ];
 
   if (game_streamout_left.length || game_streamclear_left) {
-    var obj = { id: 2 };
+    let obj = { id: 2 };
     if (game_streamout_left.length)
       obj.text = game_streamout_left;
     if (game_streamclear_left)
@@ -305,7 +309,7 @@ function game_select() {
 
   if (game_splitwin) {
     if (game_streamout_right.length || game_streamclear_right) {
-      var obj = { id: 4 };
+      let obj = { id: 4 };
       if (game_streamout_right.length)
         obj.text = game_streamout_right;
       if (game_streamclear_right)
@@ -316,7 +320,7 @@ function game_select() {
 
   if (game_graphwin) {
     if (game_streamout_graph.length) {
-      var obj = { id: 5 };
+      let obj = { id: 5 };
       obj.draw = game_streamout_graph;
       argc.push(obj);
     }
@@ -349,7 +353,7 @@ function game_select() {
 
   var argi = [ ];
   if (!game_statusmenu) {
-    var obj =  { id: 2, gen: game_inputgen_left,
+    let obj =  { id: 2, gen: game_inputgen_left,
       type: (game_inputline_left ? 'line' : 'char'), maxlen: 200,
       hyperlink: true };
     if (game_inputinitial_left)
@@ -357,11 +361,11 @@ function game_select() {
     argi.push(obj);
   }
   else {
-    var obj = { id: 2, hyperlink: true };
+    let obj = { id: 2, hyperlink: true };
     argi.push(obj);
   }
   if (!game_statusmenu && game_splitwin) {
-    var obj = { id: 4, gen: game_inputgen_right,
+    let obj = { id: 4, gen: game_inputgen_right,
       type: (game_inputline_right ? 'line' : 'char'), maxlen: 200,
       hyperlink: true };
     if (game_inputinitial_right)
@@ -369,21 +373,21 @@ function game_select() {
     argi.push(obj);
   }
   else {
-    var obj = { id: 4, hyperlink: true };
+    let obj = { id: 4, hyperlink: true };
     argi.push(obj);
   }
   if (game_statusmenu) {
-    var obj = { id: 1, gen: game_inputgen_top,
+    let obj = { id: 1, gen: game_inputgen_top,
       type: 'char', xpos:15, ypos:3+game_mood,
       mouse: true };
     argi.push(obj);
   }
   if (game_graphwin) {
-    var obj = { id: 5, mouse: true };
+    let obj = { id: 5, mouse: true };
     argi.push(obj);
   }
-  if (true) {
-    var obj = { id: 3, hyperlink: true };
+  if (game_hyperlink) {
+    let obj = { id: 3, hyperlink: true };
     argi.push(obj);
   }
 
@@ -723,21 +727,22 @@ function game_fetch_image(num, alignment) {
 var regexp_color = /(^#(?:[0-9a-f]{3})$)|(^#(?:[0-9a-f]{6})$)|(^red|green|blue|yellow|orange|purple|magenta|cyan|black|white$)/;
 
 function game_parse(val) {
+
+  function helpopt(cmd, val) {
+    game_print({ text: '    '});
+    game_print({ newline:false, style:'subheader', text: cmd});
+    game_print({ newline:false, text: ': ' + val});
+  }
+  function helpopt2(cmd, args, val) {
+    game_print({ text: '    '});
+    game_print({ newline:false, style:'subheader', text: cmd});
+    game_print({ newline:false, text: ' '});
+    game_print({ newline:false, style:'emphasized', text: args});
+    game_print({ newline:false, text: ': ' + val});
+  }
+
   if (val == 'help' || val == 'about' || val == '?') {
     game_print('This is an interface demo of the RemGlk Javascript front end. There is no IF interpreter behind the display library -- just a few lines of Javascript. It accepts some commands which demonstrate the capabilities of the display system.\n');
-
-    helpopt = function(cmd, val) {
-      game_print({ text: '    '});
-      game_print({ newline:false, style:'subheader', text: cmd});
-      game_print({ newline:false, text: ': ' + val});
-    }
-    helpopt2 = function(cmd, args, val) {
-      game_print({ text: '    '});
-      game_print({ newline:false, style:'subheader', text: cmd});
-      game_print({ newline:false, text: ' '});
-      game_print({ newline:false, style:'emphasized', text: args});
-      game_print({ newline:false, text: ': ' + val});
-    }
 
     helpopt('help',    'this list');
     helpopt('long',    'a long paragraph of text');
@@ -899,10 +904,10 @@ function game_parse(val) {
   }
 
   if (val == 'page' || val == 'tall') {
-    var arr = [];
-    for (var ix=0; ix<150; ix++)
+    const arr = [];
+    for (let ix=0; ix<150; ix++)
       arr.push('Line ' + ix + '...');
-    var msg = arr.join('\n') + '\nThat is all.';
+    const msg = arr.join('\n') + '\nThat is all.';
     game_print(msg);
     return;
   }
@@ -968,10 +973,10 @@ function game_parse(val) {
       game_print('There is no graphics window.');
     }
     else {
-      var obj = { special:'setcolor', color:'#FFFFFF' };
-      var ls = val.split(' ');
-      for (var ix=0; ix<ls.length; ix++) {
-        var val = ls[ix];
+      const obj = { special:'setcolor', color:'#FFFFFF' };
+      const ls = val.split(' ');
+      for (let ix=0; ix<ls.length; ix++) {
+        const val = ls[ix];
         if (val.match(regexp_color))
           obj.color = val;
       }
@@ -986,20 +991,20 @@ function game_parse(val) {
       game_print('There is no graphics window.');
     }
     else {
-      var obj = { special:'fill' };
-      var ls = val.split(' ');
-      for (var ix=0; ix<ls.length; ix++) {
-        var val = ls[ix];
+      const obj = { special:'fill' };
+      const ls = val.split(' ');
+      for (let ix=0; ix<ls.length; ix++) {
+        const val = ls[ix];
         if (val.match(regexp_color)) {
           obj.color = val;
         }
         else if (val.match(/^[0-9]+,[0-9]+$/)) {
-          var pair = val.split(',');
+          const pair = val.split(',');
           obj.x = (1*pair[0]);
           obj.y = (1*pair[1]);
         }
         else if (val.match(/^[0-9]+x[0-9]+$/)) {
-          var pair = val.split('x');
+          const pair = val.split('x');
           obj.width = (1*pair[0]);
           obj.height = (1*pair[1]);
         }
@@ -1023,11 +1028,11 @@ function game_parse(val) {
       game_print('There is no graphics window.');
       return;
     }
-    var imagenum = 0;
-    var dimensions = undefined;
-    var pos = { x:0, y:0 };
-    var ls = val.split(' ');
-    for (var ix=0; ix<ls.length; ix++) {
+    let imagenum = 0;
+    let dimensions = undefined;
+    let pos = { x:0, y:0 };
+    const ls = val.split(' ');
+    for (let ix=0; ix<ls.length; ix++) {
       val = ls[ix];
       if (!val || val == 'gimage')
         continue;
@@ -1036,15 +1041,15 @@ function game_parse(val) {
         continue;
       }
       if (val.match(/^[0-9]+x[0-9]+$/)) {
-        var pair = val.split('x');
+        const pair = val.split('x');
         dimensions = { width:(1*pair[0]), height:(1*pair[1]) };
       }
       if (val.match(/^[0-9]+,[0-9]+$/)) {
-        var pair = val.split(',');
+        const pair = val.split(',');
         pos = { x:(1*pair[0]), y:(1*pair[1]) };
       }
     }
-    var img = game_fetch_image(imagenum, alignment);
+    const img = game_fetch_image(imagenum, alignment);
     if (!img) {
       game_print('There is no image number ' + imagenum + '.');
       return;
@@ -1065,7 +1070,7 @@ function game_parse(val) {
       game_print('There is no graphics window.');
     }
     else {
-      var obj = { special:'setcolor', color:'#FFF' };
+      let obj = { special:'setcolor', color:'#FFF' };
       game_streamout_graph.push(obj);
       obj = { special:'fill' };
       game_streamout_graph.push(obj);
@@ -1118,7 +1123,7 @@ function game_parse(val) {
     game_inputline_left = true;
     game_inputline_right = true;
     /* leave game_inputinitial_left/right as set */
-    var printtmp = game_print_left;
+    const printtmp = game_print_left;
     game_print_left = true;
     game_print(printtmp ? msg1 : msg2);
     game_print_left = false;
@@ -1133,18 +1138,18 @@ function game_parse(val) {
       return;
     }
 
-    var arr = [];
-    for (var ix=0; ix<100; ix++)
+    const arr = [];
+    for (let ix=0; ix<100; ix++)
         arr.push('Line ' + ix + '...');
-    var msg1 = arr.join('\n') + '\nThat is all for the primary window.';
-    var msg2 = arr.join('\n') + '\nThat is all for the secondary window.';
+    const msg1 = arr.join('\n') + '\nThat is all for the primary window.';
+    const msg2 = arr.join('\n') + '\nThat is all for the secondary window.';
 
     game_inputgen_left = 0;
     game_inputgen_right = 0;
     game_inputline_left = true;
     game_inputline_right = true;
     /* leave game_inputinitial_left/right as set */
-    var printtmp = game_print_left;
+    const printtmp = game_print_left;
     game_print_left = true;
     game_print(printtmp ? msg1 : msg2);
     game_print_left = false;
@@ -1210,7 +1215,7 @@ function game_parse(val) {
     game_inputinitial_left = null;
     game_inputinitial_right = null;
     game_statusmenu_from_left = game_print_left;
-    var printtmp = game_print_left;
+    const printtmp = game_print_left;
     game_print('Select an option with the arrow keys; accept by hitting Return. (N, P, and Q will also work. Or you can click on a menu line.) Waiting...');
     if (game_splitwin) {
       game_print_left = !game_print_left;
@@ -1247,7 +1252,7 @@ function game_parse(val) {
   }
 
   if (val == 'load') {
-    if (!window.Dialog) {
+    if (!Dialog) {
       game_print('The "dialog.js" script was not loaded by this page, so you cannot test the file-selection dialog.');
       return;
     }
@@ -1264,7 +1269,7 @@ function game_parse(val) {
   }
 
   if (val == 'save') {
-    if (!window.Dialog) {
+    if (!Dialog) {
       game_print('The "dialog.js" script was not loaded by this page, so you cannot test the file-selection dialog.');
       return;
     }
@@ -1286,9 +1291,9 @@ function game_parse(val) {
       game_print('File already exists; deleting...');
       Dialog.file_remove_ref(ref);
     }
-    var scriptdat = 'This is a fake transcript.\nIt was written out at ' + Date() + '.\n';
-    var arr = [];
-    for (var ix=0; ix<scriptdat.length; ix++)
+    const scriptdat = 'This is a fake transcript.\nIt was written out at ' + Date() + '.\n';
+    const arr = [];
+    for (let ix=0; ix<scriptdat.length; ix++)
       arr[ix] = scriptdat.charCodeAt(ix);
     Dialog.file_write(ref, arr);
     game_print('Wrote a transcript file named "test-script".');
@@ -1320,9 +1325,9 @@ function game_parse(val) {
 
   if (val == 'metric' || val == 'metrics') {
     game_print('Window metrics (as computed by GlkOte):');
-    var ls = jQuery.map(game_metrics, function(val, key) { return key; });
+    const ls = jQuery.map(game_metrics, function(val, key) { return key; });
     ls.sort();
-    for (var ix=0; ix<ls.length; ix++) {
+    for (let ix=0; ix<ls.length; ix++) {
       game_print('  ' + ls[ix] + ': ' + game_metrics[ls[ix]]);
     }
     return;
@@ -1357,3 +1362,13 @@ function game_parse(val) {
 
   game_print('I don\'t know how to "' + val + '". Try "help".');
 }
+
+/* The game interface object. */
+const Game = {
+  Dialog: Dialog,
+  accept: game_accept,
+  detect_external_links: 'match',
+  spacing: 4,
+};
+
+$('document').ready(() => GlkOte.init(Game));

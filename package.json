@@ -1,0 +1,25 @@
+{
+  "name": "glkote",
+  "version": "2.2.5",
+  "description": "A Javascript display library for IF interfaces",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erkyrath/glkote.git"
+  },
+  "keywords": [
+    "interactive-fiction",
+    "glk"
+  ],
+  "author": "Andrew Plotkin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/erkyrath/glkote/issues"
+  },
+  "homepage": "https://github.com/erkyrath/glkote#readme",
+  "devDependencies": {
+    "eslint": "^7.3.1"
+  },
+  "scripts": {
+    "lint": "eslint ."
+  }
+}
