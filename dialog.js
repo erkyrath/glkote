@@ -963,7 +963,7 @@ function file_write(dirent, content, israw) {
     file.modified = new Date();
 
     if (!israw)
-        content = encode_array(content);
+        content = JSON.stringify(content);
 
     ls = [];
 
@@ -1014,7 +1014,7 @@ function file_read(dirent, israw) {
     if (israw)
         return content;
     else
-        return decode_array(content);
+        return JSON.parse(content);
 }
 
 function file_notimplemented() {
@@ -1107,31 +1107,6 @@ function autosave_read(signature) {
         catch (ex) { }
     }
     return null;
-}
-
-/* Define encode_array() and decode_array() functions. These would be
-   JSON.stringify() and JSON.parse(), except not all browsers support those.
-*/
-
-var encode_array = null;
-var decode_array = null;
-
-if (window.JSON) {
-    encode_array = function(arr) {
-        var res = JSON.stringify(arr);
-        var len = res.length;
-        /* Safari's JSON quotes arrays for some reason; we need to strip
-           the quotes off. */
-        if (res[0] == '"' && res[len-1] == '"')
-            res = res.slice(1, len-1);
-        return res;
-    }
-    decode_array = function(val) { return JSON.parse(val); }
-}
-else {
-    /* Not-very-safe substitutes for JSON in old browsers. */
-    encode_array = function(arr) { return '[' + arr + ']'; }
-    decode_array = function(val) { return eval(val); }
 }
 
 /* Locate the storage object, and set up the storage event handler, at load
