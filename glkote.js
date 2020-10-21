@@ -1169,8 +1169,9 @@ function accept_one_content(arg) {
         divel.data('blankpara', true);
         win.frameel.append(divel);
       }
-      if (textarg.flowbreak)
+      if (textarg.flowbreak) {
         divel.addClass('FlowBreak');
+      }
       if (!content || !content.length) {
         if (divel.data('blankpara'))
           divel.append($('<span>', { 'class':'BlankLineSpan' }).text(NBSP));
@@ -1289,7 +1290,7 @@ function accept_one_content(arg) {
        paragraph div. We use this to position the input box. */
     var divel = buffer_last_line(win);
     if (divel) {
-      cursel = $('<span>',
+      var cursel = $('<span>',
         { id: 'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
       cursel.append(NBSP);
       divel.append(cursel);
@@ -1310,6 +1311,8 @@ function accept_one_content(arg) {
           left: '0px', top: '0px', width: width+'px' });
         cursel.append(inputel);
       }
+
+      cursel = null;
     }
   }
 
