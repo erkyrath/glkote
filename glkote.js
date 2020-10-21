@@ -1480,6 +1480,9 @@ function accept_inputset(arg) {
 
     if (win.type == 'buffer') {
       var cursel = $('#win'+win.id+'_cursor', dom_context);
+      /* Check to make sure an InvisibleCursor exists on the last line.
+         The only reason it might not is if the window is entirely blank
+         (no lines). In that case, append one to the window frame itself. */
       if (!cursel.length) {
         cursel = $('<span>',
           { id: 'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
