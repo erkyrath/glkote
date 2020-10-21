@@ -858,7 +858,7 @@ function accept_one_window(arg) {
     var rockclass = 'WindowRock_' + arg.rock;
     frameel = $('<div>',
       { id: 'window'+arg.id,
-        'class': 'WindowFrame ' + typeclass + ' ' + rockclass });
+        'class': 'WindowFrame HasNoInputField ' + typeclass + ' ' + rockclass });
     frameel.data('winid', arg.id);
     frameel.on('mousedown', arg.id, evhan_window_mousedown);
     if (perform_paging && win.type == 'buffer')
@@ -1372,6 +1372,8 @@ function accept_inputcancel(arg) {
       if (argi == null || argi.gen > win.input.gen) {
         /* cancel this input. */
         win.input = null;
+        win.frameel.addClass('HasNoInputField');
+        win.frameel.removeClass('HasInputField');
         if (win.inputel) {
           win.inputel.remove();
           win.inputel = null;
@@ -1405,6 +1407,8 @@ function accept_inputset(arg) {
     if (argi == null)
       return;
     win.input = argi;
+    win.frameel.addClass('HasInputField');
+    win.frameel.removeClass('HasNoInputField');
 
     /* Maximum number of characters to accept. */
     var maxlen = 1;
