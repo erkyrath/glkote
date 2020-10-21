@@ -1152,6 +1152,9 @@ function accept_one_content(arg) {
        between an empty paragraph and one which truly contains a NBSP.
        (The difference is, when you append data to a truly empty paragraph,
        you have to delete the placeholder NBSP.)
+
+       We also give the paragraph div the BlankPara class, in case
+       CSS cares.
     */
 
     for (ix=0; ix<text.length; ix++) {
@@ -1165,7 +1168,7 @@ function accept_one_content(arg) {
       }
       if (divel == null) {
         /* Create a new paragraph div */
-        divel = $('<div>', { 'class': 'BufferLine' });
+        divel = $('<div>', { 'class': 'BufferLine BlankPara' });
         divel.data('blankpara', true);
         win.frameel.append(divel);
       }
@@ -1179,6 +1182,7 @@ function accept_one_content(arg) {
       }
       if (divel.data('blankpara')) {
         divel.data('blankpara', false);
+        divel.removeClass('BlankPara');
         divel.empty();
       }
       for (sx=0; sx<content.length; sx++) {
