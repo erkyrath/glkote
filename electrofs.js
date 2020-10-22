@@ -21,6 +21,7 @@
 
 var Dialog = function() {
 
+const electron = require('electron');
 const fs = require('fs');
 const path_mod = require('path');
 const buffer_mod = require('buffer');
@@ -48,14 +49,18 @@ const fileusage_InputRecord = 0x03;
 const BUFFER_SIZE = 256;
 
 /* Before we do any work, we must set up some path info. This is, sadly,
-   a blocking call -- it has to query some information out of the main
-   process. */
+   a blocking call. It has to query some information out of the main
+   process, which is an async operation.
+   TODO: Have the interpreter call this at startup, with a callback,
+   so that we can be async-clean? Then we wouldn't need to call init()
+   all over. */
 function init()
 {
     if (inited) return;
-        
-    userpath = require('electron').remote.app.getPath('userData');
-    temppath = require('electron').remote.app.getPath('temp');
+
+    var obj = electron.ipcRenderer.sendSync('get_app_paths');
+    userpath = obj.userData;
+    temppath = obj.temp;
     
     extfilepath = path_mod.join(userpath, 'quixe-files');
 
@@ -68,7 +73,6 @@ function init()
     catch (ex) {}
 
     inited = true;
-    console.log('### paths:', userpath, temppath, extfilepath);
 }
     
 /* Construct a file-filter list for a given usage type. These lists are
@@ -110,11 +114,11 @@ function dialog_open(tosave, usage, gameid, callback)
         
     /* The use of remote.dialog and remote.getCurrentWindow() is 
        deprecated. Change this to an explicit IPC call. */
-    const dialog = require('electron').remote.dialog;
+    const dialog = electron.remote.dialog;
     var opts = {
         filters: filters_for_usage(usage)
     };
-    var mainwin = require('electron').remote.getCurrentWindow();
+    var mainwin = electron.remote.getCurrentWindow();
     if (!tosave) {
         opts.properties = ['openFile'];
         dialog.showOpenDialog(mainwin, opts).then(function(res) {
