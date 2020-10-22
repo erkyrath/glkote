@@ -28,6 +28,7 @@ const buffer_mod = require('buffer');
 /* These will be filled in at init() time. */
 var inited = false;
 var userpath = null;
+var temppath = null;
 var extfilepath = null;
 
 /* Constants -- same as in glkapi.js. */
@@ -54,6 +55,8 @@ function init()
     if (inited) return;
         
     userpath = require('electron').remote.app.getPath('userData');
+    temppath = require('electron').remote.app.getPath('temp');
+    
     extfilepath = path_mod.join(userpath, 'quixe-files');
 
     /* We try to create a directory for external files at init time.
@@ -65,7 +68,7 @@ function init()
     catch (ex) {}
 
     inited = true;
-    console.log('### paths:', userpath, extfilepath);
+    console.log('### paths:', userpath, temppath, extfilepath);
 }
     
 /* Construct a file-filter list for a given usage type. These lists are
@@ -205,9 +208,8 @@ function file_construct_temp_ref(usage)
     init();
         
     var timestamp = new Date().getTime();
-    var filename = "_temp_" + timestamp + "_" + Math.random();
+    var filename = "_quixe_temp_" + timestamp + "_" + Math.random();
     filename = filename.replace('.', '');
-    var temppath = require('electron').remote.app.getPath('temp');
     var path = path_mod.join(temppath, filename);
     var ref = { filename:path, usage:usage };
     return ref;
