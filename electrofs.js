@@ -58,7 +58,7 @@ function init()
 {
     if (inited) return;
 
-    var obj = electron.ipcRenderer.sendSync('get_app_paths');
+    var obj = electron.ipcRenderer.sendSync('get_app_paths'); /* block and wait for response... */
     userpath = obj.userData;
     temppath = obj.temp;
     
