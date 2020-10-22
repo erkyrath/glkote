@@ -150,7 +150,8 @@ function dialog_open(tosave, usage, gameid, callback)
  * "null" if there's nothing left. Then append an appropriate suffix:
  * ".glkdata", ".glksave", ".txt".
  */
-function file_clean_fixed_name(filename, usage) {
+function file_clean_fixed_name(filename, usage)
+{
     init();
         
     var res = filename.replace(/["/\\<>:|?*]/g, '');
