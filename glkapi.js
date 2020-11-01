@@ -282,6 +282,38 @@ function complete_metrics(metrics) {
         res.buffermarginy = val;
         res.graphicsmarginy = val;
     }
+
+    val = metrics.spacing;
+    if (val !== undefined) {
+        res.inspacingx = val;
+        res.inspacingy = val;
+        res.outspacingx = val;
+        res.outspacingy = val;
+    }
+
+    val = metrics.inspacing;
+    if (val !== undefined) {
+        res.inspacingx = val;
+        res.inspacingy = val;
+    }
+
+    val = metrics.outspacing;
+    if (val !== undefined) {
+        res.outspacingx = val;
+        res.outspacingy = val;
+    }
+
+    val = metrics.spacingx;
+    if (val !== undefined) {
+        res.inspacingx = val;
+        res.outspacingx = val;
+    }
+
+    val = metrics.spacingy;
+    if (val !== undefined) {
+        res.inspacingy = val;
+        res.outspacingy = val;
+    }
     
     // Copy over all the supplied fields.
     res = Object.assign(res, metrics);
