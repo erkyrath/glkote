@@ -718,6 +718,9 @@ Mouse click in the named window. The <code>x</code> and <code>y</code> fields ar
 Resize event. The <code>gameport</code> has changed size, and so the game window sizes must be recomputed. The event provides the new window metrics. (This event may also happen if the display font has changed, or something else which affects the metrics.)
 <p>
 
+Note that each metrics object is complete; they do not contain incremental changes.
+<p>
+
 <pre class="Def">
 { type: 'redraw', gen: GENERATION, window: WINDOW_ID }
 </pre>
