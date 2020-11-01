@@ -315,7 +315,7 @@ function complete_metrics(metrics) {
         res.outspacingy = val;
     }
     
-    // Copy over all the supplied fields.
+    // Copy over all the supplied fields. These override the defaults above.
     res = Object.assign(res, metrics);
     
     return res;
