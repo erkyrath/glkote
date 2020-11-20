@@ -308,7 +308,6 @@ function glkote_init(iface) {
 /* Conclude the glkote_init() procedure. This sends the VM its "init"
    event. */
 function finish_init(iface) {
-  console.log('### finish_init', iface);
   if (!iface.font_load_delay) {
     /* Normal case: start the game (interpreter) immediately. */
     send_response('init', null, current_metrics);
