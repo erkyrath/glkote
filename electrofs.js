@@ -112,36 +112,37 @@ function dialog_open(tosave, usage, gameid, callback)
 {
     init();
         
-    /* The use of remote.dialog and remote.getCurrentWindow() is 
-       deprecated. Change this to an explicit IPC call. */
-    const dialog = electron.remote.dialog;
     var opts = {
         filters: filters_for_usage(usage)
     };
-    var mainwin = electron.remote.getCurrentWindow();
     if (!tosave) {
         opts.properties = ['openFile'];
-        dialog.showOpenDialog(mainwin, opts).then(function(res) {
-                var ls = res.filePaths;
-                if (res.canceled || !ls || !ls.length) {
-                    callback(null);
-                }
-                else {
-                    var ref = { filename:ls[0], usage:usage };
-                    callback(ref);
-                }
-            });
+    }
+
+    // Electron deprecates allowing a renderer process to directly access the dialog module. We pass the dialog request over to the main process.
+
+    if (!tosave) {
+        electron.ipcRenderer.invoke('dialog_open', tosave, opts).then(function(res) {
+            var ls = res.filePaths;
+            if (res.canceled || !ls || !ls.length) {
+                callback(null);
+            }
+            else {
+                var ref = { filename:ls[0], usage:usage };
+                callback(ref);
+            }
+        });
     }
     else {
-        dialog.showSaveDialog(mainwin, opts).then(function(res) {
-                if (res.canceled || !res.filePath) {
-                    callback(null);
-                }
-                else {
-                    var ref = { filename:res.filePath, usage:usage };
-                    callback(ref);
-                }
-            });
+        electron.ipcRenderer.invoke('dialog_open', tosave, opts).then(function(res) {
+            if (res.canceled || !res.filePath) {
+                callback(null);
+            }
+            else {
+                var ref = { filename:res.filePath, usage:usage };
+                callback(ref);
+            }
+        });
     }
 }
 
