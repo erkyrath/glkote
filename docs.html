@@ -1688,6 +1688,7 @@ By the way, in a buffer window, paragraphs of text are separated by blank lines 
 <dl>
 
 <dt>Release 2.2.### (###)
+<dd>The Dialog API now has an <code>init/init_async</code> call which GlkOte invokes if present. (electrofs.js has <code>init_async</code>; dialog.js currently has neither.)
 <dd>Updated Electron support to pass dialog requests over to the main process, rather than trying to handle them directly.
 <dd>Changed the way the bottom margin works in buffer windows. This should prevent spurious MORE prompts in fixed-size windows.
 <dd>Hopefully fixed a fatal error with zero-height or hidden grid windows.
