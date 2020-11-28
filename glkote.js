@@ -1800,7 +1800,7 @@ function hide_loading() {
     return;
   loading_visible = false;
 
-  var el = document.getElementById('loadingpane');
+  var el = document.getElementById(loadingpane_id);
   if (el) {
     el.style.display = 'none';  /* el.hide() */
   }
@@ -1815,7 +1815,7 @@ function show_loading() {
     return;
   loading_visible = true;
 
-  var el = document.getElementById('loadingpane');
+  var el = document.getElementById(loadingpane_id);
   if (el) {
     el.style.display = '';   /* el.show() */
   }
