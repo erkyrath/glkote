@@ -51,6 +51,7 @@ var dom_context = undefined;
 var windowport_id = 'windowport';
 var gameport_id = 'gameport';
 var errorpane_id = 'errorpane';
+var errorcontent_id = 'errorcontent';
 var loadingpane_id = 'loadingpane';
 var generation = 0;
 var generation_sent = -1;
@@ -1727,7 +1728,7 @@ function glkote_error(msg) {
   if (!msg)
     msg = '???';
 
-  var el = document.getElementById('errorcontent');
+  var el = document.getElementById(errorcontent_id);
   remove_children(el);
   el.appendChild(document.createTextNode(msg));
 
@@ -1758,7 +1759,7 @@ function glkote_warning(msg) {
     return;
   }
 
-  var el = document.getElementById('errorcontent');
+  var el = document.getElementById(errorcontent_id);
   remove_children(el);
   el.appendChild(document.createTextNode(msg));
 
