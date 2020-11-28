@@ -50,6 +50,8 @@ var game_interface = null;
 var dom_context = undefined;
 var windowport_id = 'windowport';
 var gameport_id = 'gameport';
+var errorpane_id = 'errorpane';
+var loadingpane_id = 'loadingpane';
 var generation = 0;
 var generation_sent = -1;
 var disabled = false;
@@ -1729,7 +1731,7 @@ function glkote_error(msg) {
   remove_children(el);
   el.appendChild(document.createTextNode(msg));
 
-  el = document.getElementById('errorpane');
+  el = document.getElementById(errorpane_id);
   if (el.className == 'WarningPane')
     el.className = null;
   el.style.display = '';   /* el.show() */
@@ -1752,7 +1754,7 @@ function glkote_warning(msg) {
     return;
 
   if (!msg) {
-    $('#errorpane').hide();
+    $('#'+errorpane_id).hide();
     return;
   }
 
@@ -1760,8 +1762,8 @@ function glkote_warning(msg) {
   remove_children(el);
   el.appendChild(document.createTextNode(msg));
 
-  $('#errorpane').addClass('WarningPane');
-  $('#errorpane').show();
+  $('#'+errorpane_id).addClass('WarningPane');
+  $('#'+errorpane_id).show();
   hide_loading();
 }
 
@@ -1784,7 +1786,7 @@ function retry_update() {
 
 /* Hide the error pane. */
 function clear_error() {
-  $('#errorpane', dom_context).hide();
+  $('#'+errorpane_id, dom_context).hide();
 }
 
 /* Hide the loading pane (the spinny compass), if it hasn't already been
