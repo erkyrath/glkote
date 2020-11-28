@@ -174,9 +174,9 @@ function glkote_init(iface) {
   windowdic = {};
 
   if (iface.windowport)
-      windowport_id = iface.windowport;
+    windowport_id = iface.windowport;
   if (iface.gameport)
-      gameport_id = iface.gameport;
+    gameport_id = iface.gameport;
 
   var el = $('#'+windowport_id, dom_context);
   if (!el.length) {
