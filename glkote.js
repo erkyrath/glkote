@@ -176,10 +176,17 @@ function glkote_init(iface) {
   /* Object mapping window ID (strings) to window description objects. */
   windowdic = {};
 
+  /* Set the top-level DOM element ids, if provided. */
   if (iface.windowport)
     windowport_id = iface.windowport;
   if (iface.gameport)
     gameport_id = iface.gameport;
+  if (iface.errorpane)
+    errorpane_id = iface.errorpane;
+  if (iface.errorcontent)
+    errorcontent_id = iface.errorcontent;
+  if (iface.loadingpane)
+    loadingpane_id = iface.loadingpane;
 
   var el = $('#'+windowport_id, dom_context);
   if (!el.length) {
