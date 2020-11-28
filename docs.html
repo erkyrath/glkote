@@ -1239,6 +1239,25 @@ This string defines the id of the <code>windowport</code> element -- the HTML di
 <p>
 
 <pre class="Def">
+Game.loadingpane
+</pre>
+<p>
+
+This string defines the id of the <code>loadingpane</code> element -- the HTML div which contains the initial "Loading..." banner and spinner image. The default value is "loadingpane".
+<p>
+
+<pre class="Def">
+Game.errorpane, Game.errorcontent
+</pre>
+<p>
+
+This string defines the id of the <code>errorpane</code> and  <code>errorcontent</code> elements -- the HTML divs which display warnings and fatal errors. <code>errorpane</code> is set <code>display:none</code> until an error needs to be displayed. The text <code>errorcontent</code> is then set to the error message. The default values are "errorpane" and "errorcontent".
+<p>
+
+(It's awkward to use two special element ids here, but that's how I set it up way back when.)
+<p>
+
+<pre class="Def">
 Game.spacing
 </pre>
 <p>
