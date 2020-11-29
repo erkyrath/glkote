@@ -48,6 +48,7 @@ var GlkOte = function() {
 /* Module global variables */
 var game_interface = null;
 var dom_context = undefined;
+var dom_prefix = '';
 var windowport_id = 'windowport';
 var gameport_id = 'gameport';
 var errorpane_id = 'errorpane';
@@ -177,6 +178,8 @@ function glkote_init(iface) {
   windowdic = {};
 
   /* Set the top-level DOM element ids, if provided. */
+  if (iface.dom_prefix)
+    dom_prefix = iface.dom_prefix;
   if (iface.windowport)
     windowport_id = iface.windowport;
   if (iface.gameport)
@@ -362,7 +365,7 @@ function measure_window() {
   /* If the HTML file includes an #layouttestpane div, we discard it.
      We used to do metrics measurements from a predefined div with
      that name. Nowadays, it's sometimes used as a hidden font-preloader. */
-  $('#layouttestpane', dom_context).remove();
+  $('#'+dom_prefix+'layouttestpane', dom_context).remove();
 
   /* Exclude padding and border. */
   metrics.width  = gameport.width();
@@ -370,7 +373,7 @@ function measure_window() {
 
   /* Create a dummy layout div containing a grid window and a buffer window,
      each with two lines of text. */
-  var layout_test_pane = $('<div>', { 'id':'layout_test_pane' });
+  var layout_test_pane = $('<div>', { id:dom_prefix+'layout_test_pane' });
   layout_test_pane.text('This should not be visible');
   layout_test_pane.css({
     /* "display:none" would make the pane not render at all, making it
@@ -526,7 +529,7 @@ function create_resize_sensors() {
     return 'Cannot find gameport element #'+gameport_id+' in this document.';
 
   var shrinkel = $('<div>', {
-    id: 'resize-sensor-shrink'
+    id: dom_prefix+'resize-sensor-shrink'
   }).css({
     position:'absolute',
     left:'0', right:'0', top:'0', bottom:'0',
@@ -534,7 +537,7 @@ function create_resize_sensors() {
     'z-index':'-1'
   });
   shrinkel.append($('<div>', {
-    id: 'resize-sensor-shrink-child'
+    id: dom_prefix+'resize-sensor-shrink-child'
   }).css({
     position:'absolute',
     left:'0', right:'0',
@@ -542,7 +545,7 @@ function create_resize_sensors() {
   }));
 
   var expandel = $('<div>', {
-    id: 'resize-sensor-expand'
+    id: dom_prefix+'resize-sensor-expand'
   }).css({
     position:'absolute',
     left:'0', right:'0', top:'0', bottom:'0',
@@ -550,7 +553,7 @@ function create_resize_sensors() {
     'z-index':'-1'
   });
   expandel.append($('<div>', {
-    id: 'resize-sensor-expand-child'
+    id: dom_prefix+'resize-sensor-expand-child'
   }).css({
     position:'absolute',
     left:'0', right:'0'
@@ -725,8 +728,8 @@ function glkote_update(arg) {
            new needspaging flag. Note that the more-prompt will be
            removed when the user scrolls down; but the prev-mark
            stays until we get back here. */
-        var moreel = $('#win'+win.id+'_moreprompt', dom_context);
-        var prevel = $('#win'+win.id+'_prevmark', dom_context);
+        var moreel = $('#'+dom_prefix+'win'+win.id+'_moreprompt', dom_context);
+        var prevel = $('#'+dom_prefix+'win'+win.id+'_prevmark', dom_context);
         if (!win.needspaging) {
           if (moreel.length)
             moreel.remove();
@@ -736,7 +739,7 @@ function glkote_update(arg) {
         else {
           if (!moreel.length) {
             moreel = $('<div>',
-              { id: 'win'+win.id+'_moreprompt', 'class': 'MorePrompt' } );
+              { id: dom_prefix+'win'+win.id+'_moreprompt', 'class': 'MorePrompt' } );
             moreel.append('More');
             /* 20 pixels is a cheap approximation of a scrollbar-width. */
             var morex = win.coords.right + approx_scroll_width;
@@ -746,7 +749,7 @@ function glkote_update(arg) {
           }
           if (!prevel.length) {
             prevel = $('<div>',
-              { id: 'win'+win.id+'_prevmark', 'class': 'PreviousMark' } );
+              { id: dom_prefix+'win'+win.id+'_prevmark', 'class': 'PreviousMark' } );
             frameel.prepend(prevel);
           }
           prevel.css('top', (win.pagefrommark+'px'));
@@ -884,7 +887,7 @@ function accept_one_window(arg) {
       typeclass = 'GraphicsWindow';
     var rockclass = 'WindowRock_' + arg.rock;
     frameel = $('<div>',
-      { id: 'window'+arg.id,
+      { id: dom_prefix+'window'+arg.id,
         'class': 'WindowFrame HasNoInputField ' + typeclass + ' ' + rockclass });
     frameel.data('winid', arg.id);
     frameel.on('mousedown', arg.id, evhan_window_mousedown);
@@ -928,14 +931,14 @@ function accept_one_window(arg) {
     if (arg.gridheight > win.gridheight) {
       for (ix=win.gridheight; ix<arg.gridheight; ix++) {
         var el = $('<div>',
-          { id: 'win'+win.id+'_ln'+ix, 'class': 'GridLine' });
+          { id: dom_prefix+'win'+win.id+'_ln'+ix, 'class': 'GridLine' });
         el.append(NBSP);
         win.frameel.append(el);
       }
     }
     if (arg.gridheight < win.gridheight) {
       for (ix=arg.gridheight; ix<win.gridheight; ix++) {
-        var el = $('#win'+win.id+'_ln'+ix, dom_context);
+        var el = $('#'+dom_prefix+'win'+win.id+'_ln'+ix, dom_context);
         if (el.length)
           el.remove();
       }
@@ -949,13 +952,13 @@ function accept_one_window(arg) {
   }
 
   if (win.type == 'graphics') {
-    var el = $('#win'+win.id+'_canvas', dom_context);
+    var el = $('#'+dom_prefix+'win'+win.id+'_canvas', dom_context);
     if (!el.length) {
       win.graphwidth = arg.graphwidth;
       win.graphheight = arg.graphheight;
       win.defcolor = '#FFF';
       el = $('<canvas>',
-        { id: 'win'+win.id+'_canvas' });
+        { id: dom_prefix+'win'+win.id+'_canvas' });
       /* The pixel-ratio code here should work correctly on Chrome and
          Safari, on screens of any pixel-ratio. I followed
          http://www.html5rocks.com/en/tutorials/canvas/hidpi/ .
@@ -1060,7 +1063,7 @@ function close_one_window(win) {
   delete windowdic[win.id];
   win.frameel = null;
 
-  var moreel = $('#win'+win.id+'_moreprompt', dom_context);
+  var moreel = $('#'+dom_prefix+'win'+win.id+'_moreprompt', dom_context);
   if (moreel.length)
     moreel.remove();
 }
@@ -1096,7 +1099,7 @@ function accept_one_content(arg) {
       var linearg = lines[ix];
       var linenum = linearg.line;
       var content = linearg.content;
-      var lineel = $('#win'+win.id+'_ln'+linenum, dom_context);
+      var lineel = $('#'+dom_prefix+'win'+win.id+'_ln'+linenum, dom_context);
       if (!lineel.length) {
         glkote_error('Got content for nonexistent line ' + linenum + ' of window ' + arg.id + '.');
         continue;
@@ -1153,7 +1156,7 @@ function accept_one_content(arg) {
         win.inputel.detach();
     }
 
-    var cursel = $('#win'+win.id+'_cursor', dom_context);
+    var cursel = $('#'+dom_prefix+'win'+win.id+'_cursor', dom_context);
     if (cursel.length)
       cursel.remove();
     cursel = null;
@@ -1322,7 +1325,7 @@ function accept_one_content(arg) {
     var divel = buffer_last_line(win);
     if (divel) {
       var cursel = $('<span>',
-        { id: 'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
+        { id: dom_prefix+'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
       divel.append(cursel);
 
       if (win.inputel) {
@@ -1458,7 +1461,7 @@ function accept_inputset(arg) {
         glkote_error('Window ' + win.id + ' has requested unrecognized input type ' + argi.type + '.');
       }
       inputel = $('<input>',
-        { id: 'win'+win.id+'_input',
+        { id: dom_prefix+'win'+win.id+'_input',
           'class': classes, type: 'text', maxlength: maxlen });
       if (true) /* should be mobile-webkit-only? */
         inputel.attr('autocapitalize', 'off');
@@ -1489,7 +1492,7 @@ function accept_inputset(arg) {
     }
 
     if (win.type == 'grid') {
-      var lineel = $('#win'+win.id+'_ln'+argi.ypos, dom_context);
+      var lineel = $('#'+dom_prefix+'win'+win.id+'_ln'+argi.ypos, dom_context);
       if (!lineel.length) {
         glkote_error('Window ' + win.id + ' has requested input at unknown line ' + argi.ypos + '.');
         return;
@@ -1509,13 +1512,13 @@ function accept_inputset(arg) {
     }
 
     if (win.type == 'buffer') {
-      var cursel = $('#win'+win.id+'_cursor', dom_context);
+      var cursel = $('#'+dom_prefix+'win'+win.id+'_cursor', dom_context);
       /* Check to make sure an InvisibleCursor exists on the last line.
          The only reason it might not is if the window is entirely blank
          (no lines). In that case, append one to the window frame itself. */
       if (!cursel.length) {
         cursel = $('<span>',
-          { id: 'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
+          { id: dom_prefix+'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
         win.frameel.append(cursel);
       }
       var pos = cursel.position();
@@ -1950,7 +1953,7 @@ function perform_graphics_ops(loadedimg, loadedev) {
       continue;
     }
 
-    var el = $('#win'+win.id+'_canvas', dom_context);
+    var el = $('#'+dom_prefix+'win'+win.id+'_canvas', dom_context);
     var ctx = canvas_get_2dcontext(el);
     if (!ctx) {
       glkote_log('perform_graphics_ops: op for nonexistent canvas ' + win.id);
@@ -2422,7 +2425,7 @@ function evhan_doc_pixelreschange(ev) {
        scale, and then hit them with a redraw event. */
     jQuery.each(windowdic, function(winid, win) {
         if (win.type == 'graphics') {
-          var el = $('#win'+win.id+'_canvas', dom_context);
+          var el = $('#'+dom_prefix+'win'+win.id+'_canvas', dom_context);
           win.scaleratio = current_devpixelratio / win.backpixelratio;
           //glkote_log('### changed canvas to scale ' + win.scaleratio + ' (device ' + current_devpixelratio + ' / backstore ' + win.backpixelratio + ')');
           var ctx = canvas_get_2dcontext(el);
@@ -2505,7 +2508,7 @@ function evhan_doc_keypress(ev) {
            if not... */
         if (frameel.scrollTop() + frameheight + moreprompt_margin >= frameel.get(0).scrollHeight) {
           win.needspaging = false;
-          var moreel = $('#win'+win.id+'_moreprompt', dom_context);
+          var moreel = $('#'+dom_prefix+'win'+win.id+'_moreprompt', dom_context);
           if (moreel.length)
             moreel.remove();
           readjust_paging_focus(true);
@@ -2610,7 +2613,7 @@ function evhan_input_mouse_click(ev) {
   var ypos = 0;
   if (win.type == 'grid') {
     /* Measure click position relative to the zeroth line of the grid. */
-    var lineel = $('#win'+win.id+'_ln'+0, dom_context);
+    var lineel = $('#'+dom_prefix+'win'+win.id+'_ln'+0, dom_context);
     if (lineel.length) {
       var linepos = lineel.offset();
       xpos = Math.floor((ev.clientX - linepos.left) / current_metrics.gridcharwidth);
@@ -2627,7 +2630,7 @@ function evhan_input_mouse_click(ev) {
   }
   else if (win.type == 'graphics') {
     /* Measure click position relative to the canvas. */
-    var canel = $('#win'+win.id+'_canvas', dom_context);
+    var canel = $('#'+dom_prefix+'win'+win.id+'_canvas', dom_context);
     if (canel.length) {
       var pos = canel.offset();
       xpos = ev.clientX - pos.left;
@@ -2878,7 +2881,7 @@ function evhan_window_scroll(ev) {
 
   if (frameel.scrollTop() + frameheight + moreprompt_margin >= frameel.get(0).scrollHeight) {
     win.needspaging = false;
-    var moreel = $('#win'+win.id+'_moreprompt', dom_context);
+    var moreel = $('#'+dom_prefix+'win'+win.id+'_moreprompt', dom_context);
     if (moreel.length)
       moreel.remove();
     readjust_paging_focus(true);
@@ -2906,7 +2909,7 @@ function window_scroll_to_bottom(win) {
        if not... */
     if (frameel.scrollTop() + frameheight + moreprompt_margin >= frameel.get(0).scrollHeight) {
       win.needspaging = false;
-      var moreel = $('#win'+win.id+'_moreprompt', dom_context);
+      var moreel = $('#'+dom_prefix+'win'+win.id+'_moreprompt', dom_context);
       if (moreel.length)
         moreel.remove();
       readjust_paging_focus(true);
