@@ -1,3 +1,5 @@
+'use strict';
+
 /* GiDebug -- a debug overlay interface for GlkOte
  * Designed by Andrew Plotkin <erkyrath@eblong.com>
  * <http://eblong.com/zarf/glk/glkote.html>
@@ -73,7 +75,7 @@ function debug_open()
     if (!rootel.length)
         throw new Error('GiDebug: unable to find root element #' + root_el_id + '.');
 
-    dia = $('<div>', { id: debug_el_id });
+    var dia = $('<div>', { id: debug_el_id });
     var el, subel;
 
     function set_drag_effect(el, tag) {
