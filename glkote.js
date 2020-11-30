@@ -1,3 +1,5 @@
+'use strict';
+
 /* GlkOte -- a Javascript display library for IF interfaces
  * GlkOte Library: version 2.2.5.
  * Designed by Andrew Plotkin <erkyrath@eblong.com>
