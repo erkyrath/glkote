@@ -1,41 +1,43 @@
+'use strict';
+
 /* All of the following code is the "fake game" behind the sample-demo
    interface. In a complete RemGlk implementation, this code would all be
    whacked out and replaced with a single AJAX call. */
 
 /* Define a whole lot of global variables, representing game state. */
 
-game_metrics = null;
-game_streamout_left = new Array();
-game_streamout_right = new Array();
-game_streamout_graph = new Array();
-game_streamclear_left = false;
-game_streamclear_right = false;
-game_generation = 1;
-game_moves = 1;
-game_quotemove = 0;
-game_quotehaslink = false;
-game_splitwin = false;
-game_graphwin = false;
-game_statusmenu = false;
-game_statusmenu_from_left = true;
-game_print_left = true;
-game_inputgen_left = 0;
-game_inputgen_right = 0;
-game_inputgen_top = 0;
-game_inputline_left = true;
-game_inputline_right = true;
-game_inputinitial_left = null;
-game_inputinitial_right = null;
-game_longprompt = false;
-game_timer_request = null;
-game_timer_lastrequest = null;
-game_simulate_quit = false;
-game_simulate_crash = false;
-game_simulate_timeout = false;
-game_simulate_dialog = false;
+var game_metrics = null;
+var game_streamout_left = new Array();
+var game_streamout_right = new Array();
+var game_streamout_graph = new Array();
+var game_streamclear_left = false;
+var game_streamclear_right = false;
+var game_generation = 1;
+var game_moves = 1;
+var game_quotemove = 0;
+var game_quotehaslink = false;
+var game_splitwin = false;
+var game_graphwin = false;
+var game_statusmenu = false;
+var game_statusmenu_from_left = true;
+var game_print_left = true;
+var game_inputgen_left = 0;
+var game_inputgen_right = 0;
+var game_inputgen_top = 0;
+var game_inputline_left = true;
+var game_inputline_right = true;
+var game_inputinitial_left = null;
+var game_inputinitial_right = null;
+var game_longprompt = false;
+var game_timer_request = null;
+var game_timer_lastrequest = null;
+var game_simulate_quit = false;
+var game_simulate_crash = false;
+var game_simulate_timeout = false;
+var game_simulate_dialog = false;
 
-game_mood = 0;
-game_mood_list = [ 'cheery', 'dopey', 'hungry', 'explodey' ];
+var game_mood = 0;
+var game_mood_list = [ 'cheery', 'dopey', 'hungry', 'explodey' ];
 
 function game_version() {
   return ('Release 22; GlkOte library ' + GlkOte.version 
@@ -726,12 +728,12 @@ function game_parse(val) {
   if (val == 'help' || val == 'about' || val == '?') {
     game_print('This is an interface demo of the RemGlk Javascript front end. There is no IF interpreter behind the display library -- just a few lines of Javascript. It accepts some commands which demonstrate the capabilities of the display system.\n');
 
-    helpopt = function(cmd, val) {
+    var helpopt = function(cmd, val) {
       game_print({ text: '    '});
       game_print({ newline:false, style:'subheader', text: cmd});
       game_print({ newline:false, text: ': ' + val});
     }
-    helpopt2 = function(cmd, args, val) {
+    var helpopt2 = function(cmd, args, val) {
       game_print({ text: '    '});
       game_print({ newline:false, style:'subheader', text: cmd});
       game_print({ newline:false, text: ' '});
