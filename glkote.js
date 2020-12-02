@@ -2421,7 +2421,7 @@ function evhan_doc_pixelreschange(ev) {
   var ratio = window.devicePixelRatio || 1;
   if (ratio != current_devpixelratio) {
     current_devpixelratio = ratio;
-    glkote_log('### devicePixelRatio changed to ' + current_devpixelratio);
+    //glkote_log('### devicePixelRatio changed to ' + current_devpixelratio);
 
     /* If we have any graphics windows, we need to redo their size and
        scale, and then hit them with a redraw event. */
