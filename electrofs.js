@@ -21,7 +21,8 @@
  * dialog.js.
  */
 
-var Dialog = function() {
+/* All state is contained in DialogClass. */
+var DialogClass = function() {
 
 const electron = require('electron');
 const fs = require('fs');
@@ -33,6 +34,7 @@ var inited = false;
 var userpath = null;
 var temppath = null;
 var extfilepath = null;
+var GlkOte = null; /* imported API object -- for GlkOte.log */
 
 /* Constants -- same as in glkapi.js. */
 const filemode_Write = 0x01;
@@ -53,13 +55,20 @@ const BUFFER_SIZE = 256;
 /* Before we do any work, we must set up some path info. This is, as noted,
    an async call.
  */
-function init_async(callback)
+function init_async(iface, callback)
 {
     if (inited) {
         callback();
         return;
     }
 
+    if (iface && iface.GlkOte) {
+        GlkOte = iface.GlkOte;
+    }
+    if (!GlkOte) {
+        throw new Error('ElectroFS: no GlkOte interface!');
+    }
+    
     electron.ipcRenderer.invoke('get_app_paths').then(function(obj) {
         userpath = obj.userData;
         temppath = obj.temp;
@@ -638,9 +647,12 @@ return {
     autosave_read: autosave_read
 };
 
-}();
+};
+
+/* Dialog is an instance of DialogClass, ready to init. */
+var Dialog = new DialogClass();
 
 // Node-compatible behavior
-try { exports.Dialog = Dialog; } catch (ex) {};
+try { exports.Dialog = Dialog; exports.DialogClass = DialogClass; } catch (ex) {};
 
 /* End of Dialog library. */

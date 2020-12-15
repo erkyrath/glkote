@@ -59,9 +59,10 @@
 
 //### accept "return" keystroke for load-select box (already works in Chrome)
 
-/* Put everything inside the Dialog namespace. */
+/* All state is contained in DialogClass. */
+var DialogClass = function() {
 
-var Dialog = function() {
+var GlkOte = null; /* imported API object -- for GlkOte.log, GlkOte.getdomid */
 
 var dialog_el_id = 'dialog';
 
@@ -77,6 +78,20 @@ var cur_usage_name; /* the file's category as a human-readable string */
 var cur_gameid; /* a string representing the game */
 var cur_filelist; /* the files currently on display */
 
+/* Dialog.init(iface) -- initialize the library */
+function dialog_init(iface) {
+    if (iface && iface.GlkOte) {
+        GlkOte = iface.GlkOte;
+    }
+    if (!GlkOte) {
+        /* Look in the global environment. */
+        GlkOte = window.GlkOte;
+    }
+    if (!GlkOte) {
+        throw new Error('Dialog: no GlkOte interface!');
+    }
+}
+    
 /* Dialog.open(tosave, usage, gameid, callback) -- open a file-choosing dialog
  *
  * The "tosave" flag should be true for a save dialog, false for a load
@@ -1212,8 +1227,8 @@ $(window).on('storage', evhan_storage_changed);
 /* End of Dialog namespace function. Return the object which will
    become the Dialog global. */
 return {
-    /* No init() in this library. */
     streaming: false,
+    init: dialog_init,
     open: dialog_open,
 
     file_clean_fixed_name: file_clean_fixed_name,
@@ -1232,9 +1247,12 @@ return {
     autosave_read: autosave_read
 };
 
-}();
+};
+
+/* Dialog is an instance of DialogClass, ready to init. */
+var Dialog = new DialogClass();
 
 // Node-compatible behavior
-try { exports.Dialog = Dialog; } catch (ex) {};
+try { exports.Dialog = Dialog; exports.DialogClass = DialogClass; } catch (ex) {};
 
 /* End of Dialog library. */

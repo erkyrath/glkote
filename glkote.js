@@ -43,9 +43,10 @@
  * For full documentation, see the docs.html file in this package.
  */
 
+//### imports Dialog (calls Dialog.init so you don't have to)
 
-/* Put everything inside the GlkOte namespace. */
-var GlkOte = function() {
+/* All state is contained in GlkoteClass. */
+var GlkOteClass = function() {
 
 /* Module global variables */
 var game_interface = null;
@@ -307,14 +308,18 @@ function glkote_init(iface) {
     }
   }
 
-  /* If Dialog is ElectroFS, we need to call an async setup call.
-     If not, go straight to finish_init(). */
+  //### if not autoinit, skip initing Dialog!
+  /* Default config object for Dialog library. GlkOte is the only field that it cares about. */
+  var dialogiface = { GlkOte:this };
+
+  /* If Dialog is ElectroFS, we need to call an async init call.
+     If not, call the init and then go straight to finish_init(). */
   if (Dialog.init_async) {
-    Dialog.init_async(function() { finish_init(iface); })
+    Dialog.init_async(dialogiface, function() { finish_init(iface); })
   }
   else {
     if (Dialog.init) {
-      Dialog.init();
+      Dialog.init(dialogiface);
     }
     finish_init(iface);
   }
@@ -3003,9 +3008,12 @@ return {
   error:    glkote_error
 };
 
-}();
+};
+
+/* GlkOte is an instance of GlkOteClass, ready to init. */
+var GlkOte = new GlkOteClass();
 
 // Node-compatible behavior
-try { exports.GlkOte = GlkOte; } catch (ex) {};
+try { exports.GlkOte = GlkOte; exports.GlkOteClass = GlkOteClass; } catch (ex) {};
 
 /* End of GlkOte library. */
