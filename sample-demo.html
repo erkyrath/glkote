@@ -76,7 +76,7 @@ body {
 
 /* The game interface object. */
 Game = {
-  accept: game_accept,
+  accept: SampleDemo.game_accept,
   detect_external_links: 'match',
   spacing: 4
 };
@@ -84,7 +84,7 @@ Game = {
 </script>
 
 </head>
-<body onLoad="GlkOte.init();">
+<body onLoad="SampleDemo.game_init(GlkOte); GlkOte.init();">
 <div id="banner">
 <div id="bannertitle">Not A Real Game</div>
 <div id="bannerhowto"><em><a target="_blank" href="sample-help.html">How do I play?</a></em></div>
