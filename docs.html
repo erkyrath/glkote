@@ -611,6 +611,19 @@ Check the DOM element id that the library is using for a given purpose. The argu
 <p>
 
 By default, you will get the same value back. However, if these have been customized in the game interface object (see <a href="#gameinterface">below</a>), you will get the customized value. For example, if <code>Game.windowport</code> was passed a string, <code>GlkOte.getdomid('windowport')</code> will return that string.
+<p>
+
+<pre class="Def">
+GlkOte.setdomcontext(domelement)
+GlkOte.getdomcontext()
+</pre>
+<p>
+
+Set and get the DOM context. This is the jQuery element within which all Glk DOM elements are looked up. (See <a href="https://api.jquery.com/jQuery/#selector-context">selector context</a> in the <a href="https://api.jquery.com/">jQuery</a> docs.)
+<p>
+
+In normal usage this is always undefined; DOM elements are searched for within the entire document. However, you might want to detach the Glk DOM and maintain it off-screen. To do this, set the DOM context to the detached element.
+<p>
 
 <pre class="Def">
 GlkOte.error(msg)
