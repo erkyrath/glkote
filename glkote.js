@@ -1673,6 +1673,24 @@ function glkote_get_interface() {
   return game_interface;
 }
 
+/* Get the DOM element ids used for various standard elements. The argument
+   should be one of 'windowport', 'gameport', 'errorpane', 'errorcontent',
+   'loadingpane'.
+   By default you will get the same string back. However, if a different
+   element ID was set in GlkOte's configuration, you'll get that.
+*/
+function glkote_get_dom_id(val) {
+    switch (val) {
+    case 'windowport': return windowport_id;
+    case 'gameport': return gameport_id;
+    case 'errorpane': return errorpane_id;
+    case 'errorcontent': return errorcontent_id;
+    case 'loadingpane': return loadingpane_id;
+    }
+    /* Unrecognized id name; just return the same value back. */
+    return val;
+}
+    
 /* Set the DOM context. This is the jQuery element within which all Glk
    DOM elements are looked up. (#gameport, #windowport, etc.)
 
@@ -2976,6 +2994,7 @@ return {
   update:   glkote_update,
   extevent: glkote_extevent,
   getinterface: glkote_get_interface,
+  getdomid: glkote_get_dom_id,
   getdomcontext: glkote_get_dom_context,
   setdomcontext: glkote_set_dom_context,
   save_allstate : glkote_save_allstate,
