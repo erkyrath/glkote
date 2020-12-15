@@ -1,9 +1,13 @@
 'use strict';
 
+var SampleDemoClass = function() {
+
 /* All of the following code is the "fake game" behind the sample-demo
    interface. In a complete RemGlk implementation, this code would all be
    whacked out and replaced with a single AJAX call. */
 
+var GlkOte = null; /* imported API object */
+    
 /* Define a whole lot of global variables, representing game state. */
 
 var game_metrics = null;
@@ -39,6 +43,14 @@ var game_simulate_dialog = false;
 var game_mood = 0;
 var game_mood_list = [ 'cheery', 'dopey', 'hungry', 'explodey' ];
 
+/* Store the GlkOte interface object. */
+function game_init(glkote) {
+  GlkOte = glkote;
+  /* If not provided, look in the global environment. */
+  if (!GlkOte)
+    GlkOte = window.GlkOte;
+}
+    
 function game_version() {
   return ('Release 22; GlkOte library ' + GlkOte.version 
     + '; last updated 22-Jan-2017');
@@ -1359,3 +1371,12 @@ function game_parse(val) {
 
   game_print('I don\'t know how to "' + val + '". Try "help".');
 }
+
+  /* Return the demo interface object. */
+  return {
+    game_init: game_init,
+    game_accept: game_accept
+  };
+};
+
+var SampleDemo = new SampleDemoClass();
