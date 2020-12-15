@@ -603,6 +603,16 @@ This exists in case another library (such as dialog.js) wants to imitate some of
 <p>
 
 <pre class="Def">
+GlkOte.getdomid(val)
+</pre>
+<p>
+
+Check the DOM element id that the library is using for a given purpose. The argument should be one of the strings <code>'windowport', 'gameport', 'errorpane', 'errorcontent', 'loadingpane'</code>.
+<p>
+
+By default, you will get the same value back. However, if these have been customized in the game interface object (see <a href="#gameinterface">below</a>), you will get the customized value. For example, if <code>Game.windowport</code> was passed a string, <code>GlkOte.getdomid('windowport')</code> will return that string.
+
+<pre class="Def">
 GlkOte.error(msg)
 </pre>
 <p>
