@@ -102,7 +102,7 @@ dt {
 
 <h1>GlkOte: a Javascript library for IF interfaces</h1>
 
-<em>GlkOte version 2.2.7###</em><br>
+<em>GlkOte version 2.3.0###</em><br>
 
 <em>Designed by Andrew Plotkin (erkyrath@eblong.com)<br>
 <a href="http://eblong.com/zarf/glk/glkote.html">(GlkOte home page</a>
@@ -370,10 +370,10 @@ Game = {
 </pre>
 <p>
 
-To use the GlkOte library, you need a global variable, a function, and a global game object.
+To use the GlkOte library, first you need a library instance. Since you have included the <code>glkote.js</code> script, you have an instance available, called <code>GlkOte</code> (or <code>window.GlkOte</code>). (It is possible to create more instances, but this requires extra effort, so we won't get into it now. See "<a href="#multiples">Multiple GlkOte instances</a>", below.)
 <p>
 
-The function accepts input from the library (which is to say, from the user) and generates output in return. You pass this function to the GlkOte library by storing it in the global <code>Game</code> object.
+Next, you need a function, a global game object, and a global <code>generation</code> variable. The function accepts input from the library (which is to say, from the user) and generates output in return. You pass this function to the GlkOte library by storing it in the global <code>Game</code> object.
 <p>
 
 In return, the GlkOte library exports a handful of functions for your use. The two important ones are <code>GlkOte.init</code> and <code>GlkOte.update</code>.
@@ -613,6 +613,9 @@ Check the DOM element id that the library is using for a given purpose. The argu
 By default, you will get the same value back. However, if these have been customized in the game interface object (see <a href="#gameinterface">below</a>), you will get the customized value. For example, if <code>Game.windowport</code> was passed a string, <code>GlkOte.getdomid('windowport')</code> will return that string.
 <p>
 
+(You don't need to use this if you're copying the standard HTML layout.)
+<p>
+
 <pre class="Def">
 GlkOte.setdomcontext(domelement)
 GlkOte.getdomcontext()
@@ -623,6 +626,9 @@ Set and get the DOM context. This is the jQuery element within which all Glk DOM
 <p>
 
 In normal usage this is always undefined; DOM elements are searched for within the entire document. However, you might want to detach the Glk DOM and maintain it off-screen. To do this, set the DOM context to the detached element.
+<p>
+
+(You don't need to use this if you're copying the standard HTML layout.)
 <p>
 
 <pre class="Def">
@@ -1740,7 +1746,9 @@ By the way, in a buffer window, paragraphs of text are separated by blank lines 
 
 <dl>
 
-<dt>Release 2.2.7 (###)
+<dt>Release 2.3.0 (###)
+<dd>All of the API objects are now defined as Javascript classes (GlkOteClass, GlkClass, DialogClass). Each file exports this class plus a single instance (GlkOte, Glk, Dialog). Existing code should continue to work, relying on the predefined instances. However, if you want several GlkOte contexts running in the same document, you can define new independent instances.
+<dd>You now have the option of initializing each API object by passing in references to the others. This allows each instance to communicate with the correct peer. If you don't do this, the instances fall back to using the globally-defined instances (window.GlkOte, etc).
 
 <dt>Release 2.2.6 (Dec 1, 2020)
 <dd>The Dialog API now has an <code>init/init_async</code> call which GlkOte invokes if present. (electrofs.js has <code>init_async</code>; dialog.js currently has neither.)
