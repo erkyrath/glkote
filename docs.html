@@ -176,6 +176,7 @@ Commons Attribution-Noncommercial-Share Alike 3.0 Unported License</a>.
   <li><a href="#cssinput">The input field</a>
   <li><a href="#cssspacing">Spacing, borders, and padding</a>
 </ul>
+<li><a href="#multiples">Multiple GlkOte instances</a>
 <li><a href="#version">GlkOte Version History</a>
 </ul>
 
@@ -1740,6 +1741,78 @@ By the way, in a buffer window, paragraphs of text are separated by blank lines 
 <p>
 
 (If you think that's ugly, don't ask what I had to do to prevent runs of spaces from collapsing.)
+<p>
+
+<h2><a name="multiples">Multiple GlkOte instances</a></h2>
+
+As of release 2.3.0, it is possible to host two separate GlkOte contexts in the same DOM (HTML page). It requires a bit of dancing, however. See
+<a href="sample-demo-double.html">this demo</a>.
+<p>
+
+First, we must create a separate gameport <code>div</code> for each game. Each one needs its own unique element id, and the same is true for all of its parts. See
+<a href="sample-demo-double.html">the sample HTML</a>
+for how this might look. In this example we use <code>alpha_</code> and <code>beta_</code> prefixes for each <code>div</code>.
+<p>
+
+We also need a game configuration object for each game:
+<p>
+
+<pre class="Sample">
+var GameA = {
+  accept: SampleDemoAlpha.game_accept,
+  dom_prefix: 'alpha_',
+  gameport: 'alpha_gameport',
+  windowport: 'alpha_windowport',
+  errorpane: 'alpha_errorpane',
+  errorcontent: 'alpha_errorcontent',
+  loadingpane: 'alpha_loadingpane',
+  detect_external_links: 'match',
+  spacing: 4
+};
+var GameB = {
+  accept: SampleDemoBeta.game_accept,
+  dom_prefix: 'beta_',
+  gameport: 'beta_gameport',
+  windowport: 'beta_windowport',
+  errorpane: 'beta_errorpane',
+  errorcontent: 'beta_errorcontent',
+  loadingpane: 'beta_loadingpane',
+  detect_external_links: 'match',
+  spacing: 4
+};
+</pre>
+
+These specify all the <code>div</code> ids. They also provide unique <code>dom_prefix</code> strings, so that when the games create window <code>div</code>s, there's no collision. Finally, each configuration object must specify the <code>accept</code> function for its own game. (In this example, each game is represented by a SampleDemo class instance.)
+<p>
+
+When starting up, you must create separate <code>GlkOte</code> library instances using the <code>GlkOteClass</code> constructor. Note that we will not be using the default <code>window.GlkOte</code> instance at all.
+<p>
+
+<pre class="Sample">
+var GlkOteA = new GlkOteClass();
+var GlkOteB = new GlkOteClass();
+</pre>
+
+Then configure each of the library instances with its configuration object:
+<p>
+
+<pre class="Sample">
+GlkOteA.init(GameA);
+GlkOteB.init(GameB);
+</pre>
+
+In the sample code, you'll also see these lines:
+<p>
+
+<pre class="Sample">
+SampleDemoAlpha.game_init(GlkOteA);
+SampleDemoBeta.game_init(GlkOteB);
+</pre>
+
+These exist because each game must call <code>GlkOte.update()</code> on <em>its own</em> library instance. Therefore, we configure each sample demo game by passing the library instance in to it.
+<p>
+
+The <code>game_init()</code> calls launch the games, so at this point everything is off and running.
 <p>
 
 <h2><a name="version">GlkOte Version History</a></h2>
