@@ -1822,6 +1822,7 @@ The <code>game_init()</code> calls launch the games, so at this point everything
 <dt>Release 2.3.0 (###)
 <dd>All of the API objects are now defined as Javascript classes (GlkOteClass, GlkClass, DialogClass). Each file exports this class plus a single instance (GlkOte, Glk, Dialog). Existing code should continue to work, relying on the predefined instances. However, if you want several GlkOte contexts running in the same document, you can define new independent instances.
 <dd>You now have the option of initializing each API object by passing in references to the others. This allows each instance to communicate with the correct peer. If you don't do this, the instances fall back to using the globally-defined instances (window.GlkOte, etc).
+<dd>Added an example of two GlkOte instances on the same page.
 
 <dt>Release 2.2.6 (Dec 1, 2020)
 <dd>The Dialog API now has an <code>init/init_async</code> call which GlkOte invokes if present. (electrofs.js has <code>init_async</code>; dialog.js currently has neither.)
