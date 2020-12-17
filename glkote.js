@@ -1705,9 +1705,6 @@ function glkote_get_dom_id(val) {
    detach the Glk DOM and maintain it off-screen. That's possible if you 
    set the DOM context to the detached element. I think (although I have
    not tested) that this configuration is less well-optimized.
-
-   You cannot use this to maintain two separate Glk DOMs in the same
-   document. Sorry.
 */
 function glkote_set_dom_context(val) {
   dom_context = val;
