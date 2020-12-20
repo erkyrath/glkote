@@ -59,7 +59,7 @@
 
 /* Prefixed definitions from dialog.css: */
 
-#dialogalpha_screen {
+#dialogalpha_screen, #dialogbeta_screen {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -67,13 +67,13 @@
   opacity: 0.5;
 }
 
-#dialogalpha_frame {
+#dialogalpha_frame, #dialogbeta_frame {
   position: absolute;
   width: 100%;
   height: 100%;
 }
 
-#dialogalpha {
+#dialogalpha, #dialogbeta {
   position: relative;
   width: 400px;
   margin-left: auto;
@@ -87,49 +87,49 @@
   -moz-border-radius: 10px;
 }
 
-#dialogalpha .DiaCaption {
+#dialogalpha .DiaCaption, #dialogbeta .DiaCaption {
   margin: 16px;
 }
 
-#dialogalpha .DiaWarning {
+#dialogalpha .DiaWarning, #dialogbeta .DiaWarning {
   margin: 16px;
   font-size: 14px;
   font-style: italic;
 }
 
-#dialogalpha .DiaInput {
+#dialogalpha .DiaInput, #dialogbeta .DiaInput {
   margin: 16px;
 }
 
-#dialogalpha input {
+#dialogalpha input, #dialogbeta input {
   width: 100%;
 }
 
-#dialogalpha .DiaBody {
+#dialogalpha .DiaBody, #dialogbeta .DiaBody {
   margin: 16px;
   clear: both;
 }
 
-#dialogalpha select {
+#dialogalpha select, #dialogbeta select {
   width: 100%;
 }
 
-#dialogalpha button {
+#dialogalpha button, #dialogbeta button {
   margin-left: 8px;
 }
 
-#dialogalpha .DiaButtons {
+#dialogalpha .DiaButtons, #dialogbeta .DiaButtons {
   margin: 16px;
   text-align: right;
 }
 
-#dialogalpha .DiaButtonsFloat {
+#dialogalpha .DiaButtonsFloat, #dialogbeta .DiaButtonsFloat {
   margin-left: 16px;
   margin-right: 16px;
   float: right;
 }
 
-#dialogalpha .DiaDisplayText {
+#dialogalpha .DiaDisplayText, #dialogbeta .DiaDisplayText {
   font-family: inherit;
   height: 200px;
   padding: 4px 8px;
