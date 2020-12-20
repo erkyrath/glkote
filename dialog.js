@@ -147,7 +147,7 @@ function dialog_open(tosave, usage, gameid, callback) {
     var screen = $('#'+dialog_el_id+'_screen');
     if (!screen.length) {
         screen = $('<div>',
-            { id: dialog_el_id+'_screen' });
+            { id: dialog_el_id+'_screen', class: 'DialogScreen' });
         rootel.append(screen);
     }
 
@@ -156,7 +156,7 @@ function dialog_open(tosave, usage, gameid, callback) {
     var frame = $('#'+dialog_el_id+'_frame');
     if (!frame.length) {
         frame = $('<div>',
-            { id: dialog_el_id+'_frame' });
+            { id: dialog_el_id+'_frame', class: 'DialogFrame' });
         rootel.append(frame);
     }
 
@@ -164,7 +164,7 @@ function dialog_open(tosave, usage, gameid, callback) {
     if (dia.length)
         dia.remove();
 
-    dia = $('<div>', { id: dialog_el_id });
+    dia = $('<div>', { id: dialog_el_id, class: 'Dialog' });
 
     var form, el, row;
 
