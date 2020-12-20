@@ -43,8 +43,6 @@
  * For full documentation, see the docs.html file in this package.
  */
 
-//### imports Dialog (calls Dialog.init so you don't have to)
-
 /* All state is contained in GlkoteClass. */
 var GlkOteClass = function() {
 
@@ -79,6 +77,8 @@ var perform_paging = true;
 var detect_external_links = false;
 var regex_external_links = null;
 var debug_out_handler = null;
+
+var Dialog = null; /* imported API object */
 
 /* Some handy constants */
 /* A non-breaking space character. */
@@ -309,21 +309,34 @@ function glkote_init(iface) {
     }
   }
 
-  //### if not autoinit, skip initing Dialog! Or if Dialog is not present! Actually, we want to create our own Dialog anyway. Or really GlkApi passed one in...
-  /* Default config object for Dialog library. GlkOte is the only field that it cares about. */
-  var dialogiface = { GlkOte:this };
-
-  /* If Dialog is ElectroFS, we need to call an async init call.
-     If not, call the init and then go straight to finish_init(). */
-  if (Dialog.init_async) {
-    Dialog.init_async(dialogiface, function() { finish_init(iface); })
+  /* Either Dialog was passed in or we must create one. */
+  if (iface.Dialog) {
+    Dialog = iface.Dialog;
+    /* This might be inited or not. */
   }
-  else {
-    if (Dialog.init) {
+  else if (window.DialogClass) {
+    Dialog = new window.DialogClass();
+    /* Will have to init. */
+  }
+
+  /* From here, every path must call finish_init(). But it might happen async (after a delay). */
+    
+  /* If Dialog exists but has not yet been inited, we should init it. */
+  if (Dialog && !Dialog.inited()) {
+    /* Default config object for initing the Dialog library. GlkOte is the only field that it cares about. */
+    var dialogiface = { GlkOte:this };
+
+    /* We might have a sync or async init call! (ElectroFS uses the async style.) */
+    if (Dialog.init_async) {
+      Dialog.init_async(dialogiface, function() { finish_init(iface); })
+      return; /* callback will call finish_init(). */
+    }
+    else if (Dialog.init) {
       Dialog.init(dialogiface);
     }
-    finish_init(iface);
   }
+    
+  finish_init(iface);
 }
 
 /* Conclude the glkote_init() procedure. This sends the VM its "init"
@@ -1684,6 +1697,18 @@ function glkote_get_interface() {
   return game_interface;
 }
 
+/* Return the library interface object that we were passed or created.
+   Call this if you want to use, e.g., the same Dialog object that GlkOte
+   is using.
+*/
+function glkote_get_library(val) {
+  switch (val) {
+    case 'Dialog': return Dialog;
+  }
+  /* Unrecognized library name. */
+  return null;
+}
+    
 /* Get the DOM element ids used for various standard elements. The argument
    should be one of 'windowport', 'gameport', 'errorpane', 'errorcontent',
    'loadingpane'.
@@ -1691,15 +1716,15 @@ function glkote_get_interface() {
    element ID was set in GlkOte's configuration, you'll get that.
 */
 function glkote_get_dom_id(val) {
-    switch (val) {
+  switch (val) {
     case 'windowport': return windowport_id;
     case 'gameport': return gameport_id;
     case 'errorpane': return errorpane_id;
     case 'errorcontent': return errorcontent_id;
     case 'loadingpane': return loadingpane_id;
-    }
-    /* Unrecognized id name; just return the same value back. */
-    return val;
+  }
+  /* Unrecognized id name; just return the same value back. */
+  return val;
 }
     
 /* Set the DOM context. This is the jQuery element within which all Glk
@@ -3007,6 +3032,7 @@ return {
   update:   glkote_update,
   extevent: glkote_extevent,
   getinterface: glkote_get_interface,
+  getlibrary: glkote_get_library,
   getdomid: glkote_get_dom_id,
   getdomcontext: glkote_get_dom_context,
   setdomcontext: glkote_set_dom_context,
