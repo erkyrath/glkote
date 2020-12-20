@@ -1767,6 +1767,8 @@ function glkote_error(msg) {
     msg = '???';
 
   var el = document.getElementById(errorcontent_id);
+  if (!el) return;
+    
   remove_children(el);
   el.appendChild(document.createTextNode(msg));
 
@@ -1798,6 +1800,8 @@ function glkote_warning(msg) {
   }
 
   var el = document.getElementById(errorcontent_id);
+  if (!el) return;
+
   remove_children(el);
   el.appendChild(document.createTextNode(msg));
 
