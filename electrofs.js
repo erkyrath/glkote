@@ -90,6 +90,11 @@ function init_async(iface, callback)
     });
 }
     
+/* Dialog.inited() -- returns whether the library is initialized */
+function dialog_inited() {
+    return inited;
+}
+    
 /* Construct a file-filter list for a given usage type. These lists are
    used by showOpenDialog and showSaveDialog, below. 
 */
@@ -629,6 +634,7 @@ function file_read(dirent, israw)
 return {
     streaming: true,
     init_async: init_async,
+    inited: dialog_inited,
     open: dialog_open,
 
     file_clean_fixed_name: file_clean_fixed_name,

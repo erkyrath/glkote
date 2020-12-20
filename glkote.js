@@ -49,6 +49,7 @@
 var GlkOteClass = function() {
 
 /* Module global variables */
+var is_inited = false;
 var game_interface = null;
 var dom_context = undefined;
 var dom_prefix = '';
@@ -308,7 +309,7 @@ function glkote_init(iface) {
     }
   }
 
-  //### if not autoinit, skip initing Dialog!
+  //### if not autoinit, skip initing Dialog! Or if Dialog is not present! Actually, we want to create our own Dialog anyway. Or really GlkApi passed one in...
   /* Default config object for Dialog library. GlkOte is the only field that it cares about. */
   var dialogiface = { GlkOte:this };
 
@@ -328,6 +329,7 @@ function glkote_init(iface) {
 /* Conclude the glkote_init() procedure. This sends the VM its "init"
    event. */
 function finish_init(iface) {
+  is_inited = true;
   if (!iface.font_load_delay) {
     /* Normal case: start the game (interpreter) immediately. */
     send_response('init', null, current_metrics);
@@ -344,6 +346,10 @@ function finish_init(iface) {
       send_response('init', null, current_metrics);
     });
   }
+}
+
+function glkote_inited() {
+  return is_inited;
 }
 
 /* Work out various pixel measurements used to compute window sizes:
@@ -2992,7 +2998,8 @@ function evhan_debug_command(cmd) {
    become the GlkOte global. */
 return {
   version:  '2.2.6',
-  init:     glkote_init, 
+  init:     glkote_init,
+  inited:   glkote_inited,
   update:   glkote_update,
   extevent: glkote_extevent,
   getinterface: glkote_get_interface,

@@ -91,6 +91,11 @@ function dialog_init(iface) {
         throw new Error('Dialog: no GlkOte interface!');
     }
 }
+
+/* Dialog.inited() -- returns whether the library is initialized */
+function dialog_inited() {
+    return (GlkOte != null);
+}
     
 /* Dialog.open(tosave, usage, gameid, callback) -- open a file-choosing dialog
  *
@@ -1229,6 +1234,7 @@ $(window).on('storage', evhan_storage_changed);
 return {
     streaming: false,
     init: dialog_init,
+    inited: dialog_inited,
     open: dialog_open,
 
     file_clean_fixed_name: file_clean_fixed_name,
