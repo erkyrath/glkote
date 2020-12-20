@@ -53,7 +53,7 @@ const fileusage_InputRecord = 0x03;
 const BUFFER_SIZE = 256;
 
 /* Before we do any work, we must set up some path info. This is, as noted,
-   an async call.
+   an async call. It will call callback(), but perhaps after a delay.
  */
 function init_async(iface, callback)
 {
