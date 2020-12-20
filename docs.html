@@ -563,14 +563,23 @@ A string representing the library version number. This will be of the form "X.Y.
 
 <pre class="Def">
 GlkOte.init()
+GlkOte.init(interface)
 </pre>
 <p>
 
 Call this to begin the game. Until this is called, the <code>gameport</code> displays the "Loading" pane.
 <p>
 
-You can optionally pass a game interface object as the argument; e.g., <code>GlkOte.init(MyGame)</code>. This tells the library to use the given interface, instead of looking for a global <code>Game</code> object. 
+You can optionally pass a game interface object as the argument. This tells the library to use the given interface, instead of looking for a global <code>Game</code> object. 
 See "<a href="#gameinterface">The Game Interface Object</a>".
+<p>
+
+<pre class="Def">
+GlkOte.inited()
+</pre>
+<p>
+
+Returns true if <code>GlkOte.init()</code> has been called successfully.
 <p>
 
 <pre class="Def">
