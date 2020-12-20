@@ -165,12 +165,10 @@ var GameB = {
 
 function init_demo()
 {
-    var GlkOteA = new GlkOteClass();
-    var GlkOteB = new GlkOteClass();
-    SampleDemoAlpha.game_init(GlkOteA);
-    GlkOteA.init(GameA);
-    SampleDemoBeta.game_init(GlkOteB);
-    GlkOteB.init(GameB);
+  var GlkOteA = new GlkOteClass();
+  var GlkOteB = new GlkOteClass();
+  SampleDemoAlpha.game_init(GlkOteA, GameA);
+  SampleDemoBeta.game_init(GlkOteB, GameB);
 }
   
 </script>
