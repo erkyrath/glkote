@@ -7,7 +7,7 @@ var SampleDemoClass = function() {
    whacked out and replaced with a single AJAX call. */
 
 var GlkOte = null; /* imported API object */
-    
+
 /* Define a whole lot of global variables, representing game state. */
 
 var game_metrics = null;
@@ -43,12 +43,17 @@ var game_simulate_dialog = false;
 var game_mood = 0;
 var game_mood_list = [ 'cheery', 'dopey', 'hungry', 'explodey' ];
 
-/* Store the GlkOte interface object. */
-function game_init(glkote) {
+function game_init(glkote, iface) {
+  /* Store the GlkOte interface object. */
   GlkOte = glkote;
   /* If not provided, look in the global environment. */
   if (!GlkOte)
     GlkOte = window.GlkOte;
+  if (!iface)
+    iface = window.Game;
+
+  /* This starts the game running. */
+  GlkOte.init(iface);
 }
     
 function game_version() {
@@ -655,6 +660,7 @@ function game_submit_redraw_input(win) {
 }
 
 function game_file_load_selected(ref) {
+  var Dialog = GlkOte.getlibrary('Dialog');
   if (!ref) {
     game_print('Selection cancelled.');
   }
@@ -674,6 +680,7 @@ function game_file_load_selected(ref) {
 }
 
 function game_file_save_selected(ref) {
+  var Dialog = GlkOte.getlibrary('Dialog');
   if (!ref) {
     game_print('Selection cancelled.');
   }
@@ -1261,7 +1268,8 @@ function game_parse(val) {
   }
 
   if (val == 'load') {
-    if (!window.Dialog) {
+    var Dialog = GlkOte.getlibrary('Dialog');
+    if (!Dialog) {
       game_print('The "dialog.js" script was not loaded by this page, so you cannot test the file-selection dialog.');
       return;
     }
@@ -1278,7 +1286,8 @@ function game_parse(val) {
   }
 
   if (val == 'save') {
-    if (!window.Dialog) {
+    var Dialog = GlkOte.getlibrary('Dialog');
+    if (!Dialog) {
       game_print('The "dialog.js" script was not loaded by this page, so you cannot test the file-selection dialog.');
       return;
     }
@@ -1295,6 +1304,7 @@ function game_parse(val) {
   }
 
   if (val == 'script') {
+    var Dialog = GlkOte.getlibrary('Dialog');
     var ref = Dialog.file_construct_ref('test-script', 'transcript', 'sample-demo');
     if (Dialog.file_ref_exists(ref)) {
       game_print('File already exists; deleting...');
