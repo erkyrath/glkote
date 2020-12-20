@@ -56,3 +56,86 @@
 #beta_windowport .GridWindow {
   background: #A0D0FF;
 }
+
+/* Prefixed definitions from dialog.css: */
+
+#dialogalpha_screen {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #808080;
+  opacity: 0.5;
+}
+
+#dialogalpha_frame {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+#dialogalpha {
+  position: relative;
+  width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 100px;
+  background: white;
+  border: 4px solid #AAA;
+  -webkit-box-shadow: 1px 1px 15px #222;
+  -moz-box-shadow: 1px 1px 15px #222;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+}
+
+#dialogalpha .DiaCaption {
+  margin: 16px;
+}
+
+#dialogalpha .DiaWarning {
+  margin: 16px;
+  font-size: 14px;
+  font-style: italic;
+}
+
+#dialogalpha .DiaInput {
+  margin: 16px;
+}
+
+#dialogalpha input {
+  width: 100%;
+}
+
+#dialogalpha .DiaBody {
+  margin: 16px;
+  clear: both;
+}
+
+#dialogalpha select {
+  width: 100%;
+}
+
+#dialogalpha button {
+  margin-left: 8px;
+}
+
+#dialogalpha .DiaButtons {
+  margin: 16px;
+  text-align: right;
+}
+
+#dialogalpha .DiaButtonsFloat {
+  margin-left: 16px;
+  margin-right: 16px;
+  float: right;
+}
+
+#dialogalpha .DiaDisplayText {
+  font-family: inherit;
+  height: 200px;
+  padding: 4px 8px;
+  overflow: scroll;   /* vertical scrollbar is mandatory */
+  overflow-x: hidden; /* but horizontal scrollbar is forbidden */
+  font-size: 14px;
+  white-space: pre-wrap;
+  background: #FED;
+}
