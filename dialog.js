@@ -80,6 +80,10 @@ var cur_filelist; /* the files currently on display */
 
 /* Dialog.init(iface) -- initialize the library */
 function dialog_init(iface) {
+    if (iface && iface.dom_prefix) {
+        dialog_el_id = iface.dom_prefix;
+    }
+    
     if (iface && iface.GlkOte) {
         GlkOte = iface.GlkOte;
     }
