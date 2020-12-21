@@ -130,6 +130,9 @@ Commons Attribution-Noncommercial-Share Alike 3.0 Unported License</a>.
   <li><a href="#electron">GlkOte under Electron</a>
 </ul>
 <li><a href="#using">Using GlkOte</a>
+<ul>
+  <li><a href="#moredemo">The Less Minimal Demo</a>
+</ul>
 <li><a href="#lifecycle">The Application's Life Story</a>
 <ul>
   <li><a href="#gennum">The Generation Number</a>
@@ -415,6 +418,32 @@ This is the <code>gameport</code> div, which was mentioned earlier. It must appe
 <p>
 
 (Yes, it is an unwieldy block of text, but you only have to paste it in once.)
+<p>
+
+<h3><a name="moredemo">The Less Minimal Demo</a></h3>
+
+Our 
+<a href="sample-demo.html">more complex demonstration</a>
+has a slightly different setup. It includes this script:
+<p>
+
+<pre class="Sample">
+&lt;script src="sample-demo.js" type="text/javascript"&gt;&lt;/script&gt;
+</pre>
+<p>
+
+This file defines an accept function and a generation variable, but these are much more ornate. It is able to display multiple windows, quote boxes, images, and so on.
+<p>
+
+We will not go into the details here. However, note that the <code>onLoad</code> line for this demo looks like this:
+<p>
+
+<pre class="Sample">
+&lt;body onLoad="SampleDemo.game_init(GlkOte, Game);"&gt;
+</pre>
+<p>
+
+<code>SampleDemo.game_init()</code> stashes the GlkOte interface object away for future use, and then calls <code>GlkOte.init()</code>, passing in the <code>Game</code> configuration object. Again, the GlkOte library begins working at this point.
 <p>
 
 <h2><a name="lifecycle">The Application's Life Story</a></h2>
