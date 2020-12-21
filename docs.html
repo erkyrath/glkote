@@ -1778,6 +1778,7 @@ We also need a game configuration object for each game:
 var GameA = {
   accept: SampleDemoAlpha.game_accept,
   dom_prefix: 'alpha_',
+  dialog_dom_prefix: 'dialogalpha',
   gameport: 'alpha_gameport',
   windowport: 'alpha_windowport',
   errorpane: 'alpha_errorpane',
@@ -1789,6 +1790,7 @@ var GameA = {
 var GameB = {
   accept: SampleDemoBeta.game_accept,
   dom_prefix: 'beta_',
+  dialog_dom_prefix: 'dialogbeta',
   gameport: 'beta_gameport',
   windowport: 'beta_windowport',
   errorpane: 'beta_errorpane',
@@ -1802,7 +1804,7 @@ var GameB = {
 These specify all the <code>div</code> ids. They also provide unique <code>dom_prefix</code> strings, so that when the games create window <code>div</code>s, there's no collision. Finally, each configuration object must specify the <code>accept</code> function for its own game. (In this example, each game is represented by a SampleDemo class instance.)
 <p>
 
-When starting up, you must create separate <code>GlkOte</code> library instances using the <code>GlkOteClass</code> constructor. Note that we will not be using the default <code>window.GlkOte</code> instance at all.
+When starting up, you must create separate <code>GlkOte</code> library instances using the <code>GlkOteClass</code> constructor. Note that we will not be using the default <code>window.GlkOte</code> instance at all. The example does this in the <code>init_demo()</code> function:
 <p>
 
 <pre class="Sample">
@@ -1810,26 +1812,15 @@ var GlkOteA = new GlkOteClass();
 var GlkOteB = new GlkOteClass();
 </pre>
 
-Then configure each of the library instances with its configuration object:
+Then configure each of the game instances with its GlkOte instance and configuration object:
 <p>
 
 <pre class="Sample">
-GlkOteA.init(GameA);
-GlkOteB.init(GameB);
+SampleDemoAlpha.game_init(GlkOteA, GameA);
+SampleDemoBeta.game_init(GlkOteB, GameB);
 </pre>
 
-In the sample code, you'll also see these lines:
-<p>
-
-<pre class="Sample">
-SampleDemoAlpha.game_init(GlkOteA);
-SampleDemoBeta.game_init(GlkOteB);
-</pre>
-
-These exist because each game must call <code>GlkOte.update()</code> on <em>its own</em> library instance. Therefore, we configure each sample demo game by passing the library instance in to it.
-<p>
-
-The <code>game_init()</code> calls launch the games, so at this point everything is off and running.
+The <code>game_init()</code> function takes care of calling <code>GlkOte.init()</code>. This launches the games, so at this point everything is off and running.
 <p>
 
 <h2><a name="version">GlkOte Version History</a></h2>
