@@ -111,6 +111,10 @@ function init(vm_options) {
     GlkOte.init(vm_options);
 }
 
+function is_inited() {
+    return (VM != null && GlkOte != null);
+}
+
 function accept_ui_event(obj) {
     var box;
 
@@ -781,6 +785,20 @@ function update() {
     }
 }
 
+/* Return the library interface object that we were passed or created.
+   Call this if you want to use, e.g., the same Dialog object that GlkOte
+   is using.
+*/
+function get_library(val) {
+    switch (val) {
+        case 'VM': return VM;
+        case 'GlkOte': return GlkOte;
+        case 'Dialog': return GlkOte.getlibrary('Dialog');
+    }
+    /* Unrecognized library name. */
+    return null;
+}
+    
 /* Wrap up the current display state as a (JSONable) object. This is
    called from Quixe.vm_autosave.
 */
@@ -6342,7 +6360,9 @@ function glk_date_to_simple_time_local(dateref, factor) {
 return {
     version: '2.3.0', /* GlkOte/GlkApi version */
     init : init,
+    inited : is_inited,
     update : update,
+    getlibrary : get_library,
     save_allstate : save_allstate,
     restore_allstate : restore_allstate,
     fatal_error : fatal_error,
