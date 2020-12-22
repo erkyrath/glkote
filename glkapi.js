@@ -40,9 +40,8 @@
    and will also double the write-count in a stream.
 */
 
-/* Put everything inside the Glk namespace. */
-
-var Glk = function() {
+/* All state is contained in GlkClass. */
+var GlkClass = function() {
 
 var GlkOte = null; /* imported API object */
 var VM = null; /* imported API object (the VM interface) */
@@ -6502,9 +6501,12 @@ return {
     glk_stream_open_resource_uni : glk_stream_open_resource_uni
 };
 
-}();
+};
+
+/* Glk is an instance of GlkClass, ready to init. */
+var Glk = new GlkClass();
 
 // Node-compatible behavior
-try { exports.Glk = Glk; } catch (ex) {};
+try { exports.Glk = Glk; exports.GlkClass = GlkClass; } catch (ex) {};
 
 /* End of Glk library. */
