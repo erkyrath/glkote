@@ -56,6 +56,15 @@ function game_init(glkote, iface) {
   GlkOte.init(iface);
 }
     
+function game_get_library(val) {
+  switch (val) {
+    case 'GlkOte': return GlkOte;
+    case 'Dialog': return GlkOte.getlibrary('Dialog');
+  }
+  /* Unrecognized library name. */
+  return null;
+}
+
 function game_version() {
   return ('Release 22; GlkOte library ' + GlkOte.version 
     + '; last updated 22-Jan-2017');
@@ -1385,6 +1394,7 @@ function game_parse(val) {
   /* Return the demo interface object. */
   return {
     game_init: game_init,
+    game_get_library: game_get_library,
     game_accept: game_accept
   };
 };
