@@ -95,6 +95,16 @@ function dialog_inited() {
     return inited;
 }
     
+/* Dialog.getlibrary() -- return the library interface object that we were passed or created.
+*/
+function dialog_get_library(val) {
+    switch (val) {
+        case 'GlkOte': return GlkOte;
+    }
+    /* Unrecognized library name. */
+    return null;
+}
+    
 /* Construct a file-filter list for a given usage type. These lists are
    used by showOpenDialog and showSaveDialog, below. 
 */
@@ -635,6 +645,8 @@ return {
     streaming: true,
     init_async: init_async,
     inited: dialog_inited,
+    getlibrary: dialog_get_library,
+    
     open: dialog_open,
 
     file_clean_fixed_name: file_clean_fixed_name,
