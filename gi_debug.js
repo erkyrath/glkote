@@ -341,6 +341,7 @@ function evhan_dragstop(ev, ui)
 /* End of GiDebug namespace function. Return the object which will
    become the GiDebug global. */
 return {
+    classname: 'GiDebug',
     init: debug_init,
     open: debug_open,
     input: debug_input,

@@ -642,6 +642,7 @@ function file_read(dirent, israw)
 /* End of Dialog namespace function. Return the object which will
    become the Dialog global. */
 return {
+    classname: 'Dialog (ElectroFS)',
     streaming: true,
     init_async: init_async,
     inited: dialog_inited,

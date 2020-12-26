@@ -1393,6 +1393,7 @@ function game_parse(val) {
 
   /* Return the demo interface object. */
   return {
+    classname: 'SampleDemo',
     game_init: game_init,
     game_get_library: game_get_library,
     game_accept: game_accept
