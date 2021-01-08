@@ -6,6 +6,8 @@
  *
  * Blorb.init(image, opts) -- ###
  *
+ * Blorb.get_exec_chunk() -- ###
+ *
  * Blorb.find_data_chunk(NUM) -- this finds the Data chunk of the
  *   given number from the Blorb file. The returned object looks like
  *   { data:[...], type:"..." } (where the type is TEXT or BINA).
@@ -34,8 +36,10 @@
 /* All state is contained in BlorbClass. */
 var BlorbClass = function() {
 
+var inited = false;
 var metadata = {}; /* Title, author, etc -- loaded from Blorb */
 var coverimageres = undefined; /* Image resource number of the cover art */
+var exec_chunk = null; /* Exec chunk (0) -- loaded from Blorb */
 var debug_info = null; /* gameinfo.dbg file -- loaded from Blorb */
 var blorbchunks = {}; /* Indexed by "USE:NUMBER" -- loaded from Blorb */
 var alttexts = {}; /* Indexed by "USE:NUMBER" -- loaded from Blorb */
@@ -49,7 +53,7 @@ var alttexts = {}; /* Indexed by "USE:NUMBER" -- loaded from Blorb */
 */
 function blorb_init(image, opts) {
     var gamechunktype = opts.gamechunktype;
-	
+
     var len = image.length;
     var ix;
     var rindex = [];
@@ -161,6 +165,22 @@ function blorb_init(image, opts) {
     return result;
 }
 
+function is_inited()
+{
+    return inited;
+}
+
+function get_library(val)
+{
+    /* This module doesn't rely on any others. */
+    return null;
+}
+    
+function get_exec_chunk()
+{
+    return exec_chunk;
+}
+    
 /* End of Blorb namespace function. Return the object which will
    become the Blorb global. */
 return {
@@ -168,13 +188,16 @@ return {
     init: blorb_init,
     inited: is_inited,
     getlibrary: get_library,
-    
+
+    get_exec_chunk: get_exec_chunk,
+    /*###
     find_data_chunk: find_data_chunk,
     get_metadata: get_metadata,
     get_cover_pict: get_cover_pict,
     get_debug_info: get_debug_info,
     get_image_info: get_image_info,
     get_image_url: get_image_url
+    ###*/
 };
 
 };
