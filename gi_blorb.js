@@ -52,8 +52,26 @@ var alttexts = {}; /* Indexed by "USE:NUMBER" -- loaded from Blorb */
    caches DATA chunks where we can reach them later.
 */
 function blorb_init(image, opts) {
-    var gamechunktype = opts.gamechunktype;
+    var format = null;
+    var gamechunktype = null;
+    if (opts) {
+        format = opts.format;
+        gamechunktype = opts.gamechunktype;
+    }
 
+    if (!format) {
+        /* An array of resources. */
+        inited = true;
+        //###
+        return;
+    }
+
+    if (format != 'array') {
+        throw new Error('Blorb: unrecognized format');
+    }
+
+    /* Blorb data in an array of bytes. */
+    
     var len = image.length;
     var ix;
     var rindex = [];
@@ -160,6 +178,8 @@ function blorb_init(image, opts) {
             blorbchunks[el.usage+':'+el.num] = el;
         }
     }
+
+    inited = true;
 }
 
 function is_inited()
