@@ -57,7 +57,6 @@ function blorb_init(image, opts) {
     var len = image.length;
     var ix;
     var rindex = [];
-    var result = null;
     var pos = 12;
 
     while (pos < len) {
@@ -149,7 +148,7 @@ function blorb_init(image, opts) {
         el.content = null;
 
         if (el.usage == "Exec" && el.num == 0 && chunktype == gamechunktype) {
-            result = image.slice(pos, pos+chunklen);
+            exec_chunk = image.slice(pos, pos+chunklen);
         }
         else {
             if (chunktype == "FORM") {
@@ -161,8 +160,6 @@ function blorb_init(image, opts) {
             blorbchunks[el.usage+':'+el.num] = el;
         }
     }
-
-    return result;
 }
 
 function is_inited()
