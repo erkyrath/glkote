@@ -7,6 +7,7 @@ var SampleDemoClass = function() {
    whacked out and replaced with a single AJAX call. */
 
 var GlkOte = null; /* imported API object */
+var Blorb = null; /* imported API object */
 
 /* Define a whole lot of global variables, representing game state. */
 
@@ -43,6 +44,28 @@ var game_simulate_dialog = false;
 var game_mood = 0;
 var game_mood_list = [ 'cheery', 'dopey', 'hungry', 'explodey' ];
 
+/* An image resourcemap, the way BlorbTool would generate it. */
+var game_resource_info = {
+  0: { image:0, 
+    url:'demomedia/pict-0.jpeg', alttext:'Picture of Zarf',
+    width:125, height:180 },
+  1: { image:1, 
+    url:'demomedia/pict-1.png', alttext:'Colored stripes',
+    width:150, height:180 },
+  2: { image:2, 
+    url:'demomedia/pict-2.png', alttext:'Monochrome textured symbol',
+    width:155, height:180 },
+  5: { image:5, 
+    url:'demomedia/pict-5.png', alttext:'Capital I',
+    width:47, height:62 },
+  10: { image:10, 
+    url:'demomedia/pict-10.jpeg', alttext:'Green texture',
+    width:128, height:128 },
+  11: { image:11, 
+    url:'demomedia/pict-11.jpeg', alttext:'Purple texture',
+    width:128, height:128 }
+};
+
 function game_init(glkote, iface) {
   /* Store the GlkOte interface object. */
   GlkOte = glkote;
@@ -52,6 +75,12 @@ function game_init(glkote, iface) {
   if (!iface)
     iface = window.Game;
 
+  /* Set up our own Blorb library, if possible. */
+  if (window.BlorbClass) {
+    Blorb = new BlorbClass();
+    Blorb.init(game_resource_info, { format:'infomap' });
+  }
+    
   /* This starts the game running. */
   GlkOte.init(iface);
 }
@@ -59,6 +88,7 @@ function game_init(glkote, iface) {
 function game_get_library(val) {
   switch (val) {
     case 'GlkOte': return GlkOte;
+    case 'Blorb': return Blorb;
     case 'Dialog': return GlkOte.getlibrary('Dialog');
   }
   /* Unrecognized library name. */
@@ -706,44 +736,18 @@ function game_file_save_selected(ref) {
 }
 
 function game_fetch_image(num, alignment) {
-  var img = null;
-
-  switch (num) {
-  case 0:
-    img = { special:'image', image:0, 
-            url:'demomedia/pict-0.jpeg', alttext:'Picture of Zarf',
-            width:125, height:180 };
-    break;
-  case 1:
-    img = { special:'image', image:1, 
-            url:'demomedia/pict-1.png', alttext:'Colored stripes',
-            width:150, height:180 };
-    break;
-  case 2:
-    img = { special:'image', image:2, 
-            url:'demomedia/pict-2.png', alttext:'Monochrome textured symbol',
-            width:155, height:180 };
-    break;
-  case 5:
-    img = { special:'image', image:5, 
-            url:'demomedia/pict-5.png', alttext:'Capital I',
-            width:47, height:62 };
-    break;
-  case 10:
-    img = { special:'image', image:10, 
-            url:'demomedia/pict-10.jpeg', alttext:'Green texture',
-            width:128, height:128 };
-    break;
-  case 11:
-    img = { special:'image', image:11, 
-            url:'demomedia/pict-11.jpeg', alttext:'Purple texture',
-            width:128, height:128 };
-    break;
-  }
-
-  if (!img)
+  var info = Blorb.get_image_info(num);
+  if (!info)
     return null;
 
+  /* Copy out the fields that GlkOte cares about. */
+  var img = {
+    special: 'image',
+    width: info.width, height: info.height,
+    url: info.url,
+    alttext: info.alttext
+  };
+    
   if (alignment)
     img.alignment = alignment;
 
@@ -845,11 +849,15 @@ function game_parse(val) {
   }
 
   if (val == 'image') {
-    game_print('Here are several images in a row:\n');
     var img1 = game_fetch_image(0, 'inlineup');
-    img1.hyperlink = 5;
     var img2 = game_fetch_image(10, 'inlinedown');
     var img3 = game_fetch_image(5, 'inlinecenter');
+    if (!(img1 && img2 && img3)) {
+      game_print('Unable to load images -- maybe the Blorb library is unavailable?\n');
+      return;
+    }
+    img1.hyperlink = 5;
+    game_print('Here are several images in a row:\n');
     game_print(['normal', 'With inlineup and link: ', img1, 'normal', ' With inlinedown: ', img2, 'normal', ' With inlinecenter: ', img3]);
     return;
   }
