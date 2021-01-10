@@ -78,6 +78,7 @@ function game_init(glkote, iface) {
   /* Set up our own Blorb library, if possible. */
   if (window.BlorbClass) {
     Blorb = new BlorbClass();
+    iface.Blorb = Blorb;      
     Blorb.init(game_resource_info, { format:'infomap' });
   }
     
