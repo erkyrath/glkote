@@ -1166,7 +1166,7 @@ function restore_allstate(res)
 
         case strtype_Resource:
             str.resfilenum = obj.resfilenum;
-            var el = Blorb.find_data_chunk(str.resfilenum);
+            var el = Blorb.get_data_chunk(str.resfilenum);
             if (el) {
                 str.buf = el.data;
             }
@@ -4911,21 +4911,20 @@ function glk_stream_open_memory(buf, fmode, rock) {
 function glk_stream_open_resource(filenum, rock) {
     var str;
 
-    if (!Blorb || !Blorb.find_data_chunk)
+    if (!Blorb)
         return null;
-    var el = Blorb.find_data_chunk(filenum);
+    var el = Blorb.get_data_chunk(filenum);
     if (!el)
         return null;
 
     var buf = el.data;
-    var isbinary = (el.type == 'BINA');
 
     str = gli_new_stream(strtype_Resource,
         true, 
         false, 
         rock);
     str.unicode = false;
-    str.isbinary = isbinary;
+    str.isbinary = el.binary;
 
     str.resfilenum = filenum;
 
@@ -4950,21 +4949,20 @@ function glk_stream_open_resource(filenum, rock) {
 function glk_stream_open_resource_uni(filenum, rock) {
     var str;
 
-    if (!Blorb || !Blorb.find_data_chunk)
+    if (!Blorb)
         return null;
-    var el = Blorb.find_data_chunk(filenum);
+    var el = Blorb.get_data_chunk(filenum);
     if (!el)
         return null;
 
     var buf = el.data;
-    var isbinary = (el.type == 'BINA');
 
     str = gli_new_stream(strtype_Resource,
         true, 
         false, 
         rock);
     str.unicode = true;
-    str.isbinary = isbinary;
+    str.isbinary = el.binary;
 
     str.resfilenum = filenum;
 

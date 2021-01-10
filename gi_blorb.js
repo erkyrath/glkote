@@ -8,7 +8,7 @@
  *
  * Blorb.get_exec_chunk() -- ###
  *
- * Blorb.find_data_chunk(NUM) -- this finds the Data chunk of the
+ * Blorb.get_data_chunk(NUM) -- this finds the Data chunk of the
  *   given number from the Blorb file. The returned object looks like
  *   { data:[...], type:"..." } (where the type is TEXT or BINA).
  *   If there was no such chunk, or if the game was loaded from a non-
@@ -368,17 +368,17 @@ function get_image_url(val) {
    is no such chunk. (This is used by the glk_stream_open_resource()
    functions.)
 */
-function find_data_chunk(val) {
+function get_data_chunk(val) {
     var chunk = blorbchunks['data:'+val];
     if (!chunk)
         return null;
 
-    //### generalize, add binary flag (see glkapi code)
-    var returntype = chunk.type;
-    if (returntype == 'FORM')
-        returntype = 'BINA';
+    //### move upstairs?
+    var isbinary = false;
+    if (chunk.blorbtype == 'FORM')
+        isbinary = true;
 
-    return { data:chunk.content, type:returntype };
+    return { data:chunk.content, type:chunk.type, binary:isbinary };
 }
 
 /* Convert an array of numeric byte values into a base64 string. */
@@ -535,7 +535,7 @@ return {
     getlibrary: get_library,
 
     get_exec_data: get_exec_data,
-    find_data_chunk: find_data_chunk,
+    get_data_chunk: get_data_chunk,
     get_metadata: get_metadata,
     get_cover_pict: get_cover_pict,
     get_debug_info: get_debug_info,
