@@ -381,6 +381,7 @@ function find_data_chunk(val) {
     return { data:chunk.content, type:returntype };
 }
 
+/* Convert an array of numeric byte values into a base64 string. */
 function encode_base64(image)
 {
     /* There's a limit on how much can be piped into .apply() at a 
