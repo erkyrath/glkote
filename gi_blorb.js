@@ -41,7 +41,6 @@ var metadata = {}; /* Title, author, etc -- loaded from Blorb */
 var coverimageres = undefined; /* Image resource number of the cover art */
 var debug_info = null; /* gameinfo.dbg file -- loaded from Blorb */
 var blorbchunks = {}; /* Indexed by "USE:NUMBER" -- loaded from Blorb */
-var alttexts = {}; /* Indexed by "USE:NUMBER" -- loaded from Blorb */
 
 /* Look through a Blorb file (provided as a byte array) and return the
    game file chunk (ditto). If no such chunk is found, returns null.
@@ -118,6 +117,8 @@ function blorb_init(data, opts) {
     if (format != 'array') {
         throw new Error('Blorb: unrecognized format');
     }
+
+    var alttexts = {}; /* Indexed by "USE:NUMBER" */
 
     /* Blorb data in an array of bytes. */
 
@@ -216,6 +217,21 @@ function blorb_init(data, opts) {
         el.len = chunklen;
         el.content = null;
 
+        /*###
+        if (chunk.type == 'JPEG')
+            img.type = 'jpeg';
+        else if (chunk.type == 'PNG ')
+            img.type = 'png';
+        else
+            img.type = '????';
+        */
+        /* Extract the alt-text, if available. */
+        /*###
+        var rdtext = alttexts['Pict:'+val];
+        if (rdtext)
+            img.alttext = rdtext;
+        */
+        
         if (chunktype == "FORM") {
             el.content = image.slice(pos-8, pos+chunklen);
         }
@@ -279,50 +295,36 @@ function get_debug_info() {
    (The alttext and type may be absent if not supplied.)
 */
 function get_image_info(val) {
-    if (all_options.image_info_map != undefined) {
-        var img = all_options.image_info_map[val];
-        if (img)
-            return img;
+    var chunk = blorbchunks['pict:'+val];
+    if (!chunk) {
+        return null;
+    }
+    
+    /* Extract the image size, if we don't have it cached already.
+       We could do this by creating an Image DOM element and measuring
+       it, but that could be slow. Instead, we'll parse the PNG or
+       JPEG data directly. It's easier than it sounds! */
+    if (chunk.imagesize === undefined && chunk.content) {
+        var imgsize = undefined;
+        if (chunk.type == 'jpeg') {
+            imgsize = find_dimensions_jpeg(chunk.content);
+        }
+        else if (chunk.type == 'png') {
+            imgsize = find_dimensions_png(chunk.content);
+        }
+        if (imgsize) {
+            chunk.imagesize = imgsize;
+        }
+    }
+    
+    var img = Object.assign({}, chunk); // copy
+    img.image = val;
+    if (chunk.imagesize) {
+        img.width = chunk.imagesize.width;
+        img.height = chunk.imagesize.height;
     }
 
-    var chunk = blorbchunks['Pict:'+val];
-    if (chunk) {
-        var img = { image:val };
-        if (chunk.type == 'JPEG')
-            img.type = 'jpeg';
-        else if (chunk.type == 'PNG ')
-            img.type = 'png';
-        else
-            img.type = '????';
-
-        /* Extract the image size, if we don't have it cached already.
-           We could do this by creating an Image DOM element and measuring
-           it, but that could be slow. Instead, we'll parse the PNG or
-           JPEG data directly. It's easier than it sounds! */
-        if (chunk.imagesize === undefined) {
-            var imgsize = undefined;
-            if (chunk.type == 'JPEG') {
-                imgsize = find_dimensions_jpeg(chunk.content);
-            }
-            else if (chunk.type == 'PNG ') {
-                imgsize = find_dimensions_png(chunk.content);
-            }
-            if (imgsize)
-                chunk.imagesize = imgsize;
-        }
-        if (chunk.imagesize) {
-            img.width = chunk.imagesize.width;
-            img.height = chunk.imagesize.height;
-        }
-
-        /* Extract the alt-text, if available. */
-        var rdtext = alttexts['Pict:'+val];
-        if (rdtext)
-            img.alttext = rdtext;
-        return img;
-    }
-
-    return undefined;
+    return img;
 }
 
 /* Return a URL representing an image. This might be loaded from static
