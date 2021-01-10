@@ -53,6 +53,10 @@ var blorbchunks = {}; /* Indexed by "USE:NUMBER" -- loaded from Blorb */
    caches DATA chunks where we can reach them later.
 */
 function blorb_init(data, opts) {
+    if (inited) {
+        throw new Error('Blorb: already inited');
+    }
+    
     var format = null;
     var gamechunktype = null;
     if (opts) {
