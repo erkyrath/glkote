@@ -249,8 +249,8 @@ function blorb_init(data, opts) {
             el.usage = '????';
         }
         
-        /* Extract the alt-text, if available. */
-        var rdtext = alttexts[el.usage + ':' + el.usagenum];
+        /* Add the alt-text, if available. */
+        var rdtext = alttexts[el.blorbusage + ':' + el.usagenum];
         if (rdtext)
             el.alttext = rdtext;
         
@@ -361,6 +361,8 @@ function get_image_info(val) {
     }
     
     var img = Object.assign({}, chunk); // copy
+    
+    /* Add image-specific fields that the caller will want. */
     img.image = val;
     if (chunk.imagesize) {
         img.width = chunk.imagesize.width;
