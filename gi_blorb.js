@@ -106,6 +106,8 @@ function blorb_init(data, opts) {
                     coverimageres = chunk.usagenum;
                 }
             }
+
+            //### absolutize url?
             
             blorbchunks[key] = chunk;
         }
@@ -333,31 +335,33 @@ function get_image_info(val) {
    The return value will be null or a URL. It might be a "data:..." URL.
 */
 function get_image_url(val) {
-    if (all_options.image_info_map) {
-        var img = all_options.image_info_map[val];
-        if (img && img.url)
-            return absolutize(img.url);
+    var chunk = blorbchunks['pict:'+val];
+    if (!chunk) {
+        return null;
+    }
+    
+    if (chunk.url) {
+        return chunk.url;
+    }
+    if (chunk.dataurl) {
+        return chunk.dataurl;
     }
 
-    var chunk = blorbchunks['Pict:'+val];
-    if (chunk) {
-        if (chunk.dataurl)
-            return chunk.dataurl;
-
-        var info = get_image_info(val);
-        if (info && chunk.content) {
-            var mimetype = 'application/octet-stream';
-            if (chunk.type == 'JPEG')
-                mimetype = 'image/jpeg';
-            else if (chunk.type == 'PNG ')
-                mimetype = 'image/png';
-            var b64dat = encode_base64(chunk.content);
-            chunk.dataurl = 'data:'+mimetype+';base64,'+b64dat;
-            return chunk.dataurl;
-        }
+    /* Convert content into a dataurl, if available. */
+    var info = get_image_info(val);
+    if (info && chunk.content) {
+        var mimetype = 'application/octet-stream';
+        if (chunk.type == 'jpeg')
+            mimetype = 'image/jpeg';
+        else if (chunk.type == 'png')
+            mimetype = 'image/png';
+        var b64dat = encode_base64(chunk.content);
+        chunk.dataurl = 'data:'+mimetype+';base64,'+b64dat;
+        return chunk.dataurl;
     }
 
-    return undefined;
+    /* Can't find anything. */
+    return null;
 }
 
 /* Return the Data chunk with the given number, or undefined if there
