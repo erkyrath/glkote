@@ -249,6 +249,132 @@ function get_exec_data()
     return chunk.content;
 }
     
+/* Return a metadata field, or undefined if there is no such field
+   (or if no metadata was loaded).
+*/
+function get_metadata(val) {
+    return metadata[val];
+}
+
+/* Return the resource number of the image resource containing the
+   cover art, or null if not available.
+*/
+function get_cover_pict() {
+    return coverimageres;
+}
+
+/* Return the gameinfo.dbg file (as an array of bytes), if it was
+   loaded.
+*/
+function get_debug_info() {
+    return debug_info;
+}
+
+/* Return information describing an image. This might be loaded from static
+   data or from a Blorb file.
+   
+   The return value will be null or an object:
+   { image:VAL, type:STRING, alttext:STRING, width:NUMBER, height:NUMBER }
+
+   (The alttext and type may be absent if not supplied.)
+*/
+function get_image_info(val) {
+    if (all_options.image_info_map != undefined) {
+        var img = all_options.image_info_map[val];
+        if (img)
+            return img;
+    }
+
+    var chunk = blorbchunks['Pict:'+val];
+    if (chunk) {
+        var img = { image:val };
+        if (chunk.type == 'JPEG')
+            img.type = 'jpeg';
+        else if (chunk.type == 'PNG ')
+            img.type = 'png';
+        else
+            img.type = '????';
+
+        /* Extract the image size, if we don't have it cached already.
+           We could do this by creating an Image DOM element and measuring
+           it, but that could be slow. Instead, we'll parse the PNG or
+           JPEG data directly. It's easier than it sounds! */
+        if (chunk.imagesize === undefined) {
+            var imgsize = undefined;
+            if (chunk.type == 'JPEG') {
+                imgsize = find_dimensions_jpeg(chunk.content);
+            }
+            else if (chunk.type == 'PNG ') {
+                imgsize = find_dimensions_png(chunk.content);
+            }
+            if (imgsize)
+                chunk.imagesize = imgsize;
+        }
+        if (chunk.imagesize) {
+            img.width = chunk.imagesize.width;
+            img.height = chunk.imagesize.height;
+        }
+
+        /* Extract the alt-text, if available. */
+        var rdtext = alttexts['Pict:'+val];
+        if (rdtext)
+            img.alttext = rdtext;
+        return img;
+    }
+
+    return undefined;
+}
+
+/* Return a URL representing an image. This might be loaded from static
+   data or from a Blorb file.
+
+   The return value will be null or a URL. It might be a "data:..." URL.
+*/
+function get_image_url(val) {
+    if (all_options.image_info_map) {
+        var img = all_options.image_info_map[val];
+        if (img && img.url)
+            return absolutize(img.url);
+    }
+
+    var chunk = blorbchunks['Pict:'+val];
+    if (chunk) {
+        if (chunk.dataurl)
+            return chunk.dataurl;
+
+        var info = get_image_info(val);
+        if (info && chunk.content) {
+            var mimetype = 'application/octet-stream';
+            if (chunk.type == 'JPEG')
+                mimetype = 'image/jpeg';
+            else if (chunk.type == 'PNG ')
+                mimetype = 'image/png';
+            var b64dat = encode_base64(chunk.content);
+            chunk.dataurl = 'data:'+mimetype+';base64,'+b64dat;
+            return chunk.dataurl;
+        }
+    }
+
+    return undefined;
+}
+
+/* Return the Data chunk with the given number, or undefined if there
+   is no such chunk. (This is used by the glk_stream_open_resource()
+   functions.)
+*/
+function find_data_chunk(val) {
+    var chunk = blorbchunks['data:'+val];
+    if (!chunk)
+        return null;
+
+    //### generalize, add binary flag (see glkapi code)
+    var returntype = chunk.type;
+    if (returntype == 'FORM')
+        returntype = 'BINA';
+
+    return { data:chunk.content, type:returntype };
+}
+
 /* Given a PNG file, extract its dimensions. Return a {width,height}
    object, or undefined on error. 
 */
@@ -325,14 +451,12 @@ return {
     getlibrary: get_library,
 
     get_exec_data: get_exec_data,
-    /*###
     find_data_chunk: find_data_chunk,
     get_metadata: get_metadata,
     get_cover_pict: get_cover_pict,
     get_debug_info: get_debug_info,
     get_image_info: get_image_info,
     get_image_url: get_image_url
-    ###*/
 };
 
 };
