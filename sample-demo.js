@@ -736,6 +736,8 @@ function game_file_save_selected(ref) {
 }
 
 function game_fetch_image(num, alignment) {
+  if (!Blorb)
+    return null;
   var info = Blorb.get_image_info(num);
   if (!info)
     return null;
@@ -853,7 +855,7 @@ function game_parse(val) {
     var img2 = game_fetch_image(10, 'inlinedown');
     var img3 = game_fetch_image(5, 'inlinecenter');
     if (!(img1 && img2 && img3)) {
-      game_print('Unable to load images -- maybe the Blorb library is unavailable?\n');
+      game_print('Unable to load images -- maybe the Blorb library is unavailable?');
       return;
     }
     img1.hyperlink = 5;
