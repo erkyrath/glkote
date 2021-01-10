@@ -58,9 +58,11 @@ function blorb_init(data, opts) {
     }
     
     var format = null;
-    if (opts) {
+    var retainuses = true; // by default, retain all
+    if (opts && opts.format !== undefined)
         format = opts.format;
-    }
+    if (opts && opts.retainuses !== undefined)
+        retainuses = opts.retainuses;
 
     if (format == 'infomap') {
         /* This is the old-style map of image resources. (See the
@@ -253,13 +255,23 @@ function blorb_init(data, opts) {
             el.alttext = rdtext;
         
         el.content = null;
-        //### filter on usage
-        if (chunktype == "FORM") {
-            el.content = image.slice(pos-8, pos+chunklen);
+
+        /* Copy the chunk data, but only if it matches retainuses. */
+        var grab = true;
+        if (retainuses === true || retainuses === false)
+            grab = retainuses;
+        else
+            grab = retainuses[el.usage];
+
+        if (grab) {
+            if (chunktype == "FORM") {
+                el.content = image.slice(pos-8, pos+chunklen);
+            }
+            else {
+                el.content = image.slice(pos, pos+chunklen);
+            }
         }
-        else {
-            el.content = image.slice(pos, pos+chunklen);
-        }
+        
         blorbchunks[el.usage+':'+el.usagenum] = el;
     }
 
