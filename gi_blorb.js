@@ -4,37 +4,40 @@
  * Designed by Andrew Plotkin <erkyrath@eblong.com>
  * <http://eblong.com/zarf/glk/glkote.html>
  *
- * All of these calls are safe to call even if the library has not
- * been initialized. They will return null, as if no resource were
- * found.
+ * Blorb.init(data, opts): Read the data and extract the resources.
+ *   Options:
+ *   - format: The data format. See below.
+ *   - retainuses: Which usage types to retain data (chunk.content)
+ *     for.
  *
- * Blorb.init(image, opts) -- ###
+ *   (Note: All of the calls below return null if a resource or field
+ *   could not be found. Also, they will all safely return null if the
+ *   library has not been initialized.)
  *
- * Blorb.get_exec_chunk() -- ###
+ * Blorb.get_exec_data(TYPE): Find the 'exec' (executable game file)
+ *   chunk and return it. If TYPE is given, this checks that the
+ *   game file is of that type ('ZCOD' or 'GLUL'). If it does not match,
+ *   returns null.
  *
- * Blorb.get_data_chunk(NUM) -- this finds the Data chunk of the
- *   given number from the Blorb file. The returned object looks like
- *   { data:[...], type:"..." } (where the type is TEXT or BINA).
- *   If there was no such chunk, or if the game was loaded from a non-
- *   Blorb file, this returns null.
+ * Blorb.get_data_chunk(NUM): Find the 'data' chunk of the given 
+ *   number from the Blorb file. The returned object looks like
+ *   { data:[...], type:str, binary:bool }
  *
- * Blorb.get_metadata(FIELD) -- this returns a metadata field (a
- *   string) from the iFiction <bibliographic> section. If there is
- *   no such field, or if the game was loaded from a non-Blorb
- *   file, this returns null.
+ * Blorb.get_metadata(FIELD): Return a metadata field (a string)
+ *   from the iFiction <bibliographic> section.
  *
- * Blorb.get_cover_pict() -- this returns the number of the image
- *   resource which contains the cover art. If there is no cover art,
- *   this returns null.
+ * Blorb.get_cover_pict(): Return the number of the image resource
+ *   which contains the cover art. If there is no cover art, this
+ *   returns null.
  *
- * Blorb.get_image_info(NUM) -- returns an object describing an image,
- *   or null.
+ * Blorb.get_image_info(NUM): Return an object describing an image,
+ *   or null. The result will contain (at least) image (number), width,
+ *   height, type fields.
  *
- * Blorb.get_debug_info() -- returns an array containing debug info,
- *   or null.
- *
- * Blorb.get_image_url(NUM) -- returns a URL describing an image, or
+ * Blorb.get_debug_info(): Return an array containing debug info, or
  *   null.
+ *
+ * Blorb.get_image_url(NUM): Return a URL describing an image, or null.
  */
 
 /* All state is contained in BlorbClass. */
@@ -308,8 +311,7 @@ function get_exec_data(gametype)
     return chunk.content;
 }
     
-/* Return a metadata field, or undefined if there is no such field
-   (or if no metadata was loaded).
+/* Return a metadata field.
 */
 function get_metadata(val) {
     return metadata[val];
@@ -408,7 +410,7 @@ function get_image_url(val) {
     return null;
 }
 
-/* Return the Data chunk with the given number, or undefined if there
+/* Return the 'data' chunk with the given number, or null if there
    is no such chunk. (This is used by the glk_stream_open_resource()
    functions.)
 */
