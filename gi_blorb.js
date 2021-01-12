@@ -4,6 +4,12 @@
  * Designed by Andrew Plotkin <erkyrath@eblong.com>
  * <http://eblong.com/zarf/glk/glkote.html>
  *
+ * This library is really more general than the name implies. It
+ * can load resources from a Blorb file (given as a byte array), but
+ * it can also store an arbitrary collection of resources (given as
+ * JS objects). The GlkOte library (and other interpreter libraries)
+ * can then access the resources through the Blorb API.
+ *
  * Blorb.init(data, opts): Read the data and extract the resources.
  *   Options:
  *   - format: The data format. See below.
