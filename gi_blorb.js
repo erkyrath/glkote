@@ -86,7 +86,8 @@
  *     url: URL,
  *     // you may alternately provide the image data as content:bytearray;
  *     // the library can convert that into a data: URL.
- *     alttext: 'Alternate text'  // optional
+ *     alttext: 'Alternate text',  // optional
+ *     coverimage: true  // if this is the cover image (one at most please)
  *   },
  *   {
  *     usage: 'exec',
@@ -116,7 +117,8 @@
  *     url: URL,
  *     // you may alternately provide the image data as content:bytearray;
  *     // the library can convert that into a data: URL.
- *     alttext: 'Alternate text'  // optional
+ *     alttext: 'Alternate text',  // optional
+ *     coverimage: true  // if this is the cover image (one at most please)
  *   },
  *   // ... more resources...
  * }
