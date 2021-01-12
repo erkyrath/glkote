@@ -280,6 +280,10 @@ function blorb_init(data, opts) {
         }
         else if (el.blorbusage == 'Data') {
             el.usage = 'data';
+            
+            el.binary = false;
+            if (el.blorbtype == 'FORM')
+                el.binary = true;
         }
         else {
             el.usage = '????';
@@ -452,12 +456,7 @@ function get_data_chunk(val) {
     if (!chunk)
         return null;
 
-    //### move upstairs?
-    var isbinary = false;
-    if (chunk.blorbtype == 'FORM')
-        isbinary = true;
-
-    return { data:chunk.content, type:chunk.type, binary:isbinary };
+    return { data:chunk.content, type:chunk.type, binary:chunk.binary };
 }
 
 /* Convert an array of numeric byte values into a base64 string. */
