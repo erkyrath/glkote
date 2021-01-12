@@ -26,6 +26,8 @@
  *   could not be found. Also, they will all safely return null if the
  *   library has not been initialized.)
  *
+ * Blorb.get_chunk(USAGE, NUM): Find a chunk by usage and number.
+ *
  * Blorb.get_exec_data(TYPE): Find the 'exec' (executable game file)
  *   chunk and return it. If TYPE is given, this checks that the
  *   game file is of that type ('ZCOD' or 'GLUL'). If it does not match,
@@ -122,6 +124,13 @@
  * For this key-map format, call
  *
  *   Blorb.init(map, { format:'infomap' });
+ *
+ * Note that when you are providing resource objects, any fields you add
+ * will be passed through unchanged to get_image_info(). This means that
+ * you can do a lot that this library wasn't really designed for! It
+ * also means that the library internals are more exposed than my
+ * crusty software-engineer soul desires. (E.g., the blorb fields
+ * leaking out, as noted above.) Try not to cut yourself.
  *
  */
 
@@ -419,6 +428,15 @@ function get_debug_info() {
     return debug_info;
 }
 
+/* Return a chunk given its usage string and number. */
+function get_chunk(usage, num) {
+    var chunk = blorbchunks[usage+':'+val];
+    if (!chunk) {
+        return null;
+    }
+    return chunk;
+}
+
 /* Return information describing an image. This might be loaded from static
    data or from a Blorb file.
    
@@ -663,6 +681,7 @@ return {
     inited: is_inited,
     getlibrary: get_library,
 
+    get_chunk: get_chunk,
     get_exec_data: get_exec_data,
     get_data_chunk: get_data_chunk,
     get_metadata: get_metadata,
