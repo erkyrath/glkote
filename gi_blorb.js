@@ -10,6 +10,12 @@
  * JS objects). The GlkOte library (and other interpreter libraries)
  * can then access the resources through the Blorb API.
  *
+ * This means it is possible to store your resource info as JSON
+ * and allow the interpreter to load it directly, with no Blorb decoding
+ * necessary.
+ *
+ * Library API:
+ *
  * Blorb.init(data, opts): Read the data and extract the resources.
  *   Options:
  *   - format: The data format. See below.
@@ -38,12 +44,33 @@
  *
  * Blorb.get_image_info(NUM): Return an object describing an image,
  *   or null. The result will contain (at least) image (number), width,
- *   height, type fields.
+ *   height, and type ('png' or 'jpeg').
  *
  * Blorb.get_debug_info(): Return an array containing debug info, or
  *   null.
  *
  * Blorb.get_image_url(NUM): Return a URL describing an image, or null.
+ *
+ * --------------------------------------------------------------------
+ *
+ * Resources are indexed by *usage* and *number*. Usage is a string;
+ * these currently include 'pict', 'snd', 'exec' (for executable
+ * game file), 'data' (arbitrary data). The number can be any
+ * non-negative integer. (The numbers do not have to be consecutive.)
+ *
+ * The pair (usage, usagenum) should be unique within the resource
+ * collection.
+ *
+ * The Blorb spec (https://eblong.com/zarf/blorb/) uses the same structure.
+ * When you load a Blorb file, the resources get imported directly.
+ * (The usage codes aren't exactly the same, but you don't have to worry
+ * about this.) To do this, call
+ *
+ *   Blorb.init(array, { format:'blorbbytes' });
+ *
+ * In this form, the resource info (i.e. the objects returned by
+ * get_image_info()) will include Blorb data fields as well as
+ * image, type, width, and height.
  */
 
 /* All state is contained in BlorbClass. */
