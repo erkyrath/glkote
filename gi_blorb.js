@@ -50,6 +50,7 @@
  *   null.
  *
  * Blorb.get_image_url(NUM): Return a URL describing an image, or null.
+ *   If the image comes from Blorb data, this will be a data: URL.
  *
  * --------------------------------------------------------------------
  *
@@ -71,6 +72,57 @@
  * In this form, the resource info (i.e. the objects returned by
  * get_image_info()) will include Blorb data fields as well as
  * image, type, width, and height.
+ *
+ * To provide resources directly, create a JS array that looks like:
+ *
+ * [
+ *   {
+ *     usage: 'pict',
+ *     usagenum: 5,
+ *     type: 'jpeg',  // 'jpeg' or 'png'
+ *     imagesize: { width:100, height:200 },  // only for 'pict' resources
+ *     url: URL,
+ *     // you may alternately provide the image data as content:bytearray;
+ *     // the library can convert that into a data: URL.
+ *     alttext: 'Alternate text'  // optional
+ *   },
+ *   {
+ *     usage: 'exec',
+ *     usagenum: 0,  // executable chunk must have num 0
+ *     content: bytearray
+ *   },
+ *   {
+ *     usage: 'data',
+ *     usagenum: 1,
+ *     binary: bool,
+ *     content: bytearray
+ *   },
+ *   // ... more resources...
+ * ]
+ *
+ * Then call
+ *
+ *   Blorb.init(resourcearray);
+ *
+ * If your data consists only of images, you can use this simpler format:
+ *
+ * {
+ *   5: {  // usagenum is the object key
+ *     // usage:'pict' is assumed
+ *     type: 'jpeg',  // 'jpeg' or 'png'
+ *     width:100, height:200,  // note separate fields
+ *     url: URL,
+ *     // you may alternately provide the image data as content:bytearray;
+ *     // the library can convert that into a data: URL.
+ *     alttext: 'Alternate text'  // optional
+ *   },
+ *   // ... more resources...
+ * }
+ * 
+ * For this key-map format, call
+ *
+ *   Blorb.init(map, { format:'infomap' });
+ *
  */
 
 /* All state is contained in BlorbClass. */
@@ -82,11 +134,10 @@ var coverimageres = undefined; /* Image resource number of the cover art */
 var debug_info = null; /* gameinfo.dbg file -- loaded from Blorb */
 var blorbchunks = {}; /* Indexed by "USE:NUMBER" -- loaded from Blorb */
 
-/* Look through a Blorb file (provided as ### a byte array) and return the
-   game file chunk (ditto). If no such chunk is found, returns null.
+/* Load the resource data, according to opts.format.
 
    This also loads the IFID metadata into the metadata object, and
-   caches DATA chunks where we can reach them later.
+   caches other data we might want.
 */
 function blorb_init(data, opts) {
     if (inited) {
