@@ -56,6 +56,8 @@
  *
  * --------------------------------------------------------------------
  *
+ * * Loading a Blorb file
+ *
  * Resources are indexed by *usage* and *number*. Usage is a string;
  * these currently include 'pict', 'snd', 'exec' (for executable
  * game file), 'data' (arbitrary data). The number can be any
@@ -74,6 +76,19 @@
  * In this form, the resource info (i.e. the objects returned by
  * get_image_info()) will include Blorb data fields as well as
  * image, type, width, and height.
+ *
+ * Each chunk object will have a content field which contains an array
+ * of bytes (integers 0-255) representing the resource data. These
+ * arrays are extracted from the Blorb file.
+ *
+ * It's possible that you might not need all of these content arrays.
+ * (GlkOte currently doesn't support sound, so you probably don't need to
+ * save all the sound data.) You can customize this by providing
+ * retainuses in the init() options. The retainuses option may be true
+ * (keep all content arrays), false (keep none of them), or a dict
+ * { pict:bool, snd:bool, data:bool, exec:bool }.
+ *
+ * * Non-Blorb use
  *
  * To provide resources directly, create a JS array that looks like:
  *
