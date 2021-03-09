@@ -1862,6 +1862,7 @@ The <code>game_init()</code> function takes care of calling <code>GlkOte.init()<
 <dd>Added gi_blorb.js, which provides BlorbClass. This class contains the Blorb parser and general resource-handling functionality. This used to be part of gi_load.js in the Quixe repository, but it makes more sense here. (Thanks to Dannii for pointing this out.) 
 <dd>Various bits of code in glkote.js, glkapi.js, and sample-demo.js now refer to Blorb rather than GiLoad. This means you will need to pass in a Blorb reference when initializing them, if you want to support images at all. (The gi_load.js loader does this automatically.)
 <dd>Added an example of two GlkOte instances on the same page.
+<dd>Added a <code>max_buffer_length</code> config option, defaulting to 800 (lines or paragraphs) instead of the previous 200.
 
 <dt>Release 2.2.6 (Dec 1, 2020)
 <dd>The Dialog API now has an <code>init/init_async</code> call which GlkOte invokes if present. (electrofs.js has <code>init_async</code>; dialog.js currently has neither.)
