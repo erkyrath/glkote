@@ -756,6 +756,10 @@ function glkote_update(arg) {
           if (frameel.scrollTop() + frameheight + moreprompt_margin >= frameel.get(0).scrollHeight) {
             win.needspaging = false;
           }
+          else if (frameheight <= current_metrics.buffercharheight) {
+            /* Window is too small to bother paging. */
+            win.needspaging = false;
+          }
           else {
             win.needspaging = true;
           }
