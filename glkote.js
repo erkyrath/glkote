@@ -623,6 +623,16 @@ function create_resize_sensors() {
      This is one reason evhan_doc_resize() has debouncing logic. */
   shrinkel.on('scroll', evhan);
   expandel.on('scroll', evhan);
+
+  /* Move the top-most grid window into the viewport
+    when the iOS virtual keyboard pops up. */
+  if (window.visualViewport) {
+    var visualViewportHandler = function () {
+      $('.topgrid').css({ top: visualViewport.offsetTop });
+    }
+    visualViewport.addEventListener('resize', visualViewportHandler);
+    visualViewport.addEventListener('scroll', visualViewportHandler);
+  }
 }
 
 /* This function becomes GlkOte.update(). The game calls this to update
@@ -923,9 +933,13 @@ function accept_one_window(arg) {
     if (win.type == 'graphics')
       typeclass = 'GraphicsWindow';
     var rockclass = 'WindowRock_' + arg.rock;
+    var topclass = "";
+    if (win.type == 'grid' && arg.top === 0 && current_metrics.inspacingy === 0) {
+      topclass = " topgrid";
+    }
     frameel = $('<div>',
       { id: dom_prefix+'window'+arg.id,
-        'class': 'WindowFrame HasNoInputField ' + typeclass + ' ' + rockclass });
+        'class': 'WindowFrame HasNoInputField ' + typeclass + ' ' + rockclass + topclass});
     frameel.data('winid', arg.id);
     frameel.on('mousedown', arg.id, evhan_window_mousedown);
     if (perform_paging && win.type == 'buffer')
