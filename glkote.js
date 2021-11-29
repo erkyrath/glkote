@@ -1364,6 +1364,7 @@ function accept_one_content(arg) {
       var cursel = $('<span>',
         { id: dom_prefix+'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
       divel.append(cursel);
+      divel.click(function () { if (win.inputel) win.inputel.focus(); });
 
       if (win.inputel) {
         /* Put back the inputel that we found earlier. */
