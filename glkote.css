@@ -51,6 +51,7 @@
   /* This class provides the default background color of windows. You
      can change that, but don't touch the position or margin. */
   position: absolute;
+  box-sizing: border-box;
   margin: 0px;
   background: #FFFFEE;
 }
