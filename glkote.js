@@ -843,19 +843,19 @@ function glkote_update(arg) {
   if (autorestore) {
     if (autorestore.history) {
       for (const [winid, ls] of Object.entries(autorestore.history)) {
-          var win = windowdic[winid];
-          if (win != null) {
-            win.history = ls.slice(0);
-            win.historypos = win.history.length;
-          }
+        var win = windowdic[winid];
+        if (win != null) {
+          win.history = ls.slice(0);
+          win.historypos = win.history.length;
+        }
       }
     }
     if (autorestore.defcolor) {
       for (const [winid, val] of Object.entries(autorestore.defcolor)) {
-          var win = windowdic[winid];
-          if (win != null) {
-            win.defcolor = val;
-          }
+        var win = windowdic[winid];
+        if (win != null) {
+          win.defcolor = val;
+        }
       }
     }
     
@@ -863,9 +863,9 @@ function glkote_update(arg) {
     /* For the case of autorestore (only), we short-circuit the paging
        mechanism and assume the player has already seen all the text. */
     for (const win of Object.values(windowdic)) {
-        if (win.type == 'buffer') {
-          window_scroll_to_bottom(win);
-        }
+      if (win.type == 'buffer') {
+        window_scroll_to_bottom(win);
+      }
     }
     
     if (!(autorestore.metrics 
