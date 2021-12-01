@@ -896,10 +896,14 @@ function accept_windowset(arg) {
   arg.forEach(accept_one_window);
 
   /* Close any windows not mentioned in the argument. */
+  var closewins = [];
   for (const win of Object.values(windowdic)) {
     if (!win.inplace) {
-      close_one_window(win);
+      closewins.push(win);
     }
+  }
+  for (const win of closewins) {
+    close_one_window(win);
   }
 }
 
