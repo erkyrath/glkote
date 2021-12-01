@@ -65,7 +65,6 @@ var error_visible = false;
 var windowdic = null;
 var current_metrics = null;
 var current_devpixelratio = null;
-var currently_focussed = false;
 var last_known_focus = 0;
 var last_known_paging = 0;
 var windows_paging_count = 0;
@@ -84,7 +83,7 @@ var Blorb = null; /* imported API object (the resource layer) */
 
 /* Some handy constants */
 /* A non-breaking space character. */
-var NBSP = "\xa0";
+var NBSP = '\xa0';
 /* Size of the scrollbar, give or take some. */
 var approx_scroll_width = 20;
 /* Margin for how close you have to scroll to end-of-page to kill the
@@ -171,12 +170,12 @@ function glkote_init(iface) {
     terminator_key_values[terminator_key_names[val]] = val;
   }
 
-  if (false) {
-    /* ### test for mobile browser? "'ontouchstart' in document.documentElement"? */
-    /* Paging doesn't make sense for iphone/android, because you can't
-       get keystroke events from a window. */
+  /*if (false) {
+    // ### test for mobile browser? "'ontouchstart' in document.documentElement"?
+    // Paging doesn't make sense for iphone/android, because you can't
+    //   get keystroke events from a window.
     perform_paging = false;
-  }
+  }*/
 
   /* Map mapping window ID (strings) to window description objects. */
   windowdic = new Map();
@@ -283,10 +282,10 @@ function glkote_init(iface) {
     else {
       /* Set up the recording-state object. */
       recording_state = {
-        sessionId: (new Date().getTime())+""+( Math.ceil( Math.random() * 10000 ) ),
+        sessionId: (new Date().getTime()) + '' + (Math.ceil( Math.random() * 10000 )),
         input: null, output: null,
         timestamp: 0, outtimestamp: 0
-      }
+      };
       if (iface.recording_label)
         recording_state.label = iface.recording_label;
       if (iface.recording_format == 'simple')
@@ -339,7 +338,7 @@ function glkote_init(iface) {
 
     /* We might have a sync or async init call! (ElectroFS uses the async style.) */
     if (Dialog.init_async) {
-      Dialog.init_async(dialogiface, function() { finish_init(iface); })
+      Dialog.init_async(dialogiface, function() { finish_init(iface); });
       return; /* callback will call finish_init(). */
     }
     else if (Dialog.init) {
@@ -389,7 +388,7 @@ function glkote_inited() {
 */
 function measure_window() {
   var metrics = {};
-  var winsize, line1size, line2size, invcursize, spansize, canvassize;
+  var winsize, line1size, line2size, spansize, canvassize;
 
   /* We assume the gameport is the same size as the windowport, which
      is true on all browsers but IE7. Fortunately, on IE7 it's
@@ -420,7 +419,7 @@ function measure_window() {
     left: '-1000px'
   });
   var line = $('<div>');
-  line.append($('<span>', {'class': "Style_normal"}).text('12345678'));
+  line.append($('<span>', {'class': 'Style_normal'}).text('12345678'));
 
   var gridwin = $('<div>', {'class': 'WindowFrame GridWindow'});
   var gridline1 = line.clone().addClass('GridLine').appendTo(gridwin);
@@ -473,7 +472,6 @@ function measure_window() {
   spansize = get_size(bufspan);
   line1size = get_size(bufline1);
   line2size = get_size(bufline2);
-  invcursize = get_size(invcurspan);    
 
   metrics.buffercharheight = Math.max(1, bufline2.position().top - bufline1.position().top);
   metrics.buffercharwidth = Math.max(1, bufspan.width() / 8);
@@ -600,7 +598,7 @@ function create_resize_sensors() {
   var expanddom = expandel.get(0);
   var expandchilddom = expanddom.childNodes[0];
 
-  var reset = function() {
+  function reset() {
     shrinkdom.scrollLeft = 100000;
     shrinkdom.scrollTop = 100000;
 
@@ -614,7 +612,7 @@ function create_resize_sensors() {
   gameport.append(expandel);
   reset();
 
-  var evhan = function(ev) {
+  function evhan(ev) {
     evhan_doc_resize(ev);
     reset();
   }
@@ -852,7 +850,7 @@ function glkote_update(arg) {
     }
     if (autorestore.defcolor) {
       for (const [winid, val] of Object.entries(autorestore.defcolor)) {
-        var win = windowdic.get(winid);
+        const win = windowdic.get(winid);
         if (win != null) {
           win.defcolor = val;
         }
@@ -971,9 +969,8 @@ function accept_one_window(arg) {
 
   if (win.type == 'grid') {
     /* Make sure we have the correct number of GridLine divs. */
-    var ix;
     if (arg.gridheight > win.gridheight) {
-      for (ix=win.gridheight; ix<arg.gridheight; ix++) {
+      for (let ix=win.gridheight; ix<arg.gridheight; ix++) {
         var el = $('<div>',
           { id: dom_prefix+'win'+win.id+'_ln'+ix, 'class': 'GridLine' });
         el.append(NBSP);
@@ -981,8 +978,8 @@ function accept_one_window(arg) {
       }
     }
     if (arg.gridheight < win.gridheight) {
-      for (ix=arg.gridheight; ix<win.gridheight; ix++) {
-        var el = $('#'+dom_prefix+'win'+win.id+'_ln'+ix, dom_context);
+      for (let ix=arg.gridheight; ix<win.gridheight; ix++) {
+        const el = $('#'+dom_prefix+'win'+win.id+'_ln'+ix, dom_context);
         if (el.length)
           el.remove();
       }
@@ -996,7 +993,7 @@ function accept_one_window(arg) {
   }
 
   if (win.type == 'graphics') {
-    var el = $('#'+dom_prefix+'win'+win.id+'_canvas', dom_context);
+    let el = $('#'+dom_prefix+'win'+win.id+'_canvas', dom_context);
     if (!el.length) {
       win.graphwidth = arg.graphwidth;
       win.graphheight = arg.graphheight;
@@ -1008,7 +1005,6 @@ function accept_one_window(arg) {
          http://www.html5rocks.com/en/tutorials/canvas/hidpi/ .
       */
       win.backpixelratio = 1;
-      var canvas = el.get(0);
       var ctx = canvas_get_2dcontext(el);
       if (ctx) {
         /* This property is still namespaced as of 2016. */
@@ -1041,7 +1037,7 @@ function accept_one_window(arg) {
         el.css('width', (win.graphwidth + 'px'));
         el.css('height', (win.graphheight + 'px'));
         /* Clear to the default color, as if for a "fill" command. */
-        var ctx = canvas_get_2dcontext(el);
+        const ctx = canvas_get_2dcontext(el);
         if (ctx) {
           ctx.setTransform(win.scaleratio, 0, 0, win.scaleratio, 0, 0);
           ctx.fillStyle = win.defcolor;
@@ -1062,42 +1058,15 @@ function accept_one_window(arg) {
      of the border, but width/height are measured from the inside of the
      border. (Measured by the browser's DOM methods, I mean.) */
   var styledic;
-  if (0 /*###Prototype.Browser.IE*/) {
-    /* Actually this method works in Safari also, but in Firefox the buffer
-       windows are too narrow by a scrollbar-width. So we don't use it
-       generally. */
-    var width = arg.width;
-    var height = arg.height;
-    if (arg.type == 'grid') {
-      width -= current_metrics.gridmarginx;
-      height -= current_metrics.gridmarginy;
-    }
-    if (arg.type == 'buffer') {
-      width -= current_metrics.buffermarginx;
-      height -= current_metrics.buffermarginy;
-    }
-    if (width < 0)
-      width = 0;
-    if (height < 0)
-      height = 0;
-    styledic = { left: arg.left+'px', top: arg.top+'px',
-      width: width+'px', height: height+'px' };
-    win.coords.left = arg.left;
-    win.coords.top = arg.top;
-    win.coords.right = current_metrics.width - (arg.left+arg.width);
-    win.coords.bottom = current_metrics.height - (arg.top+arg.height);
-  }
-  else {
-    /* This method works in everything but IE. */
-    var right = current_metrics.width - (arg.left + arg.width);
-    var bottom = current_metrics.height - (arg.top + arg.height);
-    styledic = { left: arg.left+'px', top: arg.top+'px',
-      right: right+'px', bottom: bottom+'px' };
-    win.coords.left = arg.left;
-    win.coords.top = arg.top;
-    win.coords.right = right;
-    win.coords.bottom = bottom;
-  }
+  /* This method works in everything but IE. */
+  var right = current_metrics.width - (arg.left + arg.width);
+  var bottom = current_metrics.height - (arg.top + arg.height);
+  styledic = { left: arg.left+'px', top: arg.top+'px',
+    right: right+'px', bottom: bottom+'px' };
+  win.coords.left = arg.left;
+  win.coords.top = arg.top;
+  win.coords.right = right;
+  win.coords.bottom = bottom;
   frameel.css(styledic);
 }
 
@@ -1190,7 +1159,6 @@ function accept_one_content(arg) {
   if (win.type == 'buffer') {
     /* Append the given lines onto the end of the buffer window. */
     var text = arg.text;
-    var ix, sx;
 
     if (win.inputel) {
       /* This can happen if we're waiting for char input. (Line input
@@ -1231,10 +1199,10 @@ function accept_one_content(arg) {
        CSS cares.
     */
 
-    for (ix=0; ix<text.length; ix++) {
+    for (let ix=0; ix<text.length; ix++) {
       var textarg = text[ix];
-      var content = textarg.content;
-      var divel = null;
+      const content = textarg.content;
+      let divel = null;
       if (textarg.append) {
         if (!content || !content.length)
           continue;
@@ -1260,8 +1228,8 @@ function accept_one_content(arg) {
         divel.empty();
       }
       for (sx=0; sx<content.length; sx++) {
-        var rdesc = content[sx];
-        var rstyle, rtext, rlink;
+        const rdesc = content[sx];
+        let rstyle, rtext, rlink;
         if (jQuery.type(rdesc) === 'object') {
           if (rdesc.special !== undefined) {
             if (rdesc.special == 'image') {
@@ -1275,7 +1243,7 @@ function accept_one_content(arg) {
                 if (newurl)
                   imgurl = newurl;
               }
-              var el = $('<img>', 
+              let el = $('<img>', 
                 { src:imgurl,
                   width:''+rdesc.width, height:''+rdesc.height } );
               if (rdesc.alttext)
@@ -1303,7 +1271,7 @@ function accept_one_content(arg) {
                   break;
               }
               if (rdesc.hyperlink != undefined) {
-                var ael = $('<a>',
+                const ael = $('<a>',
                   { 'href': '#', 'class': 'Internal' } );
                 ael.append(el);
                 ael.on('click', build_evhan_hyperlink(win.id, rdesc.hyperlink));
@@ -1325,13 +1293,13 @@ function accept_one_content(arg) {
           rtext = content[sx];
           rlink = undefined;
         }
-        var el = $('<span>',
+        const el = $('<span>',
           { 'class': 'Style_' + rstyle } );
         if (rlink == undefined) {
           insert_text_detecting(el, rtext);
         }
         else {
-          var ael = $('<a>',
+          const ael = $('<a>',
             { 'href': '#', 'class': 'Internal' } );
           ael.text(rtext);
           ael.on('click', build_evhan_hyperlink(win.id, rlink));
@@ -1350,7 +1318,6 @@ function accept_one_content(arg) {
     if (parals.length) {
       var totrim = parals.length - max_buffer_length;
       if (totrim > 0) {
-        var ix, obj;
         var offtop = parals.get(totrim).offsetTop;
         win.topunseen -= offtop;
         if (win.topunseen < 0)
@@ -1358,7 +1325,7 @@ function accept_one_content(arg) {
         win.pagefrommark -= offtop;
         if (win.pagefrommark < 0)
           win.pagefrommark = 0;
-        for (ix=0; ix<totrim; ix++) {
+        for (let ix=0; ix<totrim; ix++) {
           $(parals.get(ix)).remove();
         }
       }
@@ -1366,9 +1333,9 @@ function accept_one_content(arg) {
 
     /* Stick the invisible cursor-marker inside (at the end of) the last
        paragraph div. We use this to position the input box. */
-    var divel = buffer_last_line(win);
+    const divel = buffer_last_line(win);
     if (divel) {
-      var cursel = $('<span>',
+      let cursel = $('<span>',
         { id: dom_prefix+'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
       divel.append(cursel);
 
@@ -1396,7 +1363,6 @@ function accept_one_content(arg) {
   if (win.type == 'graphics') {
     /* Perform the requested draw operations. */
     var draw = arg.draw;
-    var ix;
     
     /* Accept a missing draw field as doing nothing. */
     if (draw === undefined)
@@ -1412,7 +1378,7 @@ function accept_one_content(arg) {
     */
 
     var docall = (graphics_draw_queue.length == 0);
-    for (ix=0; ix<draw.length; ix++) {
+    for (let ix=0; ix<draw.length; ix++) {
       var op = draw[ix];
       /* We'll be paranoid and clone the op object, throwing in a window
          number. */
@@ -1507,11 +1473,10 @@ function accept_inputset(arg) {
       inputel = $('<input>',
         { id: dom_prefix+'win'+win.id+'_input',
           'class': classes, type: 'text', maxlength: maxlen });
-      if (true) /* should be mobile-webkit-only? */
-        inputel.attr('autocapitalize', 'off');
       inputel.attr({
-          'aria-live':'off'
-        });
+        'aria-live': 'off',
+        'autocapitalize': 'off',
+      });
       if (argi.type == 'line') {
         inputel.on('keypress', evhan_input_keypress);
         inputel.on('keydown', evhan_input_keydown);
@@ -1565,13 +1530,13 @@ function accept_inputset(arg) {
           { id: dom_prefix+'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
         win.frameel.append(cursel);
       }
-      var pos = cursel.position();
+      let pos = cursel.position();
       /* This calculation is antsy. (Was on Prototype, anyhow, I haven't
            retested in jquery...) On Firefox, buffermarginx is too high (or
            getWidth() is too low) by the width of a scrollbar. On MSIE,
            buffermarginx is one pixel too low. We fudge for that, giving a
            result which errs on the low side. */
-      var width = win.frameel.width() - (current_metrics.buffermarginx + pos.left + 2);
+      let width = win.frameel.width() - (current_metrics.buffermarginx + pos.left + 2);
       if (width < 1)
         width = 1;
       inputel.css({ position: 'absolute',
@@ -1619,7 +1584,7 @@ function accept_specialinput(arg) {
       GlkOte.log('Unable to open file dialog: ' + ex);
       /* Return a failure. But we don't want to call send_response before
          glkote_update has finished, so we defer the reply slightly. */
-      replyfunc = function(ref) {
+      replyfunc = function() {
         send_response('specialresponse', null, 'fileref_prompt', null);
       };
       defer_func(replyfunc);
@@ -1871,11 +1836,6 @@ function retry_update() {
   send_response('refresh', null, null);
 }
 
-/* Hide the error pane. */
-function clear_error() {
-  $('#'+errorpane_id, dom_context).hide();
-}
-
 /* Hide the loading pane (the spinny compass), if it hasn't already been
    hidden.
 
@@ -1971,7 +1931,7 @@ function insert_text_detecting(el, val) {
         el.append(document.createTextNode(prefix));
       }
       /* Add the URL. */
-      var ael = $('<a>',
+      const ael = $('<a>',
         { 'href': match[0], 'class': 'External', 'target': '_blank' } );
       ael.text(match[0]);
       el.append(ael);
@@ -2089,7 +2049,7 @@ function perform_graphics_ops(loadedimg, loadedev) {
           //glkote_log('### setting up callback with url');
           var newimg = new Image();
           $(newimg).on('load', function(ev) { perform_graphics_ops(newimg, ev); });
-          $(newimg).on('error', function(ev) { perform_graphics_ops(newimg, null); });
+          $(newimg).on('error', function() { perform_graphics_ops(newimg, null); });
           /* Setting the src attribute will trigger one of the above
              callbacks. */
           newimg.src = imgurl;
@@ -2125,34 +2085,6 @@ function delay_func(timeout, func)
 function defer_func(func)
 {
   return window.setTimeout(func, 0.01*1000);
-}
-
-/* Debugging utility: return a string displaying all of an object's
-   properties, recursively. (Do not call this on an object which references
-   anything big!) */
-function inspect_deep(res) {
-  const keys = res.keys().sort();
-  const els = keys.map(key => {
-      var val = res[key];
-      if (jQuery.type(val) === 'string')
-        val = "'" + val + "'";
-      else if (!(jQuery.type(val) === 'number'))
-        val = inspect_deep(val);
-      return key + ':' + val;
-  });
-  return '{' + els.join(', ') + '}';
-}
-
-/* Debugging utility: same as above, but only one level deep. */
-function inspect_shallow(res) {
-  const keys = res.keys().sort();
-  const els = keys.map(key => {
-      var val = res[key];
-      if (jQuery.type(val) === 'string')
-        val = "'" + val + "'";
-      return key + ':' + val;
-  });
-  return '{' + els.join(', ') + '}';
 }
 
 /* Add a line to the window's command history, and then submit it to
@@ -2256,7 +2188,7 @@ function send_response(type, win, val, val2) {
         if (!partial) {
           partial = {};
           res.partial = partial;
-        };
+        }
         partial[win.id] = win.inputel.val();
       }
     }
@@ -2343,7 +2275,7 @@ function recording_send(arg) {
     var buffer = '';
 
     if (output.content) {
-      for (var ix=0; ix<output.content.length; ix++) {
+      for (let ix=0; ix<output.content.length; ix++) {
         var content = output.content[ix];
         if (recording_context.bufferwins && recording_context.bufferwins[content.id]) {
           if (content.text) {
@@ -2422,7 +2354,7 @@ function recording_standard_handler(state) {
    data expects, so we trigger this.)
    - The magic gameport resize sensors created in create_resize_sensors().
 */
-function evhan_doc_resize(ev) {
+function evhan_doc_resize() {
   /* We don't want to send a whole flurry of these events, just because
      the user is dragging the window-size around. So we set up a short
      timer, and don't do anything until the flurry has calmed down. */
@@ -2489,7 +2421,7 @@ function send_window_redraw(winid) {
 /* Event handler: the devicePixelRatio has changed. (Really we only get
    this for changes across particular thresholds, but I set up a bunch.)
 */
-function evhan_doc_pixelreschange(ev) {
+function evhan_doc_pixelreschange() {
   var ratio = window.devicePixelRatio || 1;
   if (ratio != current_devpixelratio) {
     current_devpixelratio = ratio;
@@ -2867,8 +2799,8 @@ function evhan_input_keydown(ev) {
     return false;
   }
   else if (terminator_key_values[keycode]) {
-    var winid = $(this).data('winid');
-    var win = windowdic.get(winid);
+    const winid = $(this).data('winid');
+    const win = windowdic.get(winid);
     if (!win || !win.input)
       return true;
 
@@ -2915,7 +2847,6 @@ function evhan_input_focus(ev) {
   if (!win)
     return;
 
-  currently_focussed = true;
   last_known_focus = winid;
   last_known_paging = winid;
 }
@@ -2929,8 +2860,6 @@ function evhan_input_blur(ev) {
   var win = windowdic.get(winid);
   if (!win)
     return;
-
-  currently_focussed = false;
 }
 
 /* Event handler: scrolling in buffer window 
@@ -3066,6 +2995,9 @@ return {
 var GlkOte = new GlkOteClass();
 
 // Node-compatible behavior
-try { exports.GlkOte = GlkOte; exports.GlkOteClass = GlkOteClass; } catch (ex) {};
+if (typeof exports === 'object' && typeof exports.nodeName !== 'string') {
+  exports.GlkOte = GlkOte;
+  exports.GlkOteClass = GlkOteClass;
+}
 
 /* End of GlkOte library. */
