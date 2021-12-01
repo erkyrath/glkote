@@ -44,58 +44,58 @@
  */
 
 /* All state is contained in GlkoteClass. */
-var GlkOteClass = function() {
+const GlkOteClass = function() {
 
 /* Module global variables */
-var is_inited = false;
-var game_interface = null;
-var dom_context = undefined;
-var dom_prefix = '';
-var windowport_id = 'windowport';
-var gameport_id = 'gameport';
-var errorpane_id = 'errorpane';
-var errorcontent_id = 'errorcontent';
-var loadingpane_id = 'loadingpane';
-var max_buffer_length = 800; /* scrollback paragraphs to retain */
-var generation = 0;
-var generation_sent = -1;
-var disabled = false;
-var loading_visible = null;
-var error_visible = false;
-var windowdic = null;
-var current_metrics = null;
-var current_devpixelratio = null;
-var last_known_focus = 0;
-var last_known_paging = 0;
-var windows_paging_count = 0;
-var graphics_draw_queue = [];
-var request_timer = null;
-var request_timer_interval = null;
-var resize_timer = null;
-var retry_timer = null;
-var perform_paging = true;
-var detect_external_links = false;
-var regex_external_links = null;
-var debug_out_handler = null;
+let is_inited = false;
+let game_interface = null;
+let dom_context = undefined;
+let dom_prefix = '';
+let windowport_id = 'windowport';
+let gameport_id = 'gameport';
+let errorpane_id = 'errorpane';
+let errorcontent_id = 'errorcontent';
+let loadingpane_id = 'loadingpane';
+let max_buffer_length = 800; /* scrollback paragraphs to retain */
+let generation = 0;
+let generation_sent = -1;
+let disabled = false;
+let loading_visible = null;
+let error_visible = false;
+let windowdic = null;
+let current_metrics = null;
+let current_devpixelratio = null;
+let last_known_focus = 0;
+let last_known_paging = 0;
+let windows_paging_count = 0;
+const graphics_draw_queue = [];
+let request_timer = null;
+let request_timer_interval = null;
+let resize_timer = null;
+let retry_timer = null;
+const perform_paging = true;
+let detect_external_links = false;
+let regex_external_links = null;
+let debug_out_handler = null;
 
-var Dialog = null; /* imported API object (the file select/open layer) */
-var Blorb = null; /* imported API object (the resource layer) */
+let Dialog = null; /* imported API object (the file select/open layer) */
+let Blorb = null; /* imported API object (the resource layer) */
 
 /* Some handy constants */
 /* A non-breaking space character. */
-var NBSP = '\xa0';
+const NBSP = '\xa0';
 /* Size of the scrollbar, give or take some. */
-var approx_scroll_width = 20;
+const approx_scroll_width = 20;
 /* Margin for how close you have to scroll to end-of-page to kill the
    moreprompt. (Really this just counters rounding error. And the
    measurement error of different fonts in a window. But as long as
    this is less than the last-line bottom margin, it won't cause
    problems.) */
-var moreprompt_margin = 4;
+const moreprompt_margin = 4;
 
 /* Some constants for key event native values. (Not including function 
    keys.) */
-var key_codes = {
+const key_codes = {
   KEY_BACKSPACE: 8,
   KEY_TAB:       9,
   KEY_RETURN:   13,
@@ -114,7 +114,7 @@ var key_codes = {
 
 /* All the keys that can be used as line input terminators, and their
    native values. */
-var terminator_key_names = {
+const terminator_key_names = {
     escape : key_codes.KEY_ESC,
     func1 : 112, func2 : 113, func3 : 114, func4 : 115, func5 : 116, 
     func6 : 117, func7 : 118, func8 : 119, func9 : 120, func10 : 121, 
@@ -122,20 +122,20 @@ var terminator_key_names = {
 };
 /* The inverse of the above. Maps native values to Glk key names. Set up at
    init time. */
-var terminator_key_values = {};
+const terminator_key_values = {};
 
 /* The transcript-recording feature. If enabled, this sends session
    information to an external recording service. */
-var recording = false;
-var recording_state = null;
-var recording_handler = null;
-var recording_handler_url = null;
-var recording_context = {};
+let recording = false;
+let recording_state = null;
+let recording_handler = null;
+let recording_handler_url = null;
+const recording_context = {};
 
 /* An image cache. This maps numbers to Image objects. These are used only
    for painting in graphics (canvas) windows.
 */
-var image_cache = {};
+const image_cache = {};
 
 /* This function becomes GlkOte.init(). The document calls this to begin
    the game. The simplest way to do this is to give the <body> tag an
@@ -159,14 +159,14 @@ function glkote_init(iface) {
     return;
   }
 
-  var version = jQuery.fn.jquery.split('.');
+  const version = jQuery.fn.jquery.split('.');
   if (version.length < 2 || version[0] < 1 || (version[0] == 1 && version[1] < 9)) {
     glkote_error('This version of the jQuery library is too old. (Version ' + jQuery.fn.jquery + ' found; 1.9.0 required.)');
     return;
   }
 
   /* Set up a static table. */
-  for (var val in terminator_key_names) {
+  for (const val in terminator_key_names) {
     terminator_key_values[terminator_key_names[val]] = val;
   }
 
@@ -194,7 +194,7 @@ function glkote_init(iface) {
   if (iface.loadingpane)
     loadingpane_id = iface.loadingpane;
 
-  var el = $('#'+windowport_id, dom_context);
+  const el = $('#'+windowport_id, dom_context);
   if (!el.length) {
     glkote_error('Cannot find windowport element #'+windowport_id+' in this document.');
     return;
@@ -218,7 +218,7 @@ function glkote_init(iface) {
   }
 
   /* Figure out the window size and font metrics. */
-  var res = measure_window();
+  const res = measure_window();
   if (jQuery.type(res) === 'string') {
     glkote_error(res);
     return;
@@ -273,8 +273,8 @@ function glkote_init(iface) {
   if (recording) {
     /* But also check whether the user has opted out by putting "feedback=0"
        in the URL query. */
-    var qparams = get_query_params();
-    var flag = qparams['feedback'];
+    const qparams = new URLSearchParams(document.location.search);
+    const flag = qparams.get('feedback');
     if (jQuery.type(flag) != 'undefined' && flag != '1') {
       recording = false;
       glkote_log('User has opted out of transcript recording.');
@@ -297,7 +297,7 @@ function glkote_init(iface) {
   }
 
   if (iface.debug_commands) {
-    var debugmod = window.GiDebug;
+    let debugmod = window.GiDebug;
     if (iface.debug_commands != true)
       debugmod = iface.debug_commands;
     if (!debugmod) {
@@ -331,7 +331,7 @@ function glkote_init(iface) {
   /* If Dialog exists but has not yet been inited, we should init it. */
   if (Dialog && !Dialog.inited()) {
     /* Default config object for initing the Dialog library. It only cares about two fields: GlkOte and dom_prefix. (We pass along dialog_dom_prefix as dom_prefix, if supplied.) */
-    var dialogiface = { GlkOte:this };
+    const dialogiface = { GlkOte:this };
     if (iface.dialog_dom_prefix) {
       dialogiface.dom_prefix = iface.dialog_dom_prefix;
     }
@@ -387,14 +387,13 @@ function glkote_inited() {
    and measuring their dimensions.
 */
 function measure_window() {
-  var metrics = {};
-  var winsize, line1size, line2size, spansize, canvassize;
+  const metrics = {};
 
   /* We assume the gameport is the same size as the windowport, which
      is true on all browsers but IE7. Fortunately, on IE7 it's
      the windowport size that's wrong -- gameport is the size
      we're interested in. */
-  var gameport = $('#'+gameport_id, dom_context);
+     const gameport = $('#'+gameport_id, dom_context);
   if (!gameport.length)
     return 'Cannot find gameport element #'+gameport_id+' in this document.';
 
@@ -409,7 +408,7 @@ function measure_window() {
 
   /* Create a dummy layout div containing a grid window and a buffer window,
      each with two lines of text. */
-  var layout_test_pane = $('<div>', { id:dom_prefix+'layout_test_pane' });
+  const layout_test_pane = $('<div>', { id:dom_prefix+'layout_test_pane' });
   layout_test_pane.text('This should not be visible');
   layout_test_pane.css({
     /* "display:none" would make the pane not render at all, making it
@@ -418,25 +417,25 @@ function measure_window() {
     visibility: 'hidden',
     left: '-1000px'
   });
-  var line = $('<div>');
+  const line = $('<div>');
   line.append($('<span>', {'class': 'Style_normal'}).text('12345678'));
 
-  var gridwin = $('<div>', {'class': 'WindowFrame GridWindow'});
-  var gridline1 = line.clone().addClass('GridLine').appendTo(gridwin);
-  var gridline2 = line.clone().addClass('GridLine').appendTo(gridwin);
-  var gridspan = gridline1.children('span');
+  const gridwin = $('<div>', {'class': 'WindowFrame GridWindow'});
+  const gridline1 = line.clone().addClass('GridLine').appendTo(gridwin);
+  const gridline2 = line.clone().addClass('GridLine').appendTo(gridwin);
+  const gridspan = gridline1.children('span');
   layout_test_pane.append(gridwin);
 
-  var bufwin = $('<div>', {'class': 'WindowFrame BufferWindow'});
-  var bufline1 = line.clone().addClass('BufferLine').appendTo(bufwin);
-  var bufline2 = line.clone().addClass('BufferLine').appendTo(bufwin);
-  var invcurspan = $('<span>', {'class': 'InvisibleCursor'});
+  const bufwin = $('<div>', {'class': 'WindowFrame BufferWindow'});
+  const bufline1 = line.clone().addClass('BufferLine').appendTo(bufwin);
+  const bufline2 = line.clone().addClass('BufferLine').appendTo(bufwin);
+  const invcurspan = $('<span>', {'class': 'InvisibleCursor'});
   bufline2.append(invcurspan);
-  var bufspan = bufline1.children('span');
+  const bufspan = bufline1.children('span');
   layout_test_pane.append(bufwin);
 
-  var graphwin = $('<div>', {'class': 'WindowFrame GraphicsWindow'});
-  var graphcanvas = $('<canvas>');
+  const graphwin = $('<div>', {'class': 'WindowFrame GraphicsWindow'});
+  const graphcanvas = $('<canvas>');
   graphcanvas.attr('width', 64);
   graphcanvas.attr('height', 32);
   graphwin.append(graphcanvas);
@@ -444,18 +443,18 @@ function measure_window() {
 
   gameport.append(layout_test_pane);
 
-  var get_size = function(el) {
+  function get_size(el) {
     return {
       width: el.outerWidth(),
       height: el.outerHeight()
     };
-  };
+  }
 
   /* Here we will include padding and border. */
-  winsize = get_size(gridwin);
-  spansize = get_size(gridspan);
-  line1size = get_size(gridline1);
-  line2size = get_size(gridline2);
+  let winsize = get_size(gridwin);
+  let spansize = get_size(gridspan);
+  let line1size = get_size(gridline1);
+  let line2size = get_size(gridline2);
 
   metrics.gridcharheight = Math.max(1, gridline2.position().top - gridline1.position().top);
   metrics.gridcharwidth = Math.max(1, gridspan.width() / 8);
@@ -485,7 +484,7 @@ function measure_window() {
 
   /* Here we will include padding and border. */
   winsize = get_size(graphwin);
-  canvassize = get_size(graphcanvas);
+  const canvassize = get_size(graphcanvas);
   
   /* Again, these values include both sides (left+right, top+bottom). */
   metrics.graphicsmarginx = winsize.width - canvassize.width;
@@ -559,11 +558,11 @@ function metrics_match(met1, met2) {
    https://github.com/marcj/css-element-queries
 */
 function create_resize_sensors() {
-  var gameport = $('#'+gameport_id, dom_context);
+  const gameport = $('#'+gameport_id, dom_context);
   if (!gameport.length)
     return 'Cannot find gameport element #'+gameport_id+' in this document.';
 
-  var shrinkel = $('<div>', {
+    const shrinkel = $('<div>', {
     id: dom_prefix+'resize-sensor-shrink'
   }).css({
     position:'absolute',
@@ -579,7 +578,7 @@ function create_resize_sensors() {
     width:'200%', height:'200%'
   }));
 
-  var expandel = $('<div>', {
+  const expandel = $('<div>', {
     id: dom_prefix+'resize-sensor-expand'
   }).css({
     position:'absolute',
@@ -594,9 +593,9 @@ function create_resize_sensors() {
     left:'0', right:'0'
   }));
 
-  var shrinkdom = shrinkel.get(0);
-  var expanddom = expandel.get(0);
-  var expandchilddom = expanddom.childNodes[0];
+  const shrinkdom = shrinkel.get(0);
+  const expanddom = expandel.get(0);
+  const expandchilddom = expanddom.childNodes[0];
 
   function reset() {
     shrinkdom.scrollLeft = 100000;
@@ -634,7 +633,7 @@ function glkote_update(arg) {
   /* This field is *only* for the autorestore case, and only on the very
      first update. It contains additional information (from save_allstate)
      which helps recreate the display. */
-  var autorestore = null;
+  let autorestore = null;
   if (arg.autorestore && generation == 0)
     autorestore = arg.autorestore;
   delete arg.autorestore; /* keep it out of the recording */
@@ -729,7 +728,7 @@ function glkote_update(arg) {
       win.needscroll = false;
 
       if (!win.needspaging) {
-        var frameel = win.frameel;
+        const frameel = win.frameel;
 
         if (!perform_paging) {
           /* Scroll all the way down. Note that scrollHeight is not a jQuery
@@ -742,9 +741,9 @@ function glkote_update(arg) {
           frameel.scrollTop(win.topunseen - current_metrics.buffercharheight);
           /* Compute the new topunseen value. */
           win.pagefrommark = win.topunseen;
-          var frameheight = frameel.outerHeight();
-          var realbottom = buffer_last_line_top_offset(win);
-          var newtopunseen = frameel.scrollTop() + frameheight;
+          const frameheight = frameel.outerHeight();
+          const realbottom = buffer_last_line_top_offset(win);
+          let newtopunseen = frameel.scrollTop() + frameheight;
           if (newtopunseen > realbottom)
             newtopunseen = realbottom;
           if (win.topunseen < newtopunseen)
@@ -763,8 +762,8 @@ function glkote_update(arg) {
            new needspaging flag. Note that the more-prompt will be
            removed when the user scrolls down; but the prev-mark
            stays until we get back here. */
-        var moreel = $('#'+dom_prefix+'win'+win.id+'_moreprompt', dom_context);
-        var prevel = $('#'+dom_prefix+'win'+win.id+'_prevmark', dom_context);
+        let moreel = $('#'+dom_prefix+'win'+win.id+'_moreprompt', dom_context);
+        let prevel = $('#'+dom_prefix+'win'+win.id+'_prevmark', dom_context);
         if (!win.needspaging) {
           if (moreel.length)
             moreel.remove();
@@ -777,8 +776,8 @@ function glkote_update(arg) {
               { id: dom_prefix+'win'+win.id+'_moreprompt', 'class': 'MorePrompt' } );
             moreel.append('More');
             /* 20 pixels is a cheap approximation of a scrollbar-width. */
-            var morex = win.coords.right + approx_scroll_width;
-            var morey = win.coords.bottom;
+            const morex = win.coords.right + approx_scroll_width;
+            const morey = win.coords.bottom;
             moreel.css({ bottom:morey+'px', right:morex+'px' });
             $('#'+windowport_id, dom_context).append(moreel);
           }
@@ -814,7 +813,7 @@ function glkote_update(arg) {
      focussing might autoscroll and we want to trap keystrokes for 
      paging anyhow.) */
 
-  var newinputwin = 0;
+  let newinputwin = 0;
   if (!disabled && !windows_paging_count) {
     for (const win of windowdic.values()) {
       if (win.input) {
@@ -829,8 +828,8 @@ function glkote_update(arg) {
        has probably just been added to the DOM, and MSIE balks at
        giving it the focus right away. So we defer the call until
        after the javascript context has yielded control to the browser. */
-    var focusfunc = function() {
-      var win = windowdic.get(newinputwin);
+    const focusfunc = function() {
+      const win = windowdic.get(newinputwin);
       if (win.inputel) {
         win.inputel.focus();
       }
@@ -841,7 +840,7 @@ function glkote_update(arg) {
   if (autorestore) {
     if (autorestore.history) {
       for (const [winid, ls] of Object.entries(autorestore.history)) {
-        var win = windowdic.get(winid);
+        const win = windowdic.get(winid);
         if (win != null) {
           win.history = ls.slice(0);
           win.historypos = win.history.length;
@@ -894,7 +893,7 @@ function accept_windowset(arg) {
   arg.forEach(accept_one_window);
 
   /* Close any windows not mentioned in the argument. */
-  var closewins = [];
+  const closewins = [];
   for (const win of windowdic.values()) {
     if (!win.inplace) {
       closewins.push(win);
@@ -909,7 +908,7 @@ function accept_windowset(arg) {
    exist; set its size and position, if those need to be changed.
 */
 function accept_one_window(arg) {
-  var frameel, win;
+  let frameel, win;
 
   if (!arg) {
     return;
@@ -920,14 +919,14 @@ function accept_one_window(arg) {
     /* The window must be created. */
     win = { id: arg.id, type: arg.type, rock: arg.rock };
     windowdic.set(arg.id, win);
-    var typeclass;
+    let typeclass;
     if (win.type == 'grid')
       typeclass = 'GridWindow';
     if (win.type == 'buffer')
       typeclass = 'BufferWindow';
     if (win.type == 'graphics')
       typeclass = 'GraphicsWindow';
-    var rockclass = 'WindowRock_' + arg.rock;
+      const rockclass = 'WindowRock_' + arg.rock;
     frameel = $('<div>',
       { id: dom_prefix+'window'+arg.id,
         'class': 'WindowFrame HasNoInputField ' + typeclass + ' ' + rockclass });
@@ -971,7 +970,7 @@ function accept_one_window(arg) {
     /* Make sure we have the correct number of GridLine divs. */
     if (arg.gridheight > win.gridheight) {
       for (let ix=win.gridheight; ix<arg.gridheight; ix++) {
-        var el = $('<div>',
+        const el = $('<div>',
           { id: dom_prefix+'win'+win.id+'_ln'+ix, 'class': 'GridLine' });
         el.append(NBSP);
         win.frameel.append(el);
@@ -1005,7 +1004,7 @@ function accept_one_window(arg) {
          http://www.html5rocks.com/en/tutorials/canvas/hidpi/ .
       */
       win.backpixelratio = 1;
-      var ctx = canvas_get_2dcontext(el);
+      const ctx = canvas_get_2dcontext(el);
       if (ctx) {
         /* This property is still namespaced as of 2016. */
         win.backpixelratio = ctx.webkitBackingStorePixelRatio
@@ -1048,7 +1047,7 @@ function accept_one_window(arg) {
         /* We have to trigger a redraw event for this window. But we can't do
            that from inside the accept handler. We'll set up a deferred
            function call. */
-        var funcarg = win.id;
+        const funcarg = win.id;
         defer_func(function() { send_window_redraw(funcarg); });
       }
     }
@@ -1057,11 +1056,10 @@ function accept_one_window(arg) {
   /* The trick is that left/right/top/bottom are measured to the outside
      of the border, but width/height are measured from the inside of the
      border. (Measured by the browser's DOM methods, I mean.) */
-  var styledic;
   /* This method works in everything but IE. */
-  var right = current_metrics.width - (arg.left + arg.width);
-  var bottom = current_metrics.height - (arg.top + arg.height);
-  styledic = { left: arg.left+'px', top: arg.top+'px',
+  const right = current_metrics.width - (arg.left + arg.width);
+  const bottom = current_metrics.height - (arg.top + arg.height);
+  const styledic = { left: arg.left+'px', top: arg.top+'px',
     right: right+'px', bottom: bottom+'px' };
   win.coords.left = arg.left;
   win.coords.top = arg.top;
@@ -1076,7 +1074,7 @@ function close_one_window(win) {
   windowdic.delete(win.id);
   win.frameel = null;
 
-  var moreel = $('#'+dom_prefix+'win'+win.id+'_moreprompt', dom_context);
+  const moreel = $('#'+dom_prefix+'win'+win.id+'_moreprompt', dom_context);
   if (moreel.length)
     moreel.remove();
 }
@@ -1088,7 +1086,7 @@ function accept_contentset(arg) {
 
 /* Handle the content changes for a single window. */
 function accept_one_content(arg) {
-  var win = windowdic.get(arg.id);
+  const win = windowdic.get(arg.id);
 
   /* Check some error conditions. */
 
@@ -1106,13 +1104,12 @@ function accept_one_content(arg) {
 
   if (win.type == 'grid') {
     /* Modify the given lines of the grid window (and leave the rest alone). */
-    var lines = arg.lines;
-    var ix, sx;
-    for (ix=0; ix<lines.length; ix++) {
-      var linearg = lines[ix];
-      var linenum = linearg.line;
-      var content = linearg.content;
-      var lineel = $('#'+dom_prefix+'win'+win.id+'_ln'+linenum, dom_context);
+    const lines = arg.lines;
+    for (let ix=0; ix<lines.length; ix++) {
+      const linearg = lines[ix];
+      const linenum = linearg.line;
+      const content = linearg.content;
+      const lineel = $('#'+dom_prefix+'win'+win.id+'_ln'+linenum, dom_context);
       if (!lineel.length) {
         glkote_error('Got content for nonexistent line ' + linenum + ' of window ' + arg.id + '.');
         continue;
@@ -1122,9 +1119,9 @@ function accept_one_content(arg) {
       }
       else {
         lineel.empty();
-        for (sx=0; sx<content.length; sx++) {
-          var rdesc = content[sx];
-          var rstyle, rtext, rlink;
+        for (let sx=0; sx<content.length; sx++) {
+          const rdesc = content[sx];
+          let rstyle, rtext, rlink;
           if (jQuery.type(rdesc) === 'object') {
             if (rdesc.special !== undefined)
               continue;
@@ -1138,13 +1135,13 @@ function accept_one_content(arg) {
             rtext = content[sx];
             rlink = undefined;
           }
-          var el = $('<span>',
+          const el = $('<span>',
             { 'class': 'Style_' + rstyle } );
           if (rlink == undefined) {
             insert_text_detecting(el, rtext);
           }
           else {
-            var ael = $('<a>',
+            const ael = $('<a>',
               { 'href': '#', 'class': 'Internal' } );
             ael.text(rtext);
             ael.on('click', build_evhan_hyperlink(win.id, rlink));
@@ -1158,7 +1155,7 @@ function accept_one_content(arg) {
 
   if (win.type == 'buffer') {
     /* Append the given lines onto the end of the buffer window. */
-    var text = arg.text;
+    let text = arg.text;
 
     if (win.inputel) {
       /* This can happen if we're waiting for char input. (Line input
@@ -1168,7 +1165,7 @@ function accept_one_content(arg) {
         win.inputel.detach();
     }
 
-    var cursel = $('#'+dom_prefix+'win'+win.id+'_cursor', dom_context);
+    let cursel = $('#'+dom_prefix+'win'+win.id+'_cursor', dom_context);
     if (cursel.length)
       cursel.remove();
     cursel = null;
@@ -1200,7 +1197,7 @@ function accept_one_content(arg) {
     */
 
     for (let ix=0; ix<text.length; ix++) {
-      var textarg = text[ix];
+      const textarg = text[ix];
       const content = textarg.content;
       let divel = null;
       if (textarg.append) {
@@ -1227,7 +1224,7 @@ function accept_one_content(arg) {
         divel.removeClass('BlankPara');
         divel.empty();
       }
-      for (sx=0; sx<content.length; sx++) {
+      for (let sx=0; sx<content.length; sx++) {
         const rdesc = content[sx];
         let rstyle, rtext, rlink;
         if (jQuery.type(rdesc) === 'object') {
@@ -1237,9 +1234,9 @@ function accept_one_content(arg) {
                  be. Margin-aligned images which do not follow a line
                  break should disappear. This will undoubtedly cause
                  headaches for portability someday. */
-              var imgurl = rdesc.url;
+              let imgurl = rdesc.url;
               if (Blorb && Blorb.get_image_url) {
-                var newurl = Blorb.get_image_url(rdesc.image);
+                const newurl = Blorb.get_image_url(rdesc.image);
                 if (newurl)
                   imgurl = newurl;
               }
@@ -1314,11 +1311,11 @@ function accept_one_content(arg) {
        character count, rather than paragraph count. But this is
        easier.) (Yeah, the prev-mark can wind up included in the count --
        and trimmed out. It's only slightly wrong.) */
-    var parals = win.frameel.children();
+    const parals = win.frameel.children();
     if (parals.length) {
-      var totrim = parals.length - max_buffer_length;
+      const totrim = parals.length - max_buffer_length;
       if (totrim > 0) {
-        var offtop = parals.get(totrim).offsetTop;
+        const offtop = parals.get(totrim).offsetTop;
         win.topunseen -= offtop;
         if (win.topunseen < 0)
           win.topunseen = 0;
@@ -1335,34 +1332,32 @@ function accept_one_content(arg) {
        paragraph div. We use this to position the input box. */
     const divel = buffer_last_line(win);
     if (divel) {
-      let cursel = $('<span>',
+      const cursel = $('<span>',
         { id: dom_prefix+'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
       divel.append(cursel);
 
       if (win.inputel) {
         /* Put back the inputel that we found earlier. */
-        var inputel = win.inputel;
-        var pos = cursel.position();
+        const inputel = win.inputel;
+        const pos = cursel.position();
         /* This calculation is antsy. (Was on Prototype, anyhow, I haven't
            retested in jquery...) On Firefox, buffermarginx is too high (or
            getWidth() is too low) by the width of a scrollbar. On MSIE,
            buffermarginx is one pixel too low. We fudge for that, giving a
            result which errs on the low side. */
-        var width = win.frameel.width() - (current_metrics.buffermarginx + pos.left + 2);
+        let width = win.frameel.width() - (current_metrics.buffermarginx + pos.left + 2);
         if (width < 1)
           width = 1;
         inputel.css({ position: 'absolute',
           left: '0px', top: '0px', width: width+'px' });
         cursel.append(inputel);
       }
-
-      cursel = null;
     }
   }
 
   if (win.type == 'graphics') {
     /* Perform the requested draw operations. */
-    var draw = arg.draw;
+    let draw = arg.draw;
     
     /* Accept a missing draw field as doing nothing. */
     if (draw === undefined)
@@ -1377,12 +1372,12 @@ function accept_one_content(arg) {
        out there, so we don't have to set it up.
     */
 
-    var docall = (graphics_draw_queue.length == 0);
+    const docall = (graphics_draw_queue.length == 0);
     for (let ix=0; ix<draw.length; ix++) {
-      var op = draw[ix];
+      const op = draw[ix];
       /* We'll be paranoid and clone the op object, throwing in a window
          number. */
-      var newop = { winid:win.id };
+      const newop = { winid:win.id };
       Object.assign(newop, op);
       graphics_draw_queue.push(newop);
     }
@@ -1399,7 +1394,7 @@ function accept_one_content(arg) {
    (The latter case means that input was cancelled and restarted.)
 */
 function accept_inputcancel(arg) {
-  var hasinput = {};
+  const hasinput = {};
   for (const argi of arg) {
     if (argi.type)
       hasinput[argi.id] = argi;
@@ -1407,7 +1402,7 @@ function accept_inputcancel(arg) {
 
   for (const win of windowdic.values()) {
     if (win.input) {
-      var argi = hasinput[win.id];
+      const argi = hasinput[win.id];
       if (argi == null || argi.gen > win.input.gen) {
         /* cancel this input. */
         win.input = null;
@@ -1426,9 +1421,9 @@ function accept_inputcancel(arg) {
    to change position, move it.
 */
 function accept_inputset(arg) {
-  var hasinput = {};
-  var hashyperlink = {};
-  var hasmouse = {};
+  const hasinput = {};
+  const hashyperlink = {};
+  const hasmouse = {};
   for (const argi of arg) {
     if (argi.type)
       hasinput[argi.id] = argi;
@@ -1442,7 +1437,7 @@ function accept_inputset(arg) {
     win.reqhyperlink = hashyperlink[win.id];
     win.reqmouse = hasmouse[win.id];
 
-    var argi = hasinput[win.id];
+    const argi = hasinput[win.id];
     if (argi == null)
       continue;
     win.input = argi;
@@ -1450,17 +1445,17 @@ function accept_inputset(arg) {
     win.frameel.removeClass('HasNoInputField');
 
     /* Maximum number of characters to accept. */
-    var maxlen = 1;
+    let maxlen = 1;
     if (argi.type == 'line')
       maxlen = argi.maxlen;
 
     /* We're only going to emplace the inputel when it's freshly created. If it's lingering from a previous input, we leave it in place in the DOM. This *should* reduce soft-keyboard flashing problems without screwing up the DOM semantics. */
-    var newinputel = false;
-    var inputel = win.inputel;
+    let newinputel = false;
+    let inputel = win.inputel;
     
     if (inputel == null) {
       newinputel = true;
-      var classes = 'Input';
+      let classes = 'Input';
       if (argi.type == 'line') {
         classes += ' LineInput';
       }
@@ -1484,7 +1479,7 @@ function accept_inputset(arg) {
           inputel.val(argi.initial);
         win.terminators = {};
         if (argi.terminators) {
-          for (var ix=0; ix<argi.terminators.length; ix++) 
+          for (let ix=0; ix<argi.terminators.length; ix++) 
             win.terminators[argi.terminators[ix]] = true;
         }
       }
@@ -1493,7 +1488,7 @@ function accept_inputset(arg) {
         inputel.on('keydown', evhan_input_char_keydown);
       }
       inputel.on('focus', win.id, evhan_input_focus);
-      inputel.on('blur', win.id, evhan_input_blur);
+      //inputel.on('blur', win.id, evhan_input_blur); // Doesn't do anything
       inputel.data('winid', win.id);
       win.inputel = inputel;
       win.historypos = win.history.length;
@@ -1501,17 +1496,17 @@ function accept_inputset(arg) {
     }
 
     if (win.type == 'grid') {
-      var lineel = $('#'+dom_prefix+'win'+win.id+'_ln'+argi.ypos, dom_context);
+      const lineel = $('#'+dom_prefix+'win'+win.id+'_ln'+argi.ypos, dom_context);
       if (!lineel.length) {
         glkote_error('Window ' + win.id + ' has requested input at unknown line ' + argi.ypos + '.');
         return;
       }
-      var pos = lineel.position();
-      var xpos = pos.left + Math.round(argi.xpos * current_metrics.gridcharwidth);
-      var width = Math.round(maxlen * current_metrics.gridcharwidth);
+      const pos = lineel.position();
+      const xpos = pos.left + Math.round(argi.xpos * current_metrics.gridcharwidth);
+      let width = Math.round(maxlen * current_metrics.gridcharwidth);
       /* This calculation is antsy. See below. (But grid window line input
          is rare in IF.) */
-      var maxwidth = win.frameel.width() - (current_metrics.buffermarginx + xpos + 2);
+      const maxwidth = win.frameel.width() - (current_metrics.buffermarginx + xpos + 2);
       if (width > maxwidth)
         width = maxwidth;
       inputel.css({ position: 'absolute',
@@ -1521,7 +1516,7 @@ function accept_inputset(arg) {
     }
 
     if (win.type == 'buffer') {
-      var cursel = $('#'+dom_prefix+'win'+win.id+'_cursor', dom_context);
+      let cursel = $('#'+dom_prefix+'win'+win.id+'_cursor', dom_context);
       /* Check to make sure an InvisibleCursor exists on the last line.
          The only reason it might not is if the window is entirely blank
          (no lines). In that case, append one to the window frame itself. */
@@ -1530,7 +1525,7 @@ function accept_inputset(arg) {
           { id: dom_prefix+'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
         win.frameel.append(cursel);
       }
-      let pos = cursel.position();
+      const pos = cursel.position();
       /* This calculation is antsy. (Was on Prototype, anyhow, I haven't
            retested in jquery...) On Firefox, buffermarginx is too high (or
            getWidth() is too low) by the width of a scrollbar. On MSIE,
@@ -1573,11 +1568,11 @@ function accept_timerrequest(arg) {
 
 function accept_specialinput(arg) {
   if (arg.type == 'fileref_prompt') {
-    var replyfunc = function(ref) {
+    let replyfunc = function(ref) {
       send_response('specialresponse', null, 'fileref_prompt', ref);
     };
     try {
-      var writable = (arg.filemode != 'read');
+      const writable = (arg.filemode != 'read');
       Dialog.open(writable, arg.filetype, arg.gameid, replyfunc);
     }
     catch (ex) {
@@ -1599,7 +1594,7 @@ function accept_specialinput(arg) {
    window. (jQuery-wrapped.) If none, return null.
 */
 function buffer_last_line(win) {
-  var divel = last_child_of(win.frameel); /* not wrapped */
+  const divel = last_child_of(win.frameel); /* not wrapped */
   if (divel == null)
     return null;
   /* If the sole child is the PreviousMark, there are no BufferLines. */
@@ -1614,7 +1609,7 @@ function buffer_last_line(win) {
    (Possibly broken in MSIE7? It worked in the old version, though.)
 */
 function buffer_last_line_top_offset(win) {
-  var divel = buffer_last_line(win);
+  const divel = buffer_last_line(win);
   if (!divel || !divel.length)
     return 0;
   return divel.get(0).offsetTop;
@@ -1630,7 +1625,7 @@ function buffer_last_line_top_offset(win) {
 */
 function readjust_paging_focus(canfocus) {
   windows_paging_count = 0;
-  var pageable_win = 0;
+  let pageable_win = 0;
 
   if (perform_paging) {
     for (const win of windowdic.values()) {
@@ -1652,7 +1647,7 @@ function readjust_paging_focus(canfocus) {
        the update routine, although somewhat simplified since we don't
        need to worry about the DOM being in flux. */
 
-    var newinputwin = 0;
+    let newinputwin = 0;
     if (!disabled && !windows_paging_count) {
       for (const win of windowdic.values()) {
           if (win.input) {
@@ -1663,7 +1658,7 @@ function readjust_paging_focus(canfocus) {
     }
     
     if (newinputwin) {
-      var win = windowdic.get(newinputwin);
+      const win = windowdic.get(newinputwin);
       if (win.inputel) {
         win.inputel.focus();
       }
@@ -1734,7 +1729,7 @@ function glkote_get_dom_context() {
 /* Stash extra information needed for autosave only.
 */
 function glkote_save_allstate() {
-  var obj = {
+  const obj = {
     metrics: {
       width: current_metrics.width,
       height: current_metrics.height
@@ -1775,7 +1770,7 @@ function glkote_error(msg) {
   if (!msg)
     msg = '???';
 
-  var el = document.getElementById(errorcontent_id);
+  let el = document.getElementById(errorcontent_id);
   if (!el) return;
     
   remove_children(el);
@@ -1808,7 +1803,7 @@ function glkote_warning(msg) {
     return;
   }
 
-  var el = document.getElementById(errorcontent_id);
+  const el = document.getElementById(errorcontent_id);
   if (!el) return;
 
   remove_children(el);
@@ -1846,7 +1841,7 @@ function hide_loading() {
     return;
   loading_visible = false;
 
-  var el = document.getElementById(loadingpane_id);
+  const el = document.getElementById(loadingpane_id);
   if (el) {
     el.style.display = 'none';  /* el.hide() */
   }
@@ -1861,7 +1856,7 @@ function show_loading() {
     return;
   loading_visible = true;
 
-  var el = document.getElementById(loadingpane_id);
+  const el = document.getElementById(loadingpane_id);
   if (el) {
     el.style.display = '';   /* el.show() */
   }
@@ -1872,10 +1867,9 @@ function show_loading() {
    Deliberately does not use any jQuery functionality.
 */
 function remove_children(parent) {
-  var obj, ls;
-  ls = parent.childNodes;
+  const ls = parent.childNodes;
   while (ls.length > 0) {
-    obj = ls.item(0);
+    const obj = ls.item(0);
     parent.removeChild(obj);
   }
 }
@@ -1886,7 +1880,7 @@ function remove_children(parent) {
    it to jquery.
 */
 function last_child_of(obj) {
-  var ls = obj.children();
+  const ls = obj.children();
   if (!ls || !ls.length)
     return null;
   return ls.get(ls.length-1);
@@ -1909,7 +1903,7 @@ function insert_text_detecting(el, val) {
     /* For 'match', we test the entire span of text to see if it's a URL.
        This is simple and fast. */
     if (regex_external_links.test(val)) {
-      var ael = $('<a>',
+      const ael = $('<a>',
         { 'href': val, 'class': 'External', 'target': '_blank' } );
       ael.text(val);
       el.append(ael);
@@ -1922,12 +1916,12 @@ function insert_text_detecting(el, val) {
        multiple URLs. This is more work, and the regex is more complicated
        too. */
     while (true) {
-      var match = regex_external_links.exec(val);
+      const match = regex_external_links.exec(val);
       if (!match)
         break;
       /* Add the characters before the URL, if any. */
       if (match.index > 0) {
-        var prefix = val.substring(0, match.index);
+        const prefix = val.substring(0, match.index);
         el.append(document.createTextNode(prefix));
       }
       /* Add the URL. */
@@ -1952,7 +1946,7 @@ function insert_text_detecting(el, val) {
 function canvas_get_2dcontext(canvasel) {
   if (!canvasel || !canvasel.length)
     return undefined;
-  var canvas = canvasel.get(0);
+  const canvas = canvasel.get(0);
   if (canvas && canvas.getContext) {
     return canvas.getContext('2d');
   }
@@ -1981,23 +1975,23 @@ function perform_graphics_ops(loadedimg, loadedev) {
      be a matching 'image' draw. */
 
   while (graphics_draw_queue.length) {
-    var op = graphics_draw_queue[0];
-    var win = windowdic.get(op.winid);
+    const op = graphics_draw_queue[0];
+    const win = windowdic.get(op.winid);
     if (!win) {
       glkote_log('perform_graphics_ops: op for nonexistent window ' + op.winid);
       graphics_draw_queue.shift();
       continue;
     }
 
-    var el = $('#'+dom_prefix+'win'+win.id+'_canvas', dom_context);
-    var ctx = canvas_get_2dcontext(el);
+    const el = $('#'+dom_prefix+'win'+win.id+'_canvas', dom_context);
+    const ctx = canvas_get_2dcontext(el);
     if (!ctx) {
       glkote_log('perform_graphics_ops: op for nonexistent canvas ' + win.id);
       graphics_draw_queue.shift();
       continue;
     }
 
-    var optype = op.special;
+    const optype = op.special;
     
     switch (optype) {
       case 'setcolor':
@@ -2027,7 +2021,7 @@ function perform_graphics_ops(loadedimg, loadedev) {
            check the cache. If that doesn't have it, we have to create a new
            Image and set up the loading callbacks. */
         if (!loadedimg) {
-          var oldimg = image_cache[op.image];
+          const oldimg = image_cache[op.image];
           if (oldimg && oldimg.width > 0 && oldimg.height > 0) {
             loadedimg = oldimg;
             loadedev = true;
@@ -2040,14 +2034,14 @@ function perform_graphics_ops(loadedimg, loadedev) {
           }
         }
         if (!loadedimg) {
-          var imgurl = op.url;
+          let imgurl = op.url;
           if (Blorb && Blorb.get_image_url) {
-            var newurl = Blorb.get_image_url(op.image);
+            const newurl = Blorb.get_image_url(op.image);
             if (newurl)
               imgurl = newurl;
           }
           //glkote_log('### setting up callback with url');
-          var newimg = new Image();
+          const newimg = new Image();
           $(newimg).on('load', function(ev) { perform_graphics_ops(newimg, ev); });
           $(newimg).on('error', function() { perform_graphics_ops(newimg, null); });
           /* Setting the src attribute will trigger one of the above
@@ -2092,7 +2086,7 @@ function defer_func(func)
    handlers.)
 */
 function submit_line_input(win, val, termkey) {
-  var historylast = null;
+  let historylast = null;
   if (win.history.length)
     historylast = win.history[win.history.length-1];
 
@@ -2129,10 +2123,8 @@ function send_response(type, win, val, val2) {
     return;
   }
 
-  var winid = 0;
-  if (win)
-    winid = win.id;
-  var res = { type: type, gen: generation };
+  const winid = win.id || 0;
+  const res = { type: type, gen: generation };
   generation_sent = generation;
 
   if (type == 'line') {
@@ -2180,11 +2172,11 @@ function send_response(type, win, val, val2) {
   if (!(type == 'init' || type == 'refresh'
       || type == 'specialresponse' || type == 'debuginput')) {
     for (const win of windowdic.values()) {
-      var savepartial = (type != 'line' && type != 'char') 
+      const savepartial = (type != 'line' && type != 'char') 
                         || (win.id != winid);
       if (savepartial && win.input && win.input.type == 'line'
         && win.inputel && win.inputel.val()) {
-        var partial = res.partial;
+        let partial = res.partial;
         if (!partial) {
           partial = {};
           res.partial = partial;
@@ -2204,33 +2196,6 @@ function send_response(type, win, val, val2) {
 
 /* ---------------------------------------------- */
 
-/* Take apart the query string of the current URL, and turn it into
-   an object map.
-   (Adapted from querystring.js by Adam Vandenberg.)
-*/
-function get_query_params() {
-    var map = {};
-
-    var qs = location.search.substring(1, location.search.length);
-    if (qs.length) {
-        var args = qs.split('&');
-
-        qs = qs.replace(/\+/g, ' ');
-        for (var ix = 0; ix < args.length; ix++) {
-            var pair = args[ix].split('=');
-            var name = decodeURIComponent(pair[0]);
-            
-            var value = (pair.length==2)
-                ? decodeURIComponent(pair[1])
-                : name;
-            
-            map[name] = value;
-        }
-    }
-
-    return map;
-}
-
 /* This is called every time the game updates the screen state. It
    wraps up the update with the most recent input event and sends them
    off to whatever is handling transcript recordings.
@@ -2239,15 +2204,15 @@ function recording_send(arg) {
   recording_state.output = arg;
   recording_state.outtimestamp = (new Date().getTime());
 
-  var send = true;
+  let send = true;
 
   /* If the format is not "glkote", we should massage state.input and
      state.output. (Or set send=false to skip this update entirely.) */
   if (recording_state.format == 'simple') {
-    var input = recording_state.input;
-    var output = recording_state.output;
+    const input = recording_state.input;
+    const output = recording_state.output;
 
-    var inputtype = null;
+    let inputtype = null;
     if (input)
       inputtype = input.type;
 
@@ -2265,27 +2230,27 @@ function recording_send(arg) {
     /* We keep track of which windows are buffer windows. */
     if (output.windows) {
       recording_context.bufferwins = {};
-      for (var ix=0; ix<output.windows.length; ix++) {
+      for (let ix=0; ix<output.windows.length; ix++) {
         if (output.windows[ix].type == 'buffer')
           recording_context.bufferwins[output.windows[ix].id] = true;
       }
     }
 
     /* Accumulate all the text that's sent to buffer windows. */
-    var buffer = '';
+    let buffer = '';
 
     if (output.content) {
       for (let ix=0; ix<output.content.length; ix++) {
-        var content = output.content[ix];
+        const content = output.content[ix];
         if (recording_context.bufferwins && recording_context.bufferwins[content.id]) {
           if (content.text) {
-            for (var jx=0; jx<content.text.length; jx++) {
-              var text = content.text[jx];
+            for (let jx=0; jx<content.text.length; jx++) {
+              const text = content.text[jx];
               if (!text.append)
                 buffer = buffer + '\n';
               if (text.content) {
-                for (var kx=0; kx<text.content.length; kx++) {
-                  var el = text.content[kx];
+                for (let kx=0; kx<text.content.length; kx++) {
+                  const el = text.content[kx];
                   /* Why did I allow the LINE_DATA_ARRAY to have two
                      possible formats? Sigh */
                   if (jQuery.type(el) == 'string') {
@@ -2390,7 +2355,7 @@ function doc_resize_real() {
     return;
   }
 
-  var new_metrics = measure_window();
+  const new_metrics = measure_window();
   if (metrics_match(new_metrics, current_metrics)) {
     /* If the metrics haven't changed, skip the arrange event. Necessary on
        mobile webkit, where the keyboard popping up and down causes a same-size
@@ -2408,7 +2373,7 @@ function doc_resize_real() {
    doc_resize_real.)
 */
 function send_window_redraw(winid) {
-  var win = windowdic.get(winid);
+  const win = windowdic.get(winid);
 
   /* It's not likely that the window has been deleted since this function
      was queued up. But we'll be paranoid. */
@@ -2422,7 +2387,7 @@ function send_window_redraw(winid) {
    this for changes across particular thresholds, but I set up a bunch.)
 */
 function evhan_doc_pixelreschange() {
-  var ratio = window.devicePixelRatio || 1;
+  const ratio = window.devicePixelRatio || 1;
   if (ratio != current_devpixelratio) {
     current_devpixelratio = ratio;
     //glkote_log('### devicePixelRatio changed to ' + current_devpixelratio);
@@ -2431,10 +2396,10 @@ function evhan_doc_pixelreschange() {
        scale, and then hit them with a redraw event. */
     for (const [winid, win] of windowdic.entries()) {
         if (win.type == 'graphics') {
-          var el = $('#'+dom_prefix+'win'+win.id+'_canvas', dom_context);
+          const el = $('#'+dom_prefix+'win'+win.id+'_canvas', dom_context);
           win.scaleratio = current_devpixelratio / win.backpixelratio;
           //glkote_log('### changed canvas to scale ' + win.scaleratio + ' (device ' + current_devpixelratio + ' / backstore ' + win.backpixelratio + ')');
-          var ctx = canvas_get_2dcontext(el);
+          const ctx = canvas_get_2dcontext(el);
           el.attr('width', win.graphwidth * win.scaleratio);
           el.attr('height', win.graphheight * win.scaleratio);
           el.css('width', (win.graphwidth + 'px'));
@@ -2465,7 +2430,7 @@ function evhan_doc_keypress(ev) {
     return;
   }
 
-  var keycode = 0;
+  let keycode = 0;
   if (ev) keycode = ev.which;
 
   if (ev.target.tagName.toUpperCase() == 'INPUT') {
@@ -2486,10 +2451,8 @@ function evhan_doc_keypress(ev) {
     return;
   }
 
-  var win;
-
   if (windows_paging_count) {
-    win = windowdic.get(last_known_paging);
+    const win = windowdic.get(last_known_paging);
     if (win) {
       if (!((keycode >= 32 && keycode <= 126) || keycode == 13)) {
         /* If the keystroke is not a printable character (or Enter),
@@ -2498,13 +2461,13 @@ function evhan_doc_keypress(ev) {
         return;
       }
       ev.preventDefault();
-      var frameel = win.frameel;
+      const frameel = win.frameel;
       /* Scroll the unseen content to the top. */
       frameel.scrollTop(win.topunseen - current_metrics.buffercharheight);
       /* Compute the new topunseen value. */
-      var frameheight = frameel.outerHeight();
-      var realbottom = buffer_last_line_top_offset(win);
-      var newtopunseen = frameel.scrollTop() + frameheight;
+      const frameheight = frameel.outerHeight();
+      const realbottom = buffer_last_line_top_offset(win);
+      let newtopunseen = frameel.scrollTop() + frameheight;
       if (newtopunseen > realbottom)
         newtopunseen = realbottom;
       if (win.topunseen < newtopunseen)
@@ -2514,7 +2477,7 @@ function evhan_doc_keypress(ev) {
            if not... */
         if (frameel.scrollTop() + frameheight + moreprompt_margin >= frameel.get(0).scrollHeight) {
           win.needspaging = false;
-          var moreel = $('#'+dom_prefix+'win'+win.id+'_moreprompt', dom_context);
+          const moreel = $('#'+dom_prefix+'win'+win.id+'_moreprompt', dom_context);
           if (moreel.length)
             moreel.remove();
           readjust_paging_focus(true);
@@ -2524,7 +2487,7 @@ function evhan_doc_keypress(ev) {
     }
   }
 
-  win = windowdic.get(last_known_focus);
+  const win = windowdic.get(last_known_focus);
   if (!win)
     return;
   if (!win.inputel)
@@ -2552,7 +2515,7 @@ function evhan_doc_keypress(ev) {
       /* This is completely wrong for accented characters (on a Mac
          keyboard), but that's beyond my depth. */
       if (keycode >= 32) {
-        var val = String.fromCharCode(keycode);
+        const val = String.fromCharCode(keycode);
         win.inputel.val(win.inputel.val() + val);
       }
       ev.preventDefault();
@@ -2566,7 +2529,7 @@ function evhan_doc_keypress(ev) {
        etc.) (This doesn't work right in Firefox, but it's not disastrously
        wrong.) */
     //### grab arrow keys too? They're common in menus.
-    var res = null;
+    let res = null;
     if (keycode == 13)
       res = 'return';
     else if (keycode == key_codes.KEY_BACKSPACE)
@@ -2587,8 +2550,8 @@ function evhan_doc_keypress(ev) {
    the focus. (Input focus and paging focus are tracked separately.)
 */
 function evhan_window_mousedown(ev) {
-  var winid = ev.data;
-  var win = windowdic.get(winid);
+  const winid = ev.data;
+  const win = windowdic.get(winid);
   if (!win)
     return;
 
@@ -2605,8 +2568,8 @@ function evhan_window_mousedown(ev) {
 /* Event handler: mouse click events on graphics or grid windows
 */
 function evhan_input_mouse_click(ev) {
-  var winid = ev.data;
-  var win = windowdic.get(winid);
+  const winid = ev.data;
+  const win = windowdic.get(winid);
   if (!win)
     return;
 
@@ -2615,13 +2578,13 @@ function evhan_input_mouse_click(ev) {
   if (!win.reqmouse)
     return;
 
-  var xpos = 0;
-  var ypos = 0;
+  let xpos = 0;
+  let ypos = 0;
   if (win.type == 'grid') {
     /* Measure click position relative to the zeroth line of the grid. */
-    var lineel = $('#'+dom_prefix+'win'+win.id+'_ln'+0, dom_context);
+    const lineel = $('#'+dom_prefix+'win'+win.id+'_ln'+0, dom_context);
     if (lineel.length) {
-      var linepos = lineel.offset();
+      const linepos = lineel.offset();
       xpos = Math.floor((ev.clientX - linepos.left) / current_metrics.gridcharwidth);
       ypos = Math.floor((ev.clientY - linepos.top) / current_metrics.gridcharheight);
     }
@@ -2636,9 +2599,9 @@ function evhan_input_mouse_click(ev) {
   }
   else if (win.type == 'graphics') {
     /* Measure click position relative to the canvas. */
-    var canel = $('#'+dom_prefix+'win'+win.id+'_canvas', dom_context);
+    const canel = $('#'+dom_prefix+'win'+win.id+'_canvas', dom_context);
     if (canel.length) {
-      var pos = canel.offset();
+      const pos = canel.offset();
       xpos = ev.clientX - pos.left;
       ypos = ev.clientY - pos.top;
     }
@@ -2667,11 +2630,11 @@ function evhan_input_mouse_click(ev) {
    count those as character input.
 */
 function evhan_input_char_keydown(ev) {
-  var keycode = 0;
+  let keycode = 0;
   if (ev) keycode = ev.keyCode; //### ev.which?
   if (!keycode) return true;
 
-  var res = null;
+  let res = null;
 
   /* We don't grab Return/Enter in this function, because Firefox lets
      it go through to the keypress handler (even if we try to block it),
@@ -2727,8 +2690,8 @@ function evhan_input_char_keydown(ev) {
   }
 
   if (res) {
-    var winid = $(this).data('winid');
-    var win = windowdic.get(winid);
+    const winid = $(this).data('winid');
+    const win = windowdic.get(winid);
     if (!win || !win.input)
       return true;
 
@@ -2746,18 +2709,18 @@ function evhan_input_char_keydown(ev) {
    the keydown handler, above.)
 */
 function evhan_input_char_keypress(ev) {
-  var keycode = 0;
+  let keycode = 0;
   if (ev) keycode = ev.which;
   if (!keycode) return false;
 
-  var res;
+  let res;
   if (keycode == 13)
     res = 'return';
   else
     res = String.fromCharCode(keycode);
 
-  var winid = $(this).data('winid');
-  var win = windowdic.get(winid);
+  const winid = $(this).data('winid');
+  const win = windowdic.get(winid);
   if (!win || !win.input)
     return true;
 
@@ -2770,13 +2733,13 @@ function evhan_input_char_keypress(ev) {
    Divert the up and down arrow keys to scroll through the command history
    for this window. */
 function evhan_input_keydown(ev) {
-  var keycode = 0;
+  let keycode = 0;
   if (ev) keycode = ev.keyCode; //### ev.which?
   if (!keycode) return true;
 
   if (keycode == key_codes.KEY_UP || keycode == key_codes.KEY_DOWN) {
-    var winid = $(this).data('winid');
-    var win = windowdic.get(winid);
+    const winid = $(this).data('winid');
+    const win = windowdic.get(winid);
     if (!win || !win.input)
       return true;
 
@@ -2820,13 +2783,13 @@ function evhan_input_keydown(ev) {
    Divert the enter/return key to submit a line of input.
 */
 function evhan_input_keypress(ev) {
-  var keycode = 0;
+  let keycode = 0;
   if (ev) keycode = ev.which;
   if (!keycode) return true;
 
   if (keycode == 13) {
-    var winid = $(this).data('winid');
-    var win = windowdic.get(winid);
+    const winid = $(this).data('winid');
+    const win = windowdic.get(winid);
     if (!win || !win.input)
       return true;
 
@@ -2842,8 +2805,8 @@ function evhan_input_keypress(ev) {
    Notice that the focus has switched to a line/char input field.
 */
 function evhan_input_focus(ev) {
-  var winid = ev.data;
-  var win = windowdic.get(winid);
+  const winid = ev.data;
+  const win = windowdic.get(winid);
   if (!win)
     return;
 
@@ -2855,28 +2818,28 @@ function evhan_input_focus(ev) {
 
    Notice that the focus has switched away from a line/char input field.
 */
-function evhan_input_blur(ev) {
-  var winid = ev.data;
-  var win = windowdic.get(winid);
+/*function evhan_input_blur(ev) {
+  const winid = ev.data;
+  const win = windowdic.get(winid);
   if (!win)
     return;
-}
+}*/
 
 /* Event handler: scrolling in buffer window 
 */
 function evhan_window_scroll(ev) {
-  var winid = ev.data;
-  var win = windowdic.get(winid);
+  const winid = ev.data;
+  const win = windowdic.get(winid);
   if (!win)
     return;
 
   if (!win.needspaging)
     return;
 
-  var frameel = win.frameel;
-  var frameheight = frameel.outerHeight();
-  var realbottom = buffer_last_line_top_offset(win);
-  var newtopunseen = frameel.scrollTop() + frameheight;
+  const frameel = win.frameel;
+  const frameheight = frameel.outerHeight();
+  const realbottom = buffer_last_line_top_offset(win);
+  let newtopunseen = frameel.scrollTop() + frameheight;
   if (newtopunseen > realbottom)
     newtopunseen = realbottom;
   if (win.topunseen < newtopunseen)
@@ -2884,7 +2847,7 @@ function evhan_window_scroll(ev) {
 
   if (frameel.scrollTop() + frameheight + moreprompt_margin >= frameel.get(0).scrollHeight) {
     win.needspaging = false;
-    var moreel = $('#'+dom_prefix+'win'+win.id+'_moreprompt', dom_context);
+    const moreel = $('#'+dom_prefix+'win'+win.id+'_moreprompt', dom_context);
     if (moreel.length)
       moreel.remove();
     readjust_paging_focus(true);
@@ -2896,13 +2859,13 @@ function evhan_window_scroll(ev) {
    This is only used in the autorestore case.
 */
 function window_scroll_to_bottom(win) {
-  var frameel = win.frameel;
+  const frameel = win.frameel;
 
-  var frameheight = frameel.outerHeight();
+  const frameheight = frameel.outerHeight();
   frameel.scrollTop(frameel.get(0).scrollHeight - frameheight);
 
-  var realbottom = buffer_last_line_top_offset(win);
-  var newtopunseen = frameel.scrollTop() + frameheight;
+  const realbottom = buffer_last_line_top_offset(win);
+  let newtopunseen = frameel.scrollTop() + frameheight;
   if (newtopunseen > realbottom)
     newtopunseen = realbottom;
   if (win.topunseen < newtopunseen)
@@ -2912,7 +2875,7 @@ function window_scroll_to_bottom(win) {
        if not... */
     if (frameel.scrollTop() + frameheight + moreprompt_margin >= frameel.get(0).scrollHeight) {
       win.needspaging = false;
-      var moreel = $('#'+dom_prefix+'win'+win.id+'_moreprompt', dom_context);
+      const moreel = $('#'+dom_prefix+'win'+win.id+'_moreprompt', dom_context);
       if (moreel.length)
         moreel.remove();
       readjust_paging_focus(true);
@@ -2929,7 +2892,7 @@ function window_scroll_to_bottom(win) {
 */
 function build_evhan_hyperlink(winid, linkval) {
   return function() {
-    var win = windowdic.get(winid);
+    const win = windowdic.get(winid);
     if (!win)
       return false;
     if (!win.reqhyperlink)
@@ -2992,7 +2955,7 @@ return {
 };
 
 /* GlkOte is an instance of GlkOteClass, ready to init. */
-var GlkOte = new GlkOteClass();
+const GlkOte = new GlkOteClass();
 
 // Node-compatible behavior
 try { exports.GlkOte = GlkOte; exports.GlkOteClass = GlkOteClass; } catch (ex) {};
