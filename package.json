@@ -1,0 +1,16 @@
+{
+  "name": "glkote",
+  "version": "2.3.0",
+  "description": "Display library for IF interfaces",
+  "license": "MIT",
+  "repository": "erkyrath/glkote",
+  "keywords": [
+    "interactive-fiction"
+  ],
+  "devDependencies": {
+    "eslint": "^8.3.0"
+  },
+  "scripts": {
+    "lint": "eslint ."
+  }
+}
