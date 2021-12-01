@@ -826,18 +826,8 @@ function glkote_update(arg) {
     }
   }
 
-  if (newinputwin) {
-    /* MSIE is weird about when you can call focus(). The input element
-       has probably just been added to the DOM, and MSIE balks at
-       giving it the focus right away. So we defer the call until
-       after the javascript context has yielded control to the browser. */
-    var focusfunc = function() {
-      var win = windowdic.get(newinputwin);
-      if (win.inputel) {
-        win.inputel.focus();
-      }
-    };
-    defer_func(focusfunc);
+  if (newinputwin && windowdic[newinputwin].inputel) {
+    windowdic[newinputwin].inputel.focus();
   }
 
   if (autorestore) {
