@@ -51,6 +51,7 @@
   /* This class provides the default background color of windows. You
      can change that, but don't touch the position or margin. */
   position: absolute;
+  box-sizing: border-box;
   margin: 0px;
   background: #FFFFEE;
 }
@@ -62,6 +63,7 @@
   font-size: 15px;
   line-height: 1.4;
   padding: 6px 10px 6px 10px;
+  z-index: 1;
 }
 
 .BufferLine {
@@ -74,6 +76,7 @@
   font-family: monaco, andale mono, lucidatypewriter, courier, courier new, monospace; /* necessary! */
   font-size: 14px;
   padding: 6px 10px 6px 10px;
+  z-index: 2;
 }
 
 .GridLine {

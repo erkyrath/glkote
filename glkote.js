@@ -623,6 +623,16 @@ function create_resize_sensors() {
      This is one reason evhan_doc_resize() has debouncing logic. */
   shrinkel.on('scroll', evhan);
   expandel.on('scroll', evhan);
+
+  /* Move the top-most grid window into the viewport
+    when the iOS virtual keyboard pops up. */
+  if (window.visualViewport) {
+    var visualViewportHandler = function () {
+      $('.topgrid').css({ top: visualViewport.offsetTop });
+    }
+    visualViewport.addEventListener('resize', visualViewportHandler);
+    visualViewport.addEventListener('scroll', visualViewportHandler);
+  }
 }
 
 /* This function becomes GlkOte.update(). The game calls this to update
@@ -930,9 +940,13 @@ function accept_one_window(arg) {
     if (win.type == 'graphics')
       typeclass = 'GraphicsWindow';
     var rockclass = 'WindowRock_' + arg.rock;
+    var topclass = "";
+    if (win.type == 'grid' && arg.top === 0 && current_metrics.inspacingy === 0) {
+      topclass = " topgrid";
+    }
     frameel = $('<div>',
       { id: dom_prefix+'window'+arg.id,
-        'class': 'WindowFrame HasNoInputField ' + typeclass + ' ' + rockclass });
+        'class': 'WindowFrame HasNoInputField ' + typeclass + ' ' + rockclass + topclass});
     frameel.data('winid', arg.id);
     frameel.on('mousedown', arg.id, evhan_window_mousedown);
     if (perform_paging && win.type == 'buffer')
@@ -1058,46 +1072,21 @@ function accept_one_window(arg) {
     }
   }
 
-  /* The trick is that left/right/top/bottom are measured to the outside
-     of the border, but width/height are measured from the inside of the
-     border. (Measured by the browser's DOM methods, I mean.) */
   var styledic;
-  if (0 /*###Prototype.Browser.IE*/) {
-    /* Actually this method works in Safari also, but in Firefox the buffer
-       windows are too narrow by a scrollbar-width. So we don't use it
-       generally. */
-    var width = arg.width;
-    var height = arg.height;
-    if (arg.type == 'grid') {
-      width -= current_metrics.gridmarginx;
-      height -= current_metrics.gridmarginy;
-    }
-    if (arg.type == 'buffer') {
-      width -= current_metrics.buffermarginx;
-      height -= current_metrics.buffermarginy;
-    }
-    if (width < 0)
-      width = 0;
-    if (height < 0)
-      height = 0;
-    styledic = { left: arg.left+'px', top: arg.top+'px',
-      width: width+'px', height: height+'px' };
-    win.coords.left = arg.left;
-    win.coords.top = arg.top;
-    win.coords.right = current_metrics.width - (arg.left+arg.width);
-    win.coords.bottom = current_metrics.height - (arg.top+arg.height);
-  }
-  else {
-    /* This method works in everything but IE. */
-    var right = current_metrics.width - (arg.left + arg.width);
-    var bottom = current_metrics.height - (arg.top + arg.height);
-    styledic = { left: arg.left+'px', top: arg.top+'px',
-      right: right+'px', bottom: bottom+'px' };
-    win.coords.left = arg.left;
-    win.coords.top = arg.top;
-    win.coords.right = right;
-    win.coords.bottom = bottom;
-  }
+  var width = arg.width;
+  var height = arg.height;
+  if (width < 0)
+    width = 0;
+  if (height < 0)
+    height = 0;
+  styledic = {
+    left: arg.left + 'px', top: arg.top + 'px',
+    width: width + 'px', height: height + 'px'
+  };
+  win.coords.left = arg.left;
+  win.coords.top = arg.top;
+  win.coords.right = current_metrics.width - (arg.left + arg.width);
+  win.coords.bottom = current_metrics.height - (arg.top + arg.height);
   frameel.css(styledic);
 }
 
