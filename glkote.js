@@ -1507,6 +1507,9 @@ function accept_inputset(arg) {
       inputel = $('<input>',
         { id: dom_prefix+'win'+win.id+'_input',
           'class': classes, type: 'text', maxlength: maxlen });
+      if ('ontouchstart' in window) {
+        inputel.attr('placeholder', 'Tap here to type');
+      }
       if (true) /* should be mobile-webkit-only? */
         inputel.attr('autocapitalize', 'off');
       inputel.attr({
