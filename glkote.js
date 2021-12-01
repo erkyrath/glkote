@@ -178,8 +178,8 @@ function glkote_init(iface) {
     perform_paging = false;
   }
 
-  /* Object mapping window ID (strings) to window description objects. */
-  windowdic = {};
+  /* Map mapping window ID (strings) to window description objects. */
+  windowdic = new Map();
 
   /* Set the top-level DOM element ids, if provided. */
   if (iface.dom_prefix)
@@ -689,7 +689,7 @@ function glkote_update(arg) {
 
   /* Un-disable the UI, if it was previously disabled. */
   if (disabled) {
-    for (const win of Object.values(windowdic)) {
+    for (const win of windowdic.values()) {
       if (win.inputel) {
         win.inputel.prop('disabled', false);
       }
@@ -719,7 +719,7 @@ function glkote_update(arg) {
      Then, we take the opportunity to update topunseen. (If a buffer
      window hasn't changed, topunseen hasn't changed.) */
 
-  for (const win of Object.values(windowdic)) {
+  for (const win of windowdic.values()) {
     if (win.type == 'buffer' && win.needscroll) {
       /* needscroll is true if the window has accumulated any content or
          an input field in this update cycle. needspaging is true if
@@ -804,7 +804,7 @@ function glkote_update(arg) {
   disabled = false;
   if (arg.disable || arg.specialinput) {
     disabled = true;
-    for (const win of Object.values(windowdic)) {
+    for (const win of windowdic.values()) {
       if (win.inputel) {
         win.inputel.prop('disabled', true);
       }
@@ -818,7 +818,7 @@ function glkote_update(arg) {
 
   var newinputwin = 0;
   if (!disabled && !windows_paging_count) {
-    for (const win of Object.values(windowdic)) {
+    for (const win of windowdic.values()) {
       if (win.input) {
         if (!newinputwin || win.id == last_known_focus)
           newinputwin = win.id;
@@ -832,7 +832,7 @@ function glkote_update(arg) {
        giving it the focus right away. So we defer the call until
        after the javascript context has yielded control to the browser. */
     var focusfunc = function() {
-      var win = windowdic[newinputwin];
+      var win = windowdic.get(newinputwin);
       if (win.inputel) {
         win.inputel.focus();
       }
@@ -843,7 +843,7 @@ function glkote_update(arg) {
   if (autorestore) {
     if (autorestore.history) {
       for (const [winid, ls] of Object.entries(autorestore.history)) {
-        var win = windowdic[winid];
+        var win = windowdic.get(winid);
         if (win != null) {
           win.history = ls.slice(0);
           win.historypos = win.history.length;
@@ -852,7 +852,7 @@ function glkote_update(arg) {
     }
     if (autorestore.defcolor) {
       for (const [winid, val] of Object.entries(autorestore.defcolor)) {
-        var win = windowdic[winid];
+        var win = windowdic.get(winid);
         if (win != null) {
           win.defcolor = val;
         }
@@ -862,7 +862,7 @@ function glkote_update(arg) {
 
     /* For the case of autorestore (only), we short-circuit the paging
        mechanism and assume the player has already seen all the text. */
-    for (const win of Object.values(windowdic)) {
+    for (const win of windowdic.values()) {
       if (win.type == 'buffer') {
         window_scroll_to_bottom(win);
       }
@@ -889,7 +889,7 @@ function glkote_update(arg) {
    an empty argument object (which would mean "close all windows").
 */
 function accept_windowset(arg) {
-  for (const win of Object.values(windowdic)) {
+  for (const win of windowdic.values()) {
     win.inplace = false;
   }
 
@@ -897,7 +897,7 @@ function accept_windowset(arg) {
 
   /* Close any windows not mentioned in the argument. */
   var closewins = [];
-  for (const win of Object.values(windowdic)) {
+  for (const win of windowdic.values()) {
     if (!win.inplace) {
       closewins.push(win);
     }
@@ -917,11 +917,11 @@ function accept_one_window(arg) {
     return;
   }
 
-  win = windowdic[arg.id];
+  win = windowdic.get(arg.id);
   if (win == null) {
     /* The window must be created. */
     win = { id: arg.id, type: arg.type, rock: arg.rock };
-    windowdic[arg.id] = win;
+    windowdic.set(arg.id, win);
     var typeclass;
     if (win.type == 'grid')
       typeclass = 'GridWindow';
@@ -1104,7 +1104,7 @@ function accept_one_window(arg) {
 /* Handle closing one window. */
 function close_one_window(win) {
   win.frameel.remove();
-  delete windowdic[win.id];
+  windowdic.delete(win.id);
   win.frameel = null;
 
   var moreel = $('#'+dom_prefix+'win'+win.id+'_moreprompt', dom_context);
@@ -1119,7 +1119,7 @@ function accept_contentset(arg) {
 
 /* Handle the content changes for a single window. */
 function accept_one_content(arg) {
-  var win = windowdic[arg.id];
+  var win = windowdic.get(arg.id);
 
   /* Check some error conditions. */
 
@@ -1439,7 +1439,7 @@ function accept_inputcancel(arg) {
       hasinput[argi.id] = argi;
   }
 
-  for (const win of Object.values(windowdic)) {
+  for (const win of windowdic.values()) {
     if (win.input) {
       var argi = hasinput[win.id];
       if (argi == null || argi.gen > win.input.gen) {
@@ -1472,7 +1472,7 @@ function accept_inputset(arg) {
       hasmouse[argi.id] = true;
   }
 
-  for (const win of Object.values(windowdic)) {
+  for (const win of windowdic.values()) {
     win.reqhyperlink = hashyperlink[win.id];
     win.reqmouse = hasmouse[win.id];
 
@@ -1668,7 +1668,7 @@ function readjust_paging_focus(canfocus) {
   var pageable_win = 0;
 
   if (perform_paging) {
-    for (const win of Object.values(windowdic)) {
+    for (const win of windowdic.values()) {
         if (win.needspaging) {
           windows_paging_count += 1;
           if (!pageable_win || win.id == last_known_paging)
@@ -1689,7 +1689,7 @@ function readjust_paging_focus(canfocus) {
 
     var newinputwin = 0;
     if (!disabled && !windows_paging_count) {
-      for (const win of Object.values(windowdic)) {
+      for (const win of windowdic.values()) {
           if (win.input) {
             if (!newinputwin || win.id == last_known_focus)
               newinputwin = win.id;
@@ -1698,7 +1698,7 @@ function readjust_paging_focus(canfocus) {
     }
     
     if (newinputwin) {
-      var win = windowdic[newinputwin];
+      var win = windowdic.get(newinputwin);
       if (win.inputel) {
         win.inputel.focus();
       }
@@ -1777,7 +1777,7 @@ function glkote_save_allstate() {
     history: {}
   };
 
-  for (const [winid, win] of Object.entries(windowdic)) {
+  for (const [winid, win] of windowdic.entries()) {
       if (win.history && win.history.length)
         obj.history[winid] = win.history.slice(0);
       if (win.defcolor) {
@@ -2022,7 +2022,7 @@ function perform_graphics_ops(loadedimg, loadedev) {
 
   while (graphics_draw_queue.length) {
     var op = graphics_draw_queue[0];
-    var win = windowdic[op.winid];
+    var win = windowdic.get(op.winid);
     if (!win) {
       glkote_log('perform_graphics_ops: op for nonexistent window ' + op.winid);
       graphics_draw_queue.shift();
@@ -2247,7 +2247,7 @@ function send_response(type, win, val, val2) {
      or ignores the UI. */
   if (!(type == 'init' || type == 'refresh'
       || type == 'specialresponse' || type == 'debuginput')) {
-    for (const win of Object.values(windowdic)) {
+    for (const win of windowdic.values()) {
       var savepartial = (type != 'line' && type != 'char') 
                         || (win.id != winid);
       if (savepartial && win.input && win.input.type == 'line'
@@ -2476,7 +2476,7 @@ function doc_resize_real() {
    doc_resize_real.)
 */
 function send_window_redraw(winid) {
-  var win = windowdic[winid];
+  var win = windowdic.get(winid);
 
   /* It's not likely that the window has been deleted since this function
      was queued up. But we'll be paranoid. */
@@ -2497,7 +2497,7 @@ function evhan_doc_pixelreschange(ev) {
 
     /* If we have any graphics windows, we need to redo their size and
        scale, and then hit them with a redraw event. */
-    for (const [winid, win] of Object.entries(windowdic)) {
+    for (const [winid, win] of windowdic.entries()) {
         if (win.type == 'graphics') {
           var el = $('#'+dom_prefix+'win'+win.id+'_canvas', dom_context);
           win.scaleratio = current_devpixelratio / win.backpixelratio;
@@ -2557,7 +2557,7 @@ function evhan_doc_keypress(ev) {
   var win;
 
   if (windows_paging_count) {
-    win = windowdic[last_known_paging];
+    win = windowdic.get(last_known_paging);
     if (win) {
       if (!((keycode >= 32 && keycode <= 126) || keycode == 13)) {
         /* If the keystroke is not a printable character (or Enter),
@@ -2592,7 +2592,7 @@ function evhan_doc_keypress(ev) {
     }
   }
 
-  win = windowdic[last_known_focus];
+  win = windowdic.get(last_known_focus);
   if (!win)
     return;
   if (!win.inputel)
@@ -2656,7 +2656,7 @@ function evhan_doc_keypress(ev) {
 */
 function evhan_window_mousedown(ev) {
   var winid = ev.data;
-  var win = windowdic[winid];
+  var win = windowdic.get(winid);
   if (!win)
     return;
 
@@ -2674,7 +2674,7 @@ function evhan_window_mousedown(ev) {
 */
 function evhan_input_mouse_click(ev) {
   var winid = ev.data;
-  var win = windowdic[winid];
+  var win = windowdic.get(winid);
   if (!win)
     return;
 
@@ -2796,7 +2796,7 @@ function evhan_input_char_keydown(ev) {
 
   if (res) {
     var winid = $(this).data('winid');
-    var win = windowdic[winid];
+    var win = windowdic.get(winid);
     if (!win || !win.input)
       return true;
 
@@ -2825,7 +2825,7 @@ function evhan_input_char_keypress(ev) {
     res = String.fromCharCode(keycode);
 
   var winid = $(this).data('winid');
-  var win = windowdic[winid];
+  var win = windowdic.get(winid);
   if (!win || !win.input)
     return true;
 
@@ -2844,7 +2844,7 @@ function evhan_input_keydown(ev) {
 
   if (keycode == key_codes.KEY_UP || keycode == key_codes.KEY_DOWN) {
     var winid = $(this).data('winid');
-    var win = windowdic[winid];
+    var win = windowdic.get(winid);
     if (!win || !win.input)
       return true;
 
@@ -2868,7 +2868,7 @@ function evhan_input_keydown(ev) {
   }
   else if (terminator_key_values[keycode]) {
     var winid = $(this).data('winid');
-    var win = windowdic[winid];
+    var win = windowdic.get(winid);
     if (!win || !win.input)
       return true;
 
@@ -2894,7 +2894,7 @@ function evhan_input_keypress(ev) {
 
   if (keycode == 13) {
     var winid = $(this).data('winid');
-    var win = windowdic[winid];
+    var win = windowdic.get(winid);
     if (!win || !win.input)
       return true;
 
@@ -2911,7 +2911,7 @@ function evhan_input_keypress(ev) {
 */
 function evhan_input_focus(ev) {
   var winid = ev.data;
-  var win = windowdic[winid];
+  var win = windowdic.get(winid);
   if (!win)
     return;
 
@@ -2926,7 +2926,7 @@ function evhan_input_focus(ev) {
 */
 function evhan_input_blur(ev) {
   var winid = ev.data;
-  var win = windowdic[winid];
+  var win = windowdic.get(winid);
   if (!win)
     return;
 
@@ -2937,7 +2937,7 @@ function evhan_input_blur(ev) {
 */
 function evhan_window_scroll(ev) {
   var winid = ev.data;
-  var win = windowdic[winid];
+  var win = windowdic.get(winid);
   if (!win)
     return;
 
@@ -3000,7 +3000,7 @@ function window_scroll_to_bottom(win) {
 */
 function build_evhan_hyperlink(winid, linkval) {
   return function() {
-    var win = windowdic[winid];
+    var win = windowdic.get(winid);
     if (!win)
       return false;
     if (!win.reqhyperlink)
