@@ -2995,9 +2995,6 @@ return {
 var GlkOte = new GlkOteClass();
 
 // Node-compatible behavior
-if (typeof exports === 'object' && typeof exports.nodeName !== 'string') {
-  exports.GlkOte = GlkOte;
-  exports.GlkOteClass = GlkOteClass;
-}
+try { exports.GlkOte = GlkOte; exports.GlkOteClass = GlkOteClass; } catch (ex) {};
 
 /* End of GlkOte library. */
