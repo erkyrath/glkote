@@ -273,8 +273,8 @@ function glkote_init(iface) {
   if (recording) {
     /* But also check whether the user has opted out by putting "feedback=0"
        in the URL query. */
-    const qparams = new URLSearchParams(document.location.search);
-    const flag = qparams.get('feedback');
+    const qparams = get_query_params();
+    const flag = qparams['feedback'];
     if (jQuery.type(flag) != 'undefined' && flag != '1') {
       recording = false;
       glkote_log('User has opted out of transcript recording.');
@@ -2195,6 +2195,33 @@ function send_response(type, win, val, val2) {
 }
 
 /* ---------------------------------------------- */
+
+/* Take apart the query string of the current URL, and turn it into
+   an object map.
+   (Adapted from querystring.js by Adam Vandenberg.)
+*/
+function get_query_params() {
+    var map = {};
+
+    var qs = location.search.substring(1, location.search.length);
+    if (qs.length) {
+        var args = qs.split('&');
+
+        qs = qs.replace(/\+/g, ' ');
+        for (var ix = 0; ix < args.length; ix++) {
+            var pair = args[ix].split('=');
+            var name = decodeURIComponent(pair[0]);
+            
+            var value = (pair.length==2)
+                ? decodeURIComponent(pair[1])
+                : name;
+            
+            map[name] = value;
+        }
+    }
+
+    return map;
+}
 
 /* This is called every time the game updates the screen state. It
    wraps up the update with the most recent input event and sends them
