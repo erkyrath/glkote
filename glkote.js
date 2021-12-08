@@ -393,7 +393,7 @@ function measure_window() {
      is true on all browsers but IE7. Fortunately, on IE7 it's
      the windowport size that's wrong -- gameport is the size
      we're interested in. */
-     const gameport = $('#'+gameport_id, dom_context);
+  const gameport = $('#'+gameport_id, dom_context);
   if (!gameport.length)
     return 'Cannot find gameport element #'+gameport_id+' in this document.';
 
@@ -562,7 +562,7 @@ function create_resize_sensors() {
   if (!gameport.length)
     return 'Cannot find gameport element #'+gameport_id+' in this document.';
 
-    const shrinkel = $('<div>', {
+  const shrinkel = $('<div>', {
     id: dom_prefix+'resize-sensor-shrink'
   }).css({
     position:'absolute',
@@ -926,7 +926,7 @@ function accept_one_window(arg) {
       typeclass = 'BufferWindow';
     if (win.type == 'graphics')
       typeclass = 'GraphicsWindow';
-      const rockclass = 'WindowRock_' + arg.rock;
+    const rockclass = 'WindowRock_' + arg.rock;
     frameel = $('<div>',
       { id: dom_prefix+'window'+arg.id,
         'class': 'WindowFrame HasNoInputField ' + typeclass + ' ' + rockclass });
@@ -1488,7 +1488,7 @@ function accept_inputset(arg) {
         inputel.on('keydown', evhan_input_char_keydown);
       }
       inputel.on('focus', win.id, evhan_input_focus);
-      //inputel.on('blur', win.id, evhan_input_blur); // Doesn't do anything
+      //inputel.on('blur', win.id, evhan_input_blur); // Currently has no effect
       inputel.data('winid', win.id);
       win.inputel = inputel;
       win.historypos = win.history.length;
@@ -2123,7 +2123,9 @@ function send_response(type, win, val, val2) {
     return;
   }
 
-  const winid = win.id || 0;
+  let winid = 0;
+  if (win)
+    winid = win.id;
   const res = { type: type, gen: generation };
   generation_sent = generation;
 
@@ -2844,6 +2846,7 @@ function evhan_input_focus(ev) {
 /* Event handler: blur events on input fields
 
    Notice that the focus has switched away from a line/char input field.
+   (Currently has no effect, so it's commented out.)
 */
 /*function evhan_input_blur(ev) {
   const winid = ev.data;
