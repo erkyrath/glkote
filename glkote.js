@@ -44,7 +44,7 @@
  */
 
 /* All state is contained in GlkoteClass. */
-const GlkOteClass = function() {
+var GlkOteClass = function() {
 
 /* Module global variables */
 let is_inited = false;
@@ -2985,7 +2985,7 @@ return {
 };
 
 /* GlkOte is an instance of GlkOteClass, ready to init. */
-const GlkOte = new GlkOteClass();
+var GlkOte = new GlkOteClass();
 
 // Node-compatible behavior
 try { exports.GlkOte = GlkOte; exports.GlkOteClass = GlkOteClass; } catch (ex) {};
