@@ -1856,6 +1856,9 @@ The <code>game_init()</code> function takes care of calling <code>GlkOte.init()<
 
 <dl>
 
+<dt>Release 2.3.1 (Jan 3, 2022)
+<dd>Adopt some modern ECMAScript idioms. Replace "var" with "let" where possible. Linting.
+
 <dt>Release 2.3.0 (Mar 27, 2021)
 <dd>All of the API objects are now defined as Javascript classes (GlkOteClass, GlkClass, DialogClass). Each file exports this class plus a single instance (GlkOte, Glk, Dialog). Existing code should continue to work, relying on the predefined instances. However, if you want several GlkOte contexts running in the same document, you can define new independent instances.
 <dd>You now have the option of initializing each API object by passing in references to the others. This allows each instance to communicate with the correct peer. If you don't do this, the instances will create their own or fall back to using the globally-defined instances (window.GlkOte, etc).
@@ -1978,7 +1981,7 @@ terminator keys, line input echo control, Unicode normalization.
 </dl>
 
 <hr>
-Last updated March 27, 2021.
+Last updated January 3, 2022.
 <p>
 
 <em><a href="http://eblong.com/zarf/glk/glkote.html">GlkOte home page</a>
