@@ -183,12 +183,12 @@ var regex_long_whitespace = new RegExp('  +', 'g'); /* two or more spaces */
 /* Given a run of N spaces (N >= 2), return N-1 non-breaking spaces plus
    a normal one. */
 function func_long_whitespace(match) {
-  var len = match.length;
-  if (len == 1)
-    return ' ';
-  /* Evil trick I picked up from Prototype. Gives len-1 copies of NBSP. */
-  var res = new Array(len).join('\xa0');
-  return res + ' ';
+    var len = match.length;
+    if (len == 1)
+        return ' ';
+    /* Evil trick I picked up from Prototype. Gives len-1 copies of NBSP. */
+    var res = new Array(len).join('\xa0');
+    return res + ' ';
 }
 
 function evhan_input(ev)
