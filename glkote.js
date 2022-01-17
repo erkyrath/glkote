@@ -2773,7 +2773,7 @@ function evhan_input_char_input(ev) {
         return false;
     }
     var winid = $(this).data('winid');
-    var win = windowdic[winid];
+    var win = windowdic.get(winid);
     if (!win || !win.input) {
         return true;
     }
