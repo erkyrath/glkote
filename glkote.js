@@ -2768,24 +2768,24 @@ function evhan_input_char_keypress(ev) {
    characters, but not function/arrow keys.
 */
 function evhan_input_char_input(ev) {
-  const char = ev.target.value[0]
-  if (char === '') {
+    const char = ev.target.value[0]
+    if (char === '') {
+        return false;
+    }
+    var winid = $(this).data('winid');
+    var win = windowdic[winid];
+    if (!win || !win.input) {
+        return true;
+    }
+    ev.target.value = ''
+    send_response('char', win, char);
+    /* Even though we have emptied the input, Android acts as though it still
+       has spaces within it, and won't send backspace keydown events until
+       the phantom spaces have all been deleted. Refocusing seems to fix it. */
+    if (char === ' ') {
+        $(ev.target).trigger('blur').trigger('focus')
+    }
     return false;
-  }
-  var winid = $(this).data('winid');
-  var win = windowdic[winid];
-  if (!win || !win.input) {
-    return true;
-  }
-  ev.target.value = ''
-  send_response('char', win, char);
-  /* Even though we have emptied the input, Android acts as though it still has
-     spaces within it, and won't send backspace keydown events until the phantom
-     spaces have all been deleted. Refocusing seems to fix it. */
-  if (char === ' ') {
-    $(ev.target).trigger('blur').trigger('focus')
-  }
-  return false;
 }
 
 /* Event handler: keydown events on input fields (line input)
