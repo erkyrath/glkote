@@ -863,6 +863,7 @@ function glkote_update(arg) {
         if (autorestore.recording_sessionid) {
             if (recording && recording_state) {
                 recording_state.sessionId = autorestore.recording_sessionid;
+                glkote_log('Transcript recording restored: session ' + recording_state.sessionId + ' "' + recording_state.label + '", destination ' + recording_handler_url);
             }
         }
 
