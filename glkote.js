@@ -860,7 +860,11 @@ function glkote_update(arg) {
                 }
             }
         }
-        
+        if (autorestore.recording_sessionid) {
+            if (recording && recording_state) {
+                recording_state.sessionId = autorestore.recording_sessionid;
+            }
+        }
 
         /* For the case of autorestore (only), we short-circuit the paging
            mechanism and assume the player has already seen all the text. */
@@ -1751,6 +1755,10 @@ function glkote_save_allstate() {
                 obj.defcolor = {};
             obj.defcolor[winid] = win.defcolor;
         }
+    }
+
+    if (recording && recording_state) {
+        obj.recording_sessionid = recording_state.sessionId;
     }
     
     return obj;
