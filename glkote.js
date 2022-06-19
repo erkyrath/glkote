@@ -456,8 +456,9 @@ function measure_window() {
     let line1size = get_size(gridline1);
     let line2size = get_size(gridline2);
 
-    metrics.gridcharheight = Math.max(1, gridline2.position().top - gridline1.position().top);
-    metrics.gridcharwidth = Math.max(1, gridspan.width() / 8);
+    /* remglk assumes gridcharheight is an integer; rounding fixes browser zoom bug */
+    metrics.gridcharheight = Math.ceil(Math.max(1, gridline2.position().top - gridline1.position().top));
+    metrics.gridcharwidth = Math.ceil(Math.max(1, gridspan.width() / 8));
     /* Yes, we can wind up with a non-integer charwidth value. But we force the value to be >= 1; zero can lead to annoying NaNs later on. */
 
     /* Find the total margin around the character grid (out to the window's
