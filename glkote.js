@@ -1,7 +1,7 @@
 'use strict';
 
 /* GlkOte -- a Javascript display library for IF interfaces
- * GlkOte Library: version 2.3.1.
+ * GlkOte Library: version 2.3.2.
  * Designed by Andrew Plotkin <erkyrath@eblong.com>
  * <http://eblong.com/zarf/glk/glkote.html>
  * 
@@ -3006,7 +3006,7 @@ function evhan_debug_command(cmd) {
    become the GlkOte global. */
 return {
     classname: 'GlkOte',
-    version:  '2.3.1',
+    version:  '2.3.2',
     init:     glkote_init,
     inited:   glkote_inited,
     update:   glkote_update,

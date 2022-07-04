@@ -1,6 +1,6 @@
 GlkOte -- a Javascript display library for IF interfaces
 
-GlkOte Library: version 2.3.1.
+GlkOte Library: version 2.3.2.
 Designed by Andrew Plotkin <erkyrath@eblong.com>
 <http://eblong.com/zarf/glk/glkote.html>
 
@@ -44,7 +44,7 @@ Example pages:
 * Permissions
 
 The GlkOte, GlkAPI, and Dialog Javascript libraries are copyright
-2008-2021 by Andrew Plotkin. They are distributed under the MIT
+2008-2022 by Andrew Plotkin. They are distributed under the MIT
 license; see the "LICENSE" file.
 
 The GlkOte documentation is licensed under a Creative Commons
