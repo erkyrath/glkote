@@ -48,8 +48,8 @@ The GlkOte, GlkAPI, and Dialog Javascript libraries are copyright
 license; see the "LICENSE" file.
 
 The GlkOte documentation is licensed under a Creative Commons
-Attribution-Noncommercial-Share Alike 3.0 Unported License.
-See <http://creativecommons.org/licenses/by-nc-sa/3.0>
+Attribution-Noncommercial-ShareAlike 4.0 International License.
+See <http://creativecommons.org/licenses/by-nc-sa/4.0>
 
 This package includes the jQuery JavaScript framework, version 1.12.4
 Copyright jQuery Foundation and other contributors
