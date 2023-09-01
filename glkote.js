@@ -566,7 +566,7 @@ function create_resize_sensors() {
     }
 
     try {
-        let observer = new ResizeObserver(evhan)
+        let observer = new ResizeObserver(evhan);
         observer.observe(gameport.get(0));
     } catch (ex) {
         console.log('ResizeObserver is not available');
