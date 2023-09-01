@@ -550,76 +550,27 @@ function metrics_match(met1, met2) {
     return true;
 }
 
-/* Create invisible divs in the gameport which will fire events if the
-   gameport changes size. (For any reason, including document CSS changes.
-   We need this to detect Lectrote's margin change, for example.)
-
-   This code is freely adapted from CSS Element Queries by Marc J. Schmidt.
-   https://github.com/marcj/css-element-queries
+/* Create an object which will fire events if the gameport changes size.
+   (For any reason, including document CSS changes. We need this to detect
+   Lectrote's margin change, for example.)
 */
 function create_resize_sensors() {
     const gameport = $('#'+gameport_id, dom_context);
     if (!gameport.length)
         return 'Cannot find gameport element #'+gameport_id+' in this document.';
 
-    const shrinkel = $('<div>', {
-        id: dom_prefix+'resize-sensor-shrink'
-    }).css({
-        position:'absolute',
-        left:'0', right:'0', top:'0', bottom:'0',
-        overflow:'hidden', visibility:'hidden',
-        'z-index':'-1'
-    });
-    shrinkel.append($('<div>', {
-        id: dom_prefix+'resize-sensor-shrink-child'
-    }).css({
-        position:'absolute',
-        left:'0', right:'0',
-        width:'200%', height:'200%'
-    }));
-
-    const expandel = $('<div>', {
-        id: dom_prefix+'resize-sensor-expand'
-    }).css({
-        position:'absolute',
-        left:'0', right:'0', top:'0', bottom:'0',
-        overflow:'hidden', visibility:'hidden',
-        'z-index':'-1'
-    });
-    expandel.append($('<div>', {
-        id: dom_prefix+'resize-sensor-expand-child'
-    }).css({
-        position:'absolute',
-        left:'0', right:'0'
-    }));
-
-    const shrinkdom = shrinkel.get(0);
-    const expanddom = expandel.get(0);
-    const expandchilddom = expanddom.childNodes[0];
-
-    function reset() {
-        shrinkdom.scrollLeft = 100000;
-        shrinkdom.scrollTop = 100000;
-
-        expandchilddom.style.width = '100000px';
-        expandchilddom.style.height = '100000px';
-        expanddom.scrollLeft = 100000;
-        expanddom.scrollTop = 100000;
-    }
-
-    gameport.append(shrinkel);
-    gameport.append(expandel);
-    reset();
-
-    function evhan(ev) {
-        evhan_doc_resize(ev);
-        reset();
-    }
-
-    /* These events fire copiously when the window is being resized.
+    /* This event fires copiously when the window is being resized.
        This is one reason evhan_doc_resize() has debouncing logic. */
-    shrinkel.on('scroll', evhan);
-    expandel.on('scroll', evhan);
+    function evhan(ents) {
+        evhan_doc_resize();
+    }
+
+    try {
+        let observer = new ResizeObserver(evhan)
+        observer.observe(gameport.get(0));
+    } catch (ex) {
+        console.log('ResizeObserver is not available');
+    }
 }
 
 /* This function becomes GlkOte.update(). The game calls this to update
