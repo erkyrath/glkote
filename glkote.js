@@ -225,7 +225,7 @@ function glkote_init(iface) {
     }
     current_metrics = res;
 
-    /* Add some elements which will give us notifications if the gameport
+    /* Add an observer which will give us notifications if the gameport
        size changes. */
     create_resize_sensor();
 
