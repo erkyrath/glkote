@@ -556,8 +556,10 @@ function metrics_match(met1, met2) {
 */
 function create_resize_sensors() {
     const gameport = $('#'+gameport_id, dom_context);
-    if (!gameport.length)
-        return 'Cannot find gameport element #'+gameport_id+' in this document.';
+    if (!gameport.length) {
+        console.log('Cannot find gameport element #'+gameport_id+' in this document.');
+        return;
+    }
 
     /* This event fires copiously when the window is being resized.
        This is one reason evhan_doc_resize() has debouncing logic. */
@@ -569,7 +571,7 @@ function create_resize_sensors() {
         let observer = new ResizeObserver(evhan);
         observer.observe(gameport.get(0));
     } catch (ex) {
-        console.log('ResizeObserver is not available');
+        console.log('ResizeObserver is not available in this browser.');
     }
 }
 
