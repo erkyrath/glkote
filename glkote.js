@@ -227,7 +227,7 @@ function glkote_init(iface) {
 
     /* Add some elements which will give us notifications if the gameport
        size changes. */
-    create_resize_sensors();
+    create_resize_sensor();
 
     if (iface.max_buffer_length)
         max_buffer_length = iface.max_buffer_length;
@@ -554,7 +554,7 @@ function metrics_match(met1, met2) {
    (For any reason, including document CSS changes. We need this to detect
    Lectrote's margin change, for example.)
 */
-function create_resize_sensors() {
+function create_resize_sensor() {
     const gameport = $('#'+gameport_id, dom_context);
     if (!gameport.length) {
         console.log('Cannot find gameport element #'+gameport_id+' in this document.');
@@ -2313,7 +2313,7 @@ function recording_standard_handler(state) {
    bigger/smaller".)
    - Autorestore. (The window might be a different size than the autosave
    data expects, so we trigger this.)
-   - The magic gameport resize sensors created in create_resize_sensors().
+   - The magic gameport resize sensor created in create_resize_sensor().
 */
 function evhan_doc_resize() {
     /* We don't want to send a whole flurry of these events, just because
