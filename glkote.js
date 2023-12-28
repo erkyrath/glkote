@@ -1294,6 +1294,13 @@ function accept_one_content(arg) {
            paragraph div. We use this to position the input box. */
         const divel = buffer_last_line(win);
         if (divel) {
+
+            /* '>' prompt isn't pretty without an extra space. */
+            const promptel = divel.children().last();
+            const prompt = promptel.text();
+            if (prompt.endsWith('>') || prompt.endsWith('?'))
+                promptel.append(' ');
+
             const cursel = $('<span>',
                              { id: dom_prefix+'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
             divel.append(cursel);
