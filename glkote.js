@@ -2086,7 +2086,12 @@ function send_response(type, win, val, val2) {
 
     if (generation <= generation_sent
         && !(type == 'init' || type == 'refresh')) {
-        glkote_log('Not sending repeated generation number: ' + generation);
+        if (type == 'char' || type == 'line' || type == 'hyperlink' || type == 'mouse') {
+            glkote_log('Scheduling event for the next generation: ' + type);
+            defer_func(() => send_response(type, win, val, val2));
+        } else {
+            glkote_log('Not sending repeated generation number: ' + generation);
+        }
         return;
     }
 
