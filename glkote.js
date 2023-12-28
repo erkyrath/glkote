@@ -1292,11 +1292,18 @@ function accept_one_content(arg) {
 
         /* Stick the invisible cursor-marker inside (at the end of) the last
            paragraph div. We use this to position the input box. */
-        const divel = buffer_last_line(win);
+        let divel = buffer_last_line(win);
         if (divel) {
             const cursel = $('<span>',
                              { id: dom_prefix+'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
             divel.append(cursel);
+
+            /* Make sure we have some space left for typing. */
+            if (cursel.position().left / win.frameel.width() > 0.5) {
+                divel = $('<div>', { 'class': 'BufferLine BlankPara BlankLineSpan' }).text(NBSP);
+                win.frameel.append(divel);
+                divel.append(cursel);
+            }
 
             if (win.inputel) {
                 /* Put back the inputel that we found earlier. */
