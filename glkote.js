@@ -1433,6 +1433,8 @@ function accept_inputset(arg) {
             inputel.attr({
                 'aria-live': 'off',
                 'autocapitalize': 'off',
+                'virtualkeyboardpolicy': 'manual',
+                'onclick': 'navigator.virtualKeyboard?.show()',
             });
             if (argi.type == 'line') {
                 inputel.on('keypress', evhan_input_keypress);
