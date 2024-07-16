@@ -93,7 +93,11 @@ const approx_scroll_width = 20;
    this is less than the last-line bottom margin, it won't cause
    problems.) */
 const moreprompt_margin = 4;
-
+/* Minimum width of an input field. This comes up if the prompt is
+   unusually long, ending near the right margin. We'd rather the
+   input element wrap around to the next line in that case. */
+const inputel_minwidth = 200;
+    
 /* Some constants for key event native values. (Not including function 
    keys.) */
 const key_codes = {
@@ -1298,8 +1302,8 @@ function accept_one_content(arg) {
                    buffermarginx is one pixel too low. We fudge for that, giving a
                    result which errs on the low side. */
                 let width = win.frameel.width() - (current_metrics.buffermarginx + pos.left + 2);
-                if (width < 1)
-                    width = 1;
+                if (width < inputel_minwidth)
+                    width = inputel_minwidth;
                 inputel.css({ width: width+'px' });
                 cursel.append(inputel);
             }
@@ -1490,8 +1494,8 @@ function accept_inputset(arg) {
                buffermarginx is one pixel too low. We fudge for that, giving a
                result which errs on the low side. */
             let width = win.frameel.width() - (current_metrics.buffermarginx + pos.left + 2);
-            if (width < 1)
-                width = 1;
+            if (width < inputel_minwidth)
+                width = inputel_minwidth;
             inputel.css({ width: width+'px' });
             if (newinputel)
                 cursel.append(inputel);
