@@ -426,7 +426,8 @@ function game_select() {
         else {
             var obj = { id: 6 };
             obj.clear = 'true';
-            /* The blank line at the end simulates what happens if (say) an Inform game prints "Line^Line^". There's a CSS stanza which suppresses the blank line in this case to prevent a MORE prompt. */
+            /* The blank line at the end simulates what happens if (say) an Inform game prints "Line^Line^". This also happens with certain GlkTADS layouts.
+               There's a CSS stanza which suppresses the blank line to prevent a MORE prompt in this case. */
             obj.text = [
                 { content: ['normal', 'Your status: healthy.'] },
                 { content: ['normal', 'Your mood: ', 'emphasized', game_mood_list[game_mood]+'.' ] },
