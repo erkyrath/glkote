@@ -21,6 +21,7 @@ var game_generation = 1;
 var game_moves = 1;
 var game_quotemove = 0;
 var game_quotehaslink = false;
+var game_quoteisgrid = true;
 var game_splitwin = false;
 var game_graphwin = false;
 var game_statusmenu = false;
@@ -271,18 +272,25 @@ function game_select() {
 
     /* How many pixels are needed for statuslines and quotelines? */
     var statusheight = metrics.gridcharheight*statuslines + metrics.gridmarginy;
-    var quoteheight  = metrics.gridcharheight*quotelines + metrics.gridmarginy;
-    var graphheight = 120 + metrics.graphicsmarginy;
+    var quoteheight = 0;
+    var graphheight = 0;
 
     /* As many characters as fit horizontally given the pixel width. */
     var gridchars = Math.floor((pwidth - (2*metrics.outspacingx+metrics.gridmarginx)) / metrics.gridcharwidth);
 
     var storytop = (metrics.outspacingy+statusheight+metrics.inspacingy);
     if (have_quotewin) {
+        if (game_quoteisgrid) {
+            quoteheight = metrics.gridcharheight*quotelines + metrics.gridmarginy;
+        }
+        else {
+            quoteheight = metrics.buffercharheight*quotelines + metrics.buffermarginy;
+        }
         var quotetop = storytop;
         storytop = storytop + (quoteheight+metrics.inspacingy);
     }
     if (have_graphwin) {
+        graphheight = 120 + metrics.graphicsmarginy;
         var graphtop = storytop;
         storytop = storytop + (graphheight+metrics.inspacingy);
     }
@@ -305,12 +313,21 @@ function game_select() {
           height: pheight-(storytop+metrics.outspacingy) },
     ];
     if (have_quotewin) {
-        argw.push({ id: 3, type: 'grid', rock: 33,
-                    gridheight: quotelines, gridwidth: gridchars,
-                    left: metrics.outspacingx,
-                    top: quotetop,
-                    width: pwidth-(2*metrics.outspacingx),
-                    height: quoteheight });
+        if (game_quoteisgrid) {
+            argw.push({ id: 3, type: 'grid', rock: 33,
+                        gridheight: quotelines, gridwidth: gridchars,
+                        left: metrics.outspacingx,
+                        top: quotetop,
+                        width: pwidth-(2*metrics.outspacingx),
+                        height: quoteheight });
+        }
+        else {
+            argw.push({ id: 3, type: 'buffer', rock: 33,
+                        left: metrics.outspacingx,
+                        top: quotetop,
+                        width: pwidth-(2*metrics.outspacingx),
+                        height: quoteheight });
+        }
     }
     if (have_graphwin) {
         argw.push({ id: 5, type: 'graphics', rock: 55,
@@ -382,27 +399,31 @@ function game_select() {
     }
 
     if (have_quotewin) {
-        var indent = Math.floor((gridchars - '  Pay no attention to the  '.length) / 2);
-        indent = game_n_spaces(indent);
-        if (!game_quotehaslink) {
-            argc.push({ id: 3, lines: [
-                { line: 0, content: ['normal', indent,
-                                     'blockquote', '  Pay no attention to the  '] },
-                { line: 1, content: ['normal', indent,
-                                     'blockquote', '  man behind the curtain!  '] }
-            ] });
+        if (game_quoteisgrid) {
+            var indent = Math.floor((gridchars - '  Pay no attention to the  '.length) / 2);
+            indent = game_n_spaces(indent);
+            if (!game_quotehaslink) {
+                argc.push({ id: 3, lines: [
+                    { line: 0, content: ['normal', indent,
+                                         'blockquote', '  Pay no attention to the  '] },
+                    { line: 1, content: ['normal', indent,
+                                         'blockquote', '  man behind the curtain!  '] }
+                ] });
+            }
+            else {
+                argc.push({ id: 3, lines: [
+                    { line: 0, content: ['normal', indent,
+                                         'blockquote', "    'Twas ",
+                                         { style:'blockquote', hyperlink:3, text:'brillig' },
+                                         'blockquote', ", and     "] },
+                    { line: 1, content: ['normal', indent,
+                                         'blockquote', '     the slithy ',
+                                         { style:'blockquote', hyperlink:4, text:'toves' },
+                                         'blockquote', '...   '] }
+                ] });
+            }
         }
         else {
-            argc.push({ id: 3, lines: [
-                { line: 0, content: ['normal', indent,
-                                     'blockquote', "    'Twas ",
-                                     { style:'blockquote', hyperlink:3, text:'brillig' },
-                                     'blockquote', ", and     "] },
-                { line: 1, content: ['normal', indent,
-                                     'blockquote', '     the slithy ',
-                                     { style:'blockquote', hyperlink:4, text:'toves' },
-                                     'blockquote', '...   '] }
-            ] });
         }
     }
 
@@ -787,6 +808,7 @@ function game_parse(val) {
         helpopt('menu',    'pause the game for menu input');
         helpopt('quote',   'display a header pane with a centered box quote');
         helpopt('link',    'hyperlinks in the story window and quote box');
+        helpopt('status',  'display a header pane (buffer) with two status lines');
         helpopt('image',   'display three-image test');
         helpopt2('image',  '[number] [left/right/up/down/center] [WxH] [caption]',  'display an image');
         helpopt('break',   'insert a flow break');
@@ -841,6 +863,7 @@ function game_parse(val) {
         game_print({ newline:false, style:'preformatted', text: 'http://eblong.com/zarf/glk/glkote.html'});
         game_print({ newline:false, text:' is an external URL set off by a distinct style. (External hyperlinks may be clickable or not, depending on GlkOte\'s configuration.)\n'});
         game_quotemove = game_moves+1;
+        game_quoteisgrid = true;
         game_quotehaslink = true;
         return;
     }
@@ -1263,8 +1286,17 @@ function game_parse(val) {
 
     if (val == 'quote') {
         game_quotemove = game_moves+1;
+        game_quoteisgrid = true;
         game_quotehaslink = false;
         game_print('Here\'s a quotation box. It will last until your next command.');
+        return;
+    }
+
+    if (val == 'status') {
+        game_quotemove = game_moves+1;
+        game_quoteisgrid = false;
+        game_quotehaslink = false;
+        game_print('Here\'s a two-line status pane. It will last until your next command.');
         return;
     }
 
