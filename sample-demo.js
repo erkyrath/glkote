@@ -817,7 +817,7 @@ function game_parse(val) {
         helpopt('menu',    'pause the game for menu input');
         helpopt('quote',   'display a header pane with a centered box quote');
         helpopt('link',    'hyperlinks in the story window and quote box');
-        helpopt('status',  'display a header pane (buffer) with two status lines');
+        helpopt('status',  'display a header pane (buffer) with two lines of status info');
         helpopt('image',   'display three-image test');
         helpopt2('image',  '[number] [left/right/up/down/center] [WxH] [caption]',  'display an image');
         helpopt('break',   'insert a flow break');
