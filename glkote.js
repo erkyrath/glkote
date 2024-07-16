@@ -73,6 +73,7 @@ let request_timer = null;
 let request_timer_interval = null;
 let resize_timer = null;
 let retry_timer = null;
+let is_mobile = false;
 const perform_paging = true;
 let detect_external_links = false;
 let regex_external_links = null;
@@ -170,12 +171,8 @@ function glkote_init(iface) {
         terminator_key_values[terminator_key_names[val]] = val;
     }
 
-    /*if (false) {
-    // ### test for mobile browser? "'ontouchstart' in document.documentElement"?
-    // Paging doesn't make sense for iphone/android, because you can't
-    //   get keystroke events from a window.
-    perform_paging = false;
-    }*/
+    /* Checking this is bad form, but we will use it for some UI tweaks. */
+    is_mobile = ('ontouchstart' in window);
 
     /* Map mapping window ID (strings) to window description objects. */
     windowdic = new Map();
@@ -1423,6 +1420,9 @@ function accept_inputset(arg) {
             inputel = $('<input>',
                         { id: dom_prefix+'win'+win.id+'_input',
                           'class': classes, type: 'text', maxlength: maxlen });
+            if (is_mobile) {
+                inputel.attr('placeholder', 'Tap here to type');
+            }
             inputel.attr({
                 'aria-live': 'off',
                 'autocapitalize': 'off',
