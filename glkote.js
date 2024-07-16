@@ -1300,8 +1300,7 @@ function accept_one_content(arg) {
                 let width = win.frameel.width() - (current_metrics.buffermarginx + pos.left + 2);
                 if (width < 1)
                     width = 1;
-                inputel.css({ position: 'absolute',
-                              left: '0px', top: '0px', width: width+'px' });
+                inputel.css({ width: width+'px' });
                 cursel.append(inputel);
             }
         }
@@ -1493,8 +1492,7 @@ function accept_inputset(arg) {
             let width = win.frameel.width() - (current_metrics.buffermarginx + pos.left + 2);
             if (width < 1)
                 width = 1;
-            inputel.css({ position: 'absolute',
-                          left: '0px', top: '0px', width: width+'px' });
+            inputel.css({ width: width+'px' });
             if (newinputel)
                 cursel.append(inputel);
         }
