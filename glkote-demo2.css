@@ -96,11 +96,9 @@
 }
 
 .InvisibleCursor {
-  /* This provides the padding below the last line of text (and the input
-     prompt). Without this, they'd be flush against the bottom of the
-     window, which would be ugly. Do not modify this CSS class. */
+  /* This is a relic. It used to provide the padding below the last line
+     of text, but now it has no effect. It will go away at some point. */
   position: relative;
-  padding-bottom: 14px;
 }
 
 .MorePrompt {
@@ -148,6 +146,11 @@
 .GridWindow .Input {
   font-family: monospace; /* necessary! */
   font-size: 14px;
+}
+
+.Input:focus::placeholder {
+  /* Hide "Tap here to type" placeholder when the input is focused */
+  color: transparent;
 }
 
 .GridWindow a {
