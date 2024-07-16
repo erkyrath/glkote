@@ -149,7 +149,7 @@
   font-size: 14px;
 }
 
-input:focus::placeholder {
+.Input:focus::placeholder {
   /* Hide "Tap here to type" placeholder when the input is focused */
   color: transparent;
 }
