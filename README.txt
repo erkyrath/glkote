@@ -44,7 +44,7 @@ Example pages:
 * Permissions
 
 The GlkOte, GlkAPI, and Dialog Javascript libraries are copyright
-2008-2023 by Andrew Plotkin. They are distributed under the MIT
+2008-2024 by Andrew Plotkin. They are distributed under the MIT
 license; see the "LICENSE" file.
 
 The GlkOte documentation is licensed under a Creative Commons
