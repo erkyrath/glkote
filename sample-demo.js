@@ -322,7 +322,7 @@ function game_select() {
                         height: quoteheight });
         }
         else {
-            argw.push({ id: 3, type: 'buffer', rock: 33,
+            argw.push({ id: 6, type: 'buffer', rock: 33,
                         left: metrics.outspacingx,
                         top: quotetop,
                         width: pwidth-(2*metrics.outspacingx),
