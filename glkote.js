@@ -1421,7 +1421,10 @@ function accept_inputset(arg) {
                         { id: dom_prefix+'win'+win.id+'_input',
                           'class': classes, type: 'text', maxlength: maxlen });
             if (is_mobile) {
-                inputel.attr('placeholder', 'Tap here to type');
+                if (maxlen < 3)
+                    inputel.attr('placeholder', '\u2316');
+                else
+                    inputel.attr('placeholder', 'Tap here to type');
             }
             inputel.attr({
                 'aria-live': 'off',
