@@ -1306,7 +1306,6 @@ function accept_one_content(arg) {
                 /* See discussion in accept_inputset(). */
                 const posleft = $('#'+dom_prefix+'win'+win.id+'_curspos', dom_context).offset().left - win.frameel.offset().left;
                 const width = win.frameel.width() - (current_metrics.buffermarginx + posleft + 2);
-                console.log('### replace inputel', 'posleft='+posleft, 'width='+width);
                 if (width < inputel_minwidth) {
                     inputel.css({ width: inputel_minwidth+'px',
                                   position: '',
@@ -1525,7 +1524,6 @@ function accept_inputset(arg) {
              */
             const posleft = $('#'+dom_prefix+'win'+win.id+'_curspos', dom_context).offset().left - win.frameel.offset().left;
             const width = win.frameel.width() - (current_metrics.buffermarginx + posleft + 2);
-            console.log('### place inputel', 'posleft='+posleft, 'width='+width);
             if (width < inputel_minwidth) {
                 inputel.css({ width: inputel_minwidth+'px',
                               position: '',
