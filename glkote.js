@@ -1299,6 +1299,9 @@ function accept_one_content(arg) {
 
             if (win.inputel) {
                 /* Put back the inputel that we found earlier. */
+                /* NOTE: Currently we never get here, or at least we don't
+                   in normal IF play. The accept_inputcancel() stage will
+                   always remove inputel entirely. */
                 const inputel = win.inputel;
                 /* See discussion in accept_inputset(). */
                 const posleft = $('#'+dom_prefix+'win'+win.id+'_curspos', dom_context).offset().left - win.frameel.offset().left;
@@ -1355,7 +1358,8 @@ function accept_one_content(arg) {
 
    A field needs to be removed if it is not listed in the input argument,
    *or* if it is listed with a later generation number than we remember.
-   (The latter case means that input was cancelled and restarted.)
+   (The latter case means that input was cancelled and restarted.
+   TODO: Is that true? Seems to happen always.)
 */
 function accept_inputcancel(arg) {
     const hasinput = {};
