@@ -85,6 +85,8 @@ let Blorb = null; /* imported API object (the resource layer) */
 /* Some handy constants */
 /* A non-breaking space character. */
 const NBSP = '\xa0';
+/* And a zero-width character. */
+const ZWJ =  '\u200D';
 /* Size of the scrollbar, give or take some. */
 const approx_scroll_width = 20;
 /* Margin for how close you have to scroll to end-of-page to kill the
@@ -1290,21 +1292,28 @@ function accept_one_content(arg) {
         if (divel) {
             const cursel = $('<span>',
                              { id: dom_prefix+'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
+            const zwjel = $('<span>', { id: dom_prefix+'win'+win.id+'_curspos', 'class': 'InvisiblePos' });
+            zwjel.text(ZWJ);
+            cursel.append(zwjel);
             divel.append(cursel);
 
             if (win.inputel) {
                 /* Put back the inputel that we found earlier. */
                 const inputel = win.inputel;
-                const pos = cursel.position();
-                /* This calculation is antsy. (Was on Prototype, anyhow, I haven't
-                   retested in jquery...) On Firefox, buffermarginx is too high (or
-                   getWidth() is too low) by the width of a scrollbar. On MSIE,
-                   buffermarginx is one pixel too low. We fudge for that, giving a
-                   result which errs on the low side. */
-                let width = win.frameel.width() - (current_metrics.buffermarginx + pos.left + 2);
-                if (width < inputel_minwidth)
-                    width = inputel_minwidth;
-                inputel.css({ width: width+'px' });
+                /* See discussion in accept_inputset(). */
+                const posleft = $('#'+dom_prefix+'win'+win.id+'_curspos', dom_context).offset().left - win.frameel.offset().left;
+                const width = win.frameel.width() - (current_metrics.buffermarginx + posleft + 2);
+                console.log('### replace inputel', 'posleft='+posleft, 'width='+width);
+                if (width < inputel_minwidth) {
+                    inputel.css({ width: inputel_minwidth+'px',
+                                  position: '',
+                                  left: '', top: '', });
+                }
+                else {
+                    inputel.css({ width: width+'px',
+                                  position: 'absolute',
+                                  left: '0px', top: '0px', });
+                }
                 cursel.append(inputel);
             }
         }
@@ -1485,18 +1494,24 @@ function accept_inputset(arg) {
             if (!cursel.length) {
                 cursel = $('<span>',
                            { id: dom_prefix+'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
+                const zwjel = $('<span>', { id: dom_prefix+'win'+win.id+'_curspos', 'class': 'InvisiblePos' });
+                zwjel.text(ZWJ);
+                cursel.append(zwjel);
                 win.frameel.append(cursel);
             }
-            const pos = cursel.position();
-            /* This calculation is antsy. (Was on Prototype, anyhow, I haven't
-               retested in jquery...) On Firefox, buffermarginx is too high (or
-               getWidth() is too low) by the width of a scrollbar. On MSIE,
-               buffermarginx is one pixel too low. We fudge for that, giving a
-               result which errs on the low side. */
-            let width = win.frameel.width() - (current_metrics.buffermarginx + pos.left + 2);
-            if (width < inputel_minwidth)
-                width = inputel_minwidth;
-            inputel.css({ width: width+'px' });
+            const posleft = $('#'+dom_prefix+'win'+win.id+'_curspos', dom_context).offset().left - win.frameel.offset().left;
+            const width = win.frameel.width() - (current_metrics.buffermarginx + posleft + 2);
+            console.log('### place inputel', 'posleft='+posleft, 'width='+width);
+            if (width < inputel_minwidth) {
+                inputel.css({ width: inputel_minwidth+'px',
+                              position: '',
+                              left: '', top: '', });
+            }
+            else {
+                inputel.css({ width: width+'px',
+                              position: 'absolute',
+                              left: '0px', top: '0px', });
+            }
             if (newinputel)
                 cursel.append(inputel);
         }
