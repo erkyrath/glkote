@@ -1490,7 +1490,8 @@ function accept_inputset(arg) {
             let cursel = $('#'+dom_prefix+'win'+win.id+'_cursor', dom_context);
             /* Check to make sure an InvisibleCursor exists on the last line.
                The only reason it might not is if the window is entirely blank
-               (no lines). In that case, append one to the window frame itself. */
+               (no lines). In that case, append one to the window frame
+               itself. */
             if (!cursel.length) {
                 cursel = $('<span>',
                            { id: dom_prefix+'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
@@ -1499,6 +1500,25 @@ function accept_inputset(arg) {
                 cursel.append(zwjel);
                 win.frameel.append(cursel);
             }
+            /* Now we check how much free space we have to the right of the
+               prompt.
+               
+               Why? Normally we want the input element to be absolutely
+               positioned in its line, running to the right margin.
+               (We recompute the width on every rearrange event, so adapting
+               to geometry changes is no problem.) But if the prompt
+               happens to be long, we'd rather let the input line wrap,
+               in which case it *shouldn't* be absolutely positioned.)
+               (Maybe we should use a hard <br> rather than relying on
+               wrapping? Well, this works for the moment.)
+
+               The free-space calculation is a bit messy. We rely on a
+               zero-width span which sit *before* the input element
+               (and thus doesn't wrap). We check its offset (relative to
+               the frame) and then subtract from the total width.
+               (We're conservative about this, excluding every possible
+               margin.)
+             */
             const posleft = $('#'+dom_prefix+'win'+win.id+'_curspos', dom_context).offset().left - win.frameel.offset().left;
             const width = win.frameel.width() - (current_metrics.buffermarginx + posleft + 2);
             console.log('### place inputel', 'posleft='+posleft, 'width='+width);
