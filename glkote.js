@@ -1293,7 +1293,7 @@ function accept_one_content(arg) {
             const cursel = $('<span>',
                              { id: dom_prefix+'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
             const zwjel = $('<span>', { id: dom_prefix+'win'+win.id+'_curspos', 'class': 'InvisiblePos' });
-            zwjel.text(ZWJ);
+            zwjel.text(ZWJ); /* zero-width but not totally collapsed */
             cursel.append(zwjel);
             divel.append(cursel);
 
@@ -1496,7 +1496,7 @@ function accept_inputset(arg) {
                 cursel = $('<span>',
                            { id: dom_prefix+'win'+win.id+'_cursor', 'class': 'InvisibleCursor' } );
                 const zwjel = $('<span>', { id: dom_prefix+'win'+win.id+'_curspos', 'class': 'InvisiblePos' });
-                zwjel.text(ZWJ);
+                zwjel.text(ZWJ); /* zero-width but not totally collapsed */
                 cursel.append(zwjel);
                 win.frameel.append(cursel);
             }
