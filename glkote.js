@@ -1144,11 +1144,11 @@ function accept_one_content(arg) {
 
            We have to keep track of a flag per paragraph div. The blankpara
            flag indicates whether this is a completely empty paragraph (a
-           blank line). We have to drop a NBSP into empty paragraphs --
+           blank line). We have to drop a space into empty paragraphs --
            otherwise they'd collapse -- and so this flag lets us distinguish
-           between an empty paragraph and one which truly contains a NBSP.
+           between an empty paragraph and one which truly contains a space.
            (The difference is, when you append data to a truly empty paragraph,
-           you have to delete the placeholder NBSP.)
+           you have to delete the placeholder space.)
 
            We also give the paragraph div the BlankPara class, in case
            CSS cares.
@@ -1174,7 +1174,7 @@ function accept_one_content(arg) {
             }
             if (!content || !content.length) {
                 if (divel.data('blankpara'))
-                    divel.append($('<span>', { 'class':'BlankLineSpan' }).text(NBSP));
+                    divel.append($('<span>', { 'class':'BlankLineSpan' }).text(' '));
                 continue;
             }
             if (divel.data('blankpara')) {
