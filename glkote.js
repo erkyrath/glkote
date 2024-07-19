@@ -2429,25 +2429,23 @@ function evhan_viewport_resize() {
     /* Adjust the top of the gameport so that its height matches the
        viewport height.
        If the page has a footer below the gameport, this will not
-       work right.
-       Sorry. */
-    const gameport = $('#'+gameport_id, dom_context);
+       work right. Sorry. */
 
     /* Ignore tiny height changes. */
-    /*
-    if (curheight-newheight >= -1 && curheight-newheight <= 1) {
+    const gameport = $('#'+gameport_id, dom_context);
+    const oldheight = gameport.outerHeight();
+    if (oldheight-current_viewportheight >= -1 && oldheight-current_viewportheight <= 1) {
         return;
     }
-    */
 
     const newtop = $(window).height() - current_viewportheight;
     console.log('### newtop', newtop);
-    gameport.outerHeight(current_viewportheight);
     gameport.css('top', newtop+'px');
+    gameport.outerHeight(current_viewportheight);
 
     /* Safari might have scrolled weirdly, so try to put it right. */
     window.scrollTo(0, newtop);
-    //###frameel.scrollTop(frameel.get(0).scrollHeight);
+    //### also want to frameel.scrollTop(frameel.get(0).scrollHeight) for the input focus! Or all buffer windows? Or go to the seen-level anyhow
 
     //evhan_doc_resize(); //###
 }
