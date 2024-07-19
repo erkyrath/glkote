@@ -2406,9 +2406,11 @@ function doc_resize_real() {
 
     const new_metrics = measure_window();
     if (metrics_match(new_metrics, current_metrics)) {
-        /* If the metrics haven't changed, skip the arrange event. Necessary on
-           mobile webkit, where the keyboard popping up and down causes a same-size
-           resize event. */
+        /* If the metrics haven't changed, skip the arrange event. Necessary
+           on mobile webkit, where the keyboard popping up and down causes
+           a same-size resize event.
+           (Not true any more given the evhan_viewport_resize() handler
+           below. But it's still a good optimization.) */
         return;
     }
     current_metrics = new_metrics;
@@ -2486,13 +2488,14 @@ function evhan_viewport_resize() {
     gameport.css('top', newtop+'px');
     gameport.outerHeight(newheight);
 
+    /* The gameport size change triggers the resize sensor, which takes
+     care of scheduling an arrange event. */
+
     /* Since our content is bottom-aligned, we scroll the window down as
        much as possible. */
     window.scrollTo(0, newtop);
     
     //### also want to frameel.scrollTop(frameel.get(0).scrollHeight) for the input focus! Or all buffer windows? Or go to the seen-level anyhow
-
-    //evhan_doc_resize(); //###
 }
     
     
