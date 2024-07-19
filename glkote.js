@@ -66,6 +66,7 @@ let windowdic = null;
 let current_metrics = null;
 let current_devpixelratio = null;
 let current_viewportheight = null;
+let orig_gameport_margins = null;
 let last_known_focus = 0;
 let last_known_paging = 0;
 let windows_paging_count = 0;
@@ -211,6 +212,15 @@ function glkote_init(iface) {
     /* Note the pixel ratio (resolution level; this is greater than 1 for
        high-res displays. */
     current_devpixelratio = window.devicePixelRatio || 1;
+
+    /* Record the original top and bottom margins (from window-edge) of
+       the gameport. This will be needed for mobile keyboard resizing. */
+    const gameport = $('#'+gameport_id, dom_context);
+    orig_gameport_margins = {
+        top: gameport.offset().top,
+        bottom: $(window).height() - (gameport.offset().top + gameport.outerHeight()),
+    };
+    console.log('### orig_margins', orig_gameport_margins);
 
     /* We can get callbacks on any *boolean* change in the resolution level.
        Not, unfortunately, on all changes. */
@@ -2427,24 +2437,34 @@ function evhan_viewport_resize() {
     current_viewportheight = visualViewport.height;
 
     /* Adjust the top of the gameport so that its height matches the
-       viewport height.
-       If the page has a footer below the gameport, this will not
-       work right. Sorry. */
+       viewport height. We are keeping the bottom fixed because iOS
+       Safari really wants the content to be bottom-aligned. (If
+       we fix the top and shorten the height, Safari persistently scrolls
+       down so that the blank space below is visible.)
+       
+       We are assuming that the gameport either takes up the full window
+       or it has fixed top and bottom margins. (See orig_gameport_margins,
+       calculated at startup.) If the page layout is more dynamic than
+       that, this will fail. */
 
     /* Ignore tiny height changes. */
     const gameport = $('#'+gameport_id, dom_context);
     const oldheight = gameport.outerHeight();
-    if (oldheight-current_viewportheight >= -1 && oldheight-current_viewportheight <= 1) {
+    const newtop = orig_gameport_margins.top + ($(window).height() - current_viewportheight);
+    const newheight = current_viewportheight - (orig_gameport_margins.top + orig_gameport_margins.bottom);
+
+    if (oldheight-newheight >= -1 && oldheight-newheight <= 1) {
         return;
     }
 
-    const newtop = $(window).height() - current_viewportheight;
-    console.log('### newtop', newtop);
+    console.log('### newheight', newheight, 'newtop', newtop);
     gameport.css('top', newtop+'px');
-    gameport.outerHeight(current_viewportheight);
+    gameport.outerHeight(newheight);
 
-    /* Safari might have scrolled weirdly, so try to put it right. */
+    /* Since our content is bottom-aligned, we scroll the window down as
+       much as possible. */
     window.scrollTo(0, newtop);
+    
     //### also want to frameel.scrollTop(frameel.get(0).scrollHeight) for the input focus! Or all buffer windows? Or go to the seen-level anyhow
 
     //evhan_doc_resize(); //###
