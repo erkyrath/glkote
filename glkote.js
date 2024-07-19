@@ -220,7 +220,6 @@ function glkote_init(iface) {
         top: gameport.offset().top,
         bottom: $(window).height() - (gameport.offset().top + gameport.outerHeight()),
     };
-    console.log('### orig_margins', orig_gameport_margins);
 
     /* We can get callbacks on any *boolean* change in the resolution level.
        Not, unfortunately, on all changes. */
@@ -569,7 +568,6 @@ function metrics_match(met1, met2) {
    Lectrote's margin change, for example.)
 */
 function create_resize_sensor() {
-    console.log('### create_resize_sensor'); //###
     const gameport = $('#'+gameport_id, dom_context);
     if (!gameport.length) {
         console.log('Cannot find gameport element #'+gameport_id+' in this document.');
@@ -2367,7 +2365,6 @@ function recording_standard_handler(state) {
    - The magic gameport resize sensor created in create_resize_sensor().
 */
 function evhan_doc_resize() {
-    console.log('### evhan_doc_resize'); //###
     /* We don't want to send a whole flurry of these events, just because
        the user is dragging the window-size around. So we set up a short
        timer, and don't do anything until the flurry has calmed down. */
@@ -2435,8 +2432,6 @@ function doc_resize_real() {
    anyhow).
 */
 function evhan_viewport_resize() {
-    console.log('### evhan_viewport_resize'); //###
-    
     if ((visualViewport.scale - 1) > 0.001) {
         /* We've pinch-zoomed in. The visualViewport will represent the
            zoomed-in region, so we can't learn anything useful about the
