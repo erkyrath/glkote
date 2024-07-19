@@ -579,7 +579,7 @@ function create_resize_sensor() {
         console.log('ResizeObserver is not available in this browser.');
     }
 
-    if (window.visualViewport) {
+    if (is_mobile && window.visualViewport) {
         $(visualViewport).on('resize', evhan_viewport_resize);
     }
 }
@@ -2426,26 +2426,30 @@ function evhan_viewport_resize() {
 
     current_viewportheight = visualViewport.height;
 
-    /* Adjust the height of the gameport so that its bottom edge is at the
-       bottom of the viewport.
-       If the page has a footer below the gameport, this will overrun it.
+    /* Adjust the top of the gameport so that its height matches the
+       viewport height.
+       If the page has a footer below the gameport, this will not
+       work right.
        Sorry. */
     const gameport = $('#'+gameport_id, dom_context);
-    let newheight = current_viewportheight - gameport.offset().top;
-    let curheight = gameport.outerHeight();
 
     /* Ignore tiny height changes. */
+    /*
     if (curheight-newheight >= -1 && curheight-newheight <= 1) {
         return;
     }
+    */
 
-    console.log('### was', curheight, 'now', newheight);
-    gameport.outerHeight(newheight);
+    const newtop = $(window).height() - current_viewportheight;
+    console.log('### newtop', newtop);
+    gameport.outerHeight(current_viewportheight);
+    gameport.css('top', newtop+'px');
 
     /* Safari might have scrolled weirdly, so try to put it right. */
-    window.scrollTo(0, 0);
+    window.scrollTo(0, newtop);
+    //###frameel.scrollTop(frameel.get(0).scrollHeight);
 
-    evhan_doc_resize(); //###
+    //evhan_doc_resize(); //###
 }
     
     
