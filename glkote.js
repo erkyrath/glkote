@@ -2433,12 +2433,12 @@ function evhan_viewport_resize() {
     if ((visualViewport.scale - 1) > 0.001) {
         /* We've pinch-zoomed in. The visualViewport will represent the
            zoomed-in region, so we can't learn anything useful about the
-           keyboard from it. Bail out; we'll adjust if the scale ever
+           keyboard from it. Bail; we'll adjust if the scale ever
            returns to 1.0. */
         return;
     }
 
-    /* The original code has an iOS 15.0 workaround here, but that bug
+    /* Dannii's AsyncGlk code has an iOS 15.0 workaround here, but that bug
        was only extant for a couple of months in fall 2021. */
 
     /* Only react to visualViewport.height changes... */
