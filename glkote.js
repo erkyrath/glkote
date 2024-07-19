@@ -65,6 +65,7 @@ let error_visible = false;
 let windowdic = null;
 let current_metrics = null;
 let current_devpixelratio = null;
+let current_viewportheight = null;
 let last_known_focus = 0;
 let last_known_paging = 0;
 let windows_paging_count = 0;
@@ -558,6 +559,7 @@ function metrics_match(met1, met2) {
    Lectrote's margin change, for example.)
 */
 function create_resize_sensor() {
+    console.log('### create_resize_sensor'); //###
     const gameport = $('#'+gameport_id, dom_context);
     if (!gameport.length) {
         console.log('Cannot find gameport element #'+gameport_id+' in this document.');
@@ -575,6 +577,10 @@ function create_resize_sensor() {
         observer.observe(gameport.get(0));
     } catch (ex) {
         console.log('ResizeObserver is not available in this browser.');
+    }
+
+    if (window.visualViewport) {
+        $(visualViewport).on('resize', evhan_viewport_resize);
     }
 }
 
@@ -2351,6 +2357,7 @@ function recording_standard_handler(state) {
    - The magic gameport resize sensor created in create_resize_sensor().
 */
 function evhan_doc_resize() {
+    console.log('### evhan_doc_resize'); //###
     /* We don't want to send a whole flurry of these events, just because
        the user is dragging the window-size around. So we set up a short
        timer, and don't do anything until the flurry has calmed down. */
@@ -2379,6 +2386,7 @@ function evhan_doc_resize() {
    resize events) from shutting down the UI (ignore resize events).
 */
 function doc_resize_real() {
+    console.log('### ### real resize event'); //###
     resize_timer = null;
 
     if (disabled) {
@@ -2397,6 +2405,50 @@ function doc_resize_real() {
     send_response('arrange', null, current_metrics);
 }
 
+function evhan_viewport_resize() {
+    console.log('### evhan_viewport_resize'); //###
+    
+    if ((visualViewport.scale - 1) > 0.001) {
+        /* We've pinch-zoomed in. The visualViewport will represent the
+           zoomed-in region, so we can't learn anything useful about the
+           keyboard from it. Bail out; we'll adjust if the scale ever
+           returns to 1.0. */
+        return;
+    }
+
+    /* The original code has an iOS 15.0 workaround here, but that bug
+       was only extant for a couple of months in fall 2021. */
+
+    /* Only react to visualViewport.height changes... */
+    if (current_viewportheight == visualViewport.height) {
+        return;
+    }
+
+    current_viewportheight = visualViewport.height;
+
+    /* Adjust the height of the gameport so that its bottom edge is at the
+       bottom of the viewport.
+       If the page has a footer below the gameport, this will overrun it.
+       Sorry. */
+    const gameport = $('#'+gameport_id, dom_context);
+    let newheight = current_viewportheight - gameport.offset().top;
+    let curheight = gameport.outerHeight();
+
+    /* Ignore tiny height changes. */
+    if (curheight-newheight >= -1 && curheight-newheight <= 1) {
+        return;
+    }
+
+    console.log('### was', curheight, 'now', newheight);
+    gameport.outerHeight(newheight);
+
+    /* Safari might have scrolled weirdly, so try to put it right. */
+    window.scrollTo(0, 0);
+
+    evhan_doc_resize(); //###
+}
+    
+    
 /* Send a "redraw" event for the given (graphics) window. This is triggered
    by the accept handler when it sees a graphics window change size.
 
