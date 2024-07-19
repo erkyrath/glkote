@@ -186,9 +186,11 @@
 }
 
 .WindowRock_22 {
-  background: #FFFFE0;
-  border-left: 2px solid #EEEEAA;
-  border-top: 1px solid #EEEEAA;
+  background: #F0FFD0;
+  border-left: 1px solid #E0EEAA;
+  border-top: 1px solid #E0EEAA;
+  border-right: 2px solid #E0EEAA;
+  border-bottom: 2px solid #E0EEAA;
 }
 
 .WindowRock_44 {
