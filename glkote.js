@@ -2441,18 +2441,26 @@ function evhan_viewport_resize() {
        Safari really wants the content to be bottom-aligned. (If
        we fix the top and shorten the height, Safari persistently scrolls
        down so that the blank space below is visible.)
-       
+
        We are assuming that the gameport either takes up the full window
        or it has fixed top and bottom margins. (See orig_gameport_margins,
        calculated at startup.) If the page layout is more dynamic than
-       that, this will fail. */
+       that, this will fail.
+
+       Any top margin (navbar, etc) will be hidden once the keyboard is up.
+       This is an unfortunate consequence of the bottom-aligned scheme; the
+       top margin gets shifted up out of sight.
+    */
 
     /* Ignore tiny height changes. */
     const gameport = $('#'+gameport_id, dom_context);
     const oldheight = gameport.outerHeight();
-    const newtop = orig_gameport_margins.top + ($(window).height() - current_viewportheight);
-    const newheight = current_viewportheight - (orig_gameport_margins.top + orig_gameport_margins.bottom);
+    let newtop = ($(window).height() - current_viewportheight);
+    if (newtop < orig_gameport_margins.top)
+        newtop = orig_gameport_margins.top;
+    const newheight = $(window).height() - (newtop + orig_gameport_margins.bottom);
 
+    /* Do not react to tiny height changes... */
     if (oldheight-newheight >= -1 && oldheight-newheight <= 1) {
         return;
     }
