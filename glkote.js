@@ -2415,6 +2415,18 @@ function doc_resize_real() {
     send_response('arrange', null, current_metrics);
 }
 
+/* Detect the *viewport* being resized, which typically means an
+   on-screen keyboard has opened or closed.
+   
+   (We only set up this handler if is_mobile is set. This is an unwarranted
+   assumption, but there's a lot of weird fudging in here. For the time
+   being, we only do it if necessary, and "necessary" means mobile
+   browsers.)
+
+   It would be better all around to rely on the viewport meta tag
+   "interactive-widget=resizes-content". However, as mid-2024, that
+   is Chrome-only (and I think Chrome defaults to it).
+*/
 function evhan_viewport_resize() {
     console.log('### evhan_viewport_resize'); //###
     
