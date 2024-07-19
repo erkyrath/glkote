@@ -2393,7 +2393,7 @@ function evhan_doc_resize() {
    resize events) from shutting down the UI (ignore resize events).
 */
 function doc_resize_real() {
-    console.log('### ### real resize event'); //###
+    console.log('### real resize event'); //###
     resize_timer = null;
 
     if (disabled) {
