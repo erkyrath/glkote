@@ -93,8 +93,8 @@
 }
 
 .InvisibleCursor {
-  /* This is a relic. It used to provide the padding below the last line
-     of text, but now it has no effect. It will go away at some point. */
+  /* We need this wrapper to perform the measurement on the ZWJ in
+     the InvisibleCursor. */
   position: relative;
 }
 
