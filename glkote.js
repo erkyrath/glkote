@@ -705,13 +705,16 @@ function glkote_update(arg) {
                        property; we have to go to the raw DOM to get it. */
                     frameel.scrollTop(frameel.get(0).scrollHeight);
                     win.needspaging = false;
+                    win.scrolledtoend = true;
                 }
                 else {
                     /* Scroll the unseen content to the top. */
                     frameel.scrollTop(win.topunseen - current_metrics.buffercharheight);
+                    const frameheight = frameel.outerHeight();
+                    win.scrolledtoend = frameel.scrollTop() + frameheight + moreprompt_margin >= frameel.get(0).scrollHeight;
+                    console.log('### win', win.id, 'scrolledtoend', win.scrolledtoend, 'for new content'); //###
                     /* Compute the new topunseen value. */
                     win.pagefrommark = win.topunseen;
-                    const frameheight = frameel.outerHeight();
                     const realbottom = buffer_last_line_top_offset(win);
                     let newtopunseen = frameel.scrollTop() + frameheight;
                     if (newtopunseen > realbottom)
@@ -762,6 +765,20 @@ function glkote_update(arg) {
                     }
                     prevel.css('top', (win.pagefrommark+'px'));
                 }
+            }
+        }
+        else if (win.type == 'buffer') { /* but *not* win.needscroll */
+            /* This window has no new content. If its size has
+               changed, it would be smart to adjust the scrolling so
+               that the same text is visible.
+               Ideally that means the same *bottom line* of text as
+               before. But we're not that smart. We enforce a simpler
+               rule: If the window was scrolled all the way down before,
+               it should still be. */
+            if (win.scrolledtoend) {
+                const frameel = win.frameel;
+                frameel.scrollTop(frameel.get(0).scrollHeight);
+                console.log('### smash-scroll down');
             }
         }
     }
@@ -923,6 +940,7 @@ function accept_one_window(arg) {
         win.reqmouse = false;
         win.needscroll = false;
         win.needspaging = false;
+        win.scrolledtoend = true;
         win.topunseen = 0;
         win.pagefrommark = 0;
         win.coords = { left:null, top:null, right:null, bottom:null };
@@ -2592,8 +2610,10 @@ function evhan_doc_keypress(ev) {
             const frameel = win.frameel;
             /* Scroll the unseen content to the top. */
             frameel.scrollTop(win.topunseen - current_metrics.buffercharheight);
-            /* Compute the new topunseen value. */
             const frameheight = frameel.outerHeight();
+            win.scrolledtoend = frameel.scrollTop() + frameheight + moreprompt_margin >= frameel.get(0).scrollHeight;
+            console.log('### win', win.id, 'scrolledtoend', win.scrolledtoend, 'for paging-key'); //###
+            /* Compute the new topunseen value. */
             const realbottom = buffer_last_line_top_offset(win);
             let newtopunseen = frameel.scrollTop() + frameheight;
             if (newtopunseen > realbottom)
@@ -2603,7 +2623,7 @@ function evhan_doc_keypress(ev) {
             if (win.needspaging) {
                 /* The scroll-down might have cleared needspaging already. But 
                    if not... */
-                if (frameel.scrollTop() + frameheight + moreprompt_margin >= frameel.get(0).scrollHeight) {
+                if (win.scrolledtoend) {
                     win.needspaging = false;
                     const moreel = $('#'+dom_prefix+'win'+win.id+'_moreprompt', dom_context);
                     if (moreel.length)
@@ -2988,11 +3008,15 @@ function evhan_window_scroll(ev) {
     if (!win)
         return;
 
+    const frameel = win.frameel;
+    const frameheight = frameel.outerHeight();
+    
+    win.scrolledtoend = frameel.scrollTop() + frameheight + moreprompt_margin >= frameel.get(0).scrollHeight;
+    console.log('### win', win.id, 'scrolledtoend', win.scrolledtoend, 'for scroll event'); //###
+    
     if (!win.needspaging)
         return;
 
-    const frameel = win.frameel;
-    const frameheight = frameel.outerHeight();
     const realbottom = buffer_last_line_top_offset(win);
     let newtopunseen = frameel.scrollTop() + frameheight;
     if (newtopunseen > realbottom)
@@ -3000,7 +3024,7 @@ function evhan_window_scroll(ev) {
     if (win.topunseen < newtopunseen)
         win.topunseen = newtopunseen;
 
-    if (frameel.scrollTop() + frameheight + moreprompt_margin >= frameel.get(0).scrollHeight) {
+    if (win.scrolledtoend) {
         win.needspaging = false;
         const moreel = $('#'+dom_prefix+'win'+win.id+'_moreprompt', dom_context);
         if (moreel.length)
@@ -3018,6 +3042,9 @@ function window_scroll_to_bottom(win) {
 
     const frameheight = frameel.outerHeight();
     frameel.scrollTop(frameel.get(0).scrollHeight - frameheight);
+    
+    win.scrolledtoend = true;
+    console.log('### win', win.id, 'scrolledtoend', win.scrolledtoend, 'for autorestore'); //###
 
     const realbottom = buffer_last_line_top_offset(win);
     let newtopunseen = frameel.scrollTop() + frameheight;
