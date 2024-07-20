@@ -114,6 +114,11 @@
   display: none;
 }
 
+.HasNoInputField .BufferLine:last-child .InvisiblePos {
+  /* We also have to suppress the measurement ZWJ in the InvisibleCursor. */
+  display: none;
+}
+
 .MorePrompt {
   /* This describes the "More" prompt that flashes in the bottom right corner
      of a window when it needs paging. */
