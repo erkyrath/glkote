@@ -2507,8 +2507,6 @@ function evhan_viewport_resize() {
     /* Since our content is bottom-aligned, we scroll the window down as
        much as possible. */
     window.scrollTo(0, newtop);
-    
-    //### also want to frameel.scrollTop(frameel.get(0).scrollHeight) for the input focus! Or all buffer windows? Or go to the seen-level anyhow
 }
     
     
