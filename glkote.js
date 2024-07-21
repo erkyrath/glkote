@@ -1003,7 +1003,6 @@ function accept_one_window(arg) {
                     || 1;
             }
             win.scaleratio = current_devpixelratio / win.backpixelratio;
-            //glkote_log('### created canvas with scale ' + win.scaleratio + ' (device ' + current_devpixelratio + ' / backstore ' + win.backpixelratio + ')');
             el.attr('width', win.graphwidth * win.scaleratio);
             el.attr('height', win.graphheight * win.scaleratio);
             el.css('width', (win.graphwidth + 'px'));
@@ -1999,7 +1998,6 @@ function perform_graphics_ops(loadedimg, loadedev) {
         glkote_log('perform_graphics_ops called with no queued ops' + (loadedimg ? ' (plus image!)' : ''));
         return;
     }
-    //glkote_log('### perform_graphics_ops, ' + graphics_draw_queue.length + ' queued' + (loadedimg ? ' (plus image!)' : '') + '.'); /*###*/
 
     /* Look at the first queue entry, execute it, and then shift it off.
        On error we must be sure to shift anyway, or the queue will jam!
@@ -2057,7 +2055,6 @@ function perform_graphics_ops(loadedimg, loadedev) {
                 if (oldimg && oldimg.width > 0 && oldimg.height > 0) {
                     loadedimg = oldimg;
                     loadedev = true;
-                    //glkote_log('### found image in cache');
                 }
                 else {
                     /* This cached image is broken. I don't know if this can happen,
@@ -2072,7 +2069,6 @@ function perform_graphics_ops(loadedimg, loadedev) {
                     if (newurl)
                         imgurl = newurl;
                 }
-                //glkote_log('### setting up callback with url');
                 const newimg = new Image();
                 $(newimg).on('load', function(ev) { perform_graphics_ops(newimg, ev); });
                 $(newimg).on('error', function() { perform_graphics_ops(newimg, null); });
@@ -2098,7 +2094,6 @@ function perform_graphics_ops(loadedimg, loadedev) {
 
         graphics_draw_queue.shift();
     }
-    //glkote_log('### queue empty.');
 }
 
 /* Run a function (no arguments) in timeout seconds. */
@@ -2533,7 +2528,7 @@ function evhan_doc_pixelreschange() {
     const ratio = window.devicePixelRatio || 1;
     if (ratio != current_devpixelratio) {
         current_devpixelratio = ratio;
-        //glkote_log('### devicePixelRatio changed to ' + current_devpixelratio);
+        //glkote_log('devicePixelRatio changed to ' + current_devpixelratio);
 
         /* If we have any graphics windows, we need to redo their size and
            scale, and then hit them with a redraw event. */
@@ -2541,7 +2536,7 @@ function evhan_doc_pixelreschange() {
             if (win.type == 'graphics') {
                 const el = $('#'+dom_prefix+'win'+win.id+'_canvas', dom_context);
                 win.scaleratio = current_devpixelratio / win.backpixelratio;
-                //glkote_log('### changed canvas to scale ' + win.scaleratio + ' (device ' + current_devpixelratio + ' / backstore ' + win.backpixelratio + ')');
+                //glkote_log('changed canvas to scale ' + win.scaleratio + ' (device ' + current_devpixelratio + ' / backstore ' + win.backpixelratio + ')');
                 const ctx = canvas_get_2dcontext(el);
                 el.attr('width', win.graphwidth * win.scaleratio);
                 el.attr('height', win.graphheight * win.scaleratio);
