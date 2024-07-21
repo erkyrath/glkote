@@ -712,7 +712,6 @@ function glkote_update(arg) {
                     frameel.scrollTop(win.topunseen - current_metrics.buffercharheight);
                     const frameheight = frameel.outerHeight();
                     win.scrolledtoend = frameel.scrollTop() + frameheight + moreprompt_margin >= frameel.get(0).scrollHeight;
-                    console.log('### win', win.id, 'scrolledtoend', win.scrolledtoend, 'for new content'); //###
                     /* Compute the new topunseen value. */
                     win.pagefrommark = win.topunseen;
                     const realbottom = buffer_last_line_top_offset(win);
@@ -778,7 +777,6 @@ function glkote_update(arg) {
             if (win.scrolledtoend) {
                 const frameel = win.frameel;
                 frameel.scrollTop(frameel.get(0).scrollHeight);
-                console.log('### smash-scroll down');
             }
         }
     }
@@ -2411,7 +2409,6 @@ function evhan_doc_resize() {
    resize events) from shutting down the UI (ignore resize events).
 */
 function doc_resize_real() {
-    console.log('### real resize event'); //###
     resize_timer = null;
 
     if (disabled) {
@@ -2497,7 +2494,6 @@ function evhan_viewport_resize() {
         return;
     }
 
-    console.log('### newheight', newheight, 'newtop', newtop);
     gameport.css('top', newtop+'px');
     gameport.outerHeight(newheight);
 
@@ -2613,7 +2609,6 @@ function evhan_doc_keypress(ev) {
             frameel.scrollTop(win.topunseen - current_metrics.buffercharheight);
             const frameheight = frameel.outerHeight();
             win.scrolledtoend = frameel.scrollTop() + frameheight + moreprompt_margin >= frameel.get(0).scrollHeight;
-            console.log('### win', win.id, 'scrolledtoend', win.scrolledtoend, 'for paging-key'); //###
             /* Compute the new topunseen value. */
             const realbottom = buffer_last_line_top_offset(win);
             let newtopunseen = frameel.scrollTop() + frameheight;
@@ -3013,7 +3008,6 @@ function evhan_window_scroll(ev) {
     const frameheight = frameel.outerHeight();
     
     win.scrolledtoend = frameel.scrollTop() + frameheight + moreprompt_margin >= frameel.get(0).scrollHeight;
-    console.log('### win', win.id, 'scrolledtoend', win.scrolledtoend, 'for scroll event'); //###
     
     if (!win.needspaging)
         return;
@@ -3045,7 +3039,6 @@ function window_scroll_to_bottom(win) {
     frameel.scrollTop(frameel.get(0).scrollHeight - frameheight);
     
     win.scrolledtoend = true;
-    console.log('### win', win.id, 'scrolledtoend', win.scrolledtoend, 'for autorestore'); //###
 
     const realbottom = buffer_last_line_top_offset(win);
     let newtopunseen = frameel.scrollTop() + frameheight;
