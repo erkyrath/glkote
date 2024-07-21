@@ -98,8 +98,8 @@ function game_get_library(val) {
 }
 
 function game_version() {
-    return ('Release 22; GlkOte library ' + GlkOte.version 
-            + '; last updated 22-Jan-2017');
+    return ('Release 23; GlkOte library ' + GlkOte.version 
+            + '; last updated 20-Jul-2024');
 }
 
 function game_n_spaces(count) {
