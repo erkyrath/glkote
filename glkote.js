@@ -2505,8 +2505,11 @@ function evhan_viewport_resize() {
      care of scheduling an arrange event. */
 
     /* Since our content is bottom-aligned, we scroll the window down as
-       much as possible. */
+       much as possible. In fact, we do it twice, because Safari
+       sometimes likes to scroll to the top for its own annoying
+       reasons. */
     window.scrollTo(0, newtop);
+    defer_func(function() { window.scrollTo(0, newtop); });
 }
     
     
