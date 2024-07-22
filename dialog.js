@@ -76,6 +76,7 @@ var editing_dirent; /* null for the edit selection screen, or a dirent to
                        display */
 var cur_usage; /* a string representing the file's category */
 var cur_usage_name; /* the file's category as a human-readable string */
+var cur_usage_names; /* the file's category (pluralized) as a human-readable string */
 var cur_gameid; /* a string representing the game */
 var cur_filelist; /* the files currently on display */
 
@@ -144,6 +145,7 @@ function dialog_open(tosave, usage, gameid, callback) {
     cur_usage = usage;
     cur_gameid = gameid;
     cur_usage_name = label_for_usage(cur_usage);
+    cur_usage_names = label_for_usage(cur_usage, true);
 
     /* Figure out what the root div is called. The dialog box will be
        positioned in this div; also, the div will be greyed out by a 
@@ -314,21 +316,13 @@ function set_caption(msg, isupper) {
 }
 
 /* Pick a human-readable label for the usage. This will be displayed in the
-   dialog prompts. (Possibly pluralized, with an "s".) 
+   dialog prompts.
 */
-function label_for_usage(val) {
-    switch (val) {
-    case 'data': 
-        return 'data file';
-    case 'save': 
-        return 'save file';
-    case 'transcript': 
-        return 'transcript';
-    case 'command': 
-        return 'command script';
-    default:
-        return 'file';
-    }
+function label_for_usage(val, plural) {
+    if (!plural)
+        return localize('dialog_usage_'+val);
+    else
+        return localize('dialog_usagepl_'+val);
 }
 
 /* Decide whether a given file is likely to contain text data. 
@@ -766,7 +760,7 @@ function evhan_storage_changed(ev) {
             if (!file.dirent) {
                 el = $('<option>', { name:'f'+ix } );
                 el.prop('disabled', true);
-                el.text('-- ' + label_for_usage(file.label) + 's --');
+                el.text('-- ' + label_for_usage(file.label, true) + ' --');
                 selel.append(el);
                 continue;
             }
@@ -831,7 +825,7 @@ function evhan_storage_changed(ev) {
     }
     else {
         if (ls.length == 0) {
-            set_caption('You have no ' + cur_usage_name + 's for this game.', true);
+            set_caption('You have no ' + cur_usage_names + ' for this game.', true);
             el = $('#'+dialog_el_id+'_accept');
             el.prop('disabled', true);
         }
@@ -1126,6 +1120,18 @@ const localization_basemap = {
     dialog_namethis: 'Name this %1.',
     dialog_confirmreplace: 'You already have a %1 "%2". Do you want to replace it?',
     dialog_cookiewarning: 'Warning: data may be erased by clearing cookies or browser privacy policies.',
+
+    /* Usages (singular and plural)... */
+    dialog_usage_data: 'data file',
+    dialog_usage_save: 'save file',
+    dialog_usage_transcript: 'transcript',
+    dialog_usage_command: 'command script',
+    dialog_usage_default: 'file',
+    dialog_usagepl_data: 'data files',
+    dialog_usagepl_save: 'save files',
+    dialog_usagepl_transcript: 'transcripts',
+    dialog_usagepl_command: 'command scripts',
+    dialog_usagepl_default: 'files',
 };
 
 /* Localize a key using the provided localization map or the default
