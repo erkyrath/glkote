@@ -65,6 +65,7 @@ var DialogClass = function() {
 var GlkOte = null; /* imported API object -- for GlkOte.log, GlkOte.getdomid */
 
 var dialog_el_id = 'dialog';
+let localization_map = {};
 
 var is_open = false;
 var dialog_callback = null;
@@ -82,6 +83,9 @@ var cur_filelist; /* the files currently on display */
 function dialog_init(iface) {
     if (iface && iface.dom_prefix) {
         dialog_el_id = iface.dom_prefix;
+    }
+    if (iface && iface.localize) {
+        localization_map = iface.localize;
     }
     
     if (iface && iface.GlkOte) {
@@ -185,13 +189,13 @@ function dialog_open(tosave, usage, gameid, callback) {
 
     row = $('<div>', { 'class': 'DiaButtonsFloat' });
     el = $('<button>', { id: dialog_el_id+'_edit', type: 'button' });
-    el.append('Edit');
+    el.text(localize('dialog_edit'));
     el.on('click', evhan_edit_button);
     row.append(el);
     form.append(row);
 
     row = $('<div>', { id: dialog_el_id+'_cap', 'class': 'DiaCaption' });
-    row.append('XXX'); // the caption will be replaced momentarily.
+    row.text('XXX'); // the caption will be replaced momentarily.
     form.append(row);
 
     if (will_save) {
@@ -217,24 +221,24 @@ function dialog_open(tosave, usage, gameid, callback) {
     {
         /* Row of buttons */
         el = $('<button>', { id: dialog_el_id+'_cancel', type: 'button' });
-        el.append('Cancel');
+        el.text(localize('dialog_cancel'));
         el.on('click', evhan_cancel_button);
         row.append(el);
 
         el = $('<button>', { id: dialog_el_id+'_delete', type: 'button' });
-        el.append('Delete');
+        el.text(localize('dialog_delete'));
         el.on('click', evhan_delete_button);
         el.hide();
         row.append(el);
 
         el = $('<button>', { id: dialog_el_id+'_display', type: 'button' });
-        el.append('Display');
+        el.text(localize('dialog_display'));
         el.on('click', evhan_display_button);
         el.hide();
         row.append(el);
 
         el = $('<button>', { id: dialog_el_id+'_accept', type: 'submit' });
-        el.append(will_save ? 'Save' : 'Load');
+        el.text(will_save ? localize('dialog_save') : localize('dialog_load'));
         el.on('click', 
             (will_save ? evhan_accept_save_button : evhan_accept_load_button));
         row.append(el);
@@ -1100,6 +1104,30 @@ function files_list(usage, gameid) {
 
     //GlkOte.log('### files_list found ' + ls.length + ' files.');
     return ls;
+}
+
+/* Default localization strings (English).
+   Note that keys are namespaced. A given map may be shared between
+   GlkOte, Dialog, Quixe, etc. */
+const localization_basemap = {
+    dialog_cancel: 'Cancel',
+    dialog_load: 'Load',
+    dialog_save: 'Save',
+    dialog_edit: 'Edit',
+    dialog_display: 'Display',
+    dialog_delete: 'Delete',
+};
+
+/* Localize a key using the provided localization map or the default
+   value. */
+function localize(key) {
+    let val = localization_map[key];
+    if (val)
+        return val;
+    val = localization_basemap[key];
+    if (val)
+        return val;
+    return key;
 }
 
 /* Convert a date object to a (short) string.
