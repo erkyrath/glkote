@@ -457,8 +457,8 @@ function evhan_accept_save_button(ev) {
            label to "Replace"; if the user really meant it, we'll wind up back
            in this event handler. */
         confirming = true;
-        set_caption('You already have a ' + cur_usage_name + ' "' 
-            + dirent.filename + '". Do you want to replace it?', false);
+        let val = localize('dialog_confirmreplace');
+        set_caption(val.replace('%1', cur_usage_name).replace('%2', dirent.filename), false);
         fel.prop('disabled', true);
         var butel = $('#'+dialog_el_id+'_accept');
         butel.text(localize('dialog_replace'));
@@ -1124,6 +1124,7 @@ const localization_basemap = {
 
     /* Labels... */
     dialog_namethis: 'Name this %1.',
+    dialog_confirmreplace: 'You already have a %1 "%2". Do you want to replace it?',
     dialog_cookiewarning: 'Warning: data may be erased by clearing cookies or browser privacy policies.',
 };
 
