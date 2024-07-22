@@ -825,12 +825,12 @@ function evhan_storage_changed(ev) {
     }
     else {
         if (ls.length == 0) {
-            set_caption('You have no ' + cur_usage_names + ' for this game.', true);
+            set_caption(localize('dialog_nousagefiles').replace('%1', cur_usage_names), true);
             el = $('#'+dialog_el_id+'_accept');
             el.prop('disabled', true);
         }
         else {
-            set_caption('Select a ' + cur_usage_name + ' to load.', true);
+            set_caption(localize('dialog_selectafile').replace('%1', cur_usage_name), true);
             el = $('#'+dialog_el_id+'_accept');
             el.prop('disabled', false);
         }
@@ -1124,6 +1124,8 @@ const localization_basemap = {
     dialog_displayingcontents: 'Displaying file contents...',
     dialog_usesaveas: 'Use "Save As" option in your browser to download this link.',
     dialog_nostoredfiles: 'You have no stored files. Press Done to continue.',
+    dialog_nousagefiles: 'You have no %1 for this game.',
+    dialog_selectafile: 'Select a %1 to load.',
 
     /* Usages (singular and plural)... */
     dialog_usage_data: 'data file',
