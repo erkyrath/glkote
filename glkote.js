@@ -51,6 +51,7 @@ let is_inited = false;
 let game_interface = null;
 let dom_context = undefined;
 let dom_prefix = '';
+let localization_map = {};
 let windowport_id = 'windowport';
 let gameport_id = 'gameport';
 let errorpane_id = 'errorpane';
@@ -184,6 +185,11 @@ function glkote_init(iface) {
 
     /* Map mapping window ID (strings) to window description objects. */
     windowdic = new Map();
+
+    /* Get the localization map, if provided.
+       (Despite the name, this is a plain object, not a Map. Sorry.) */
+    if (iface.localize)
+        localization_map = iface.localize;
 
     /* Set the top-level DOM element ids, if provided. */
     if (iface.dom_prefix)
@@ -750,7 +756,7 @@ function glkote_update(arg) {
                     if (!moreel.length) {
                         moreel = $('<div>',
                                    { id: dom_prefix+'win'+win.id+'_moreprompt', 'class': 'MorePrompt' } );
-                        moreel.append('More');
+                        moreel.append(localize('glkote_more'));
                         /* 20 pixels is a cheap approximation of a scrollbar-width. */
                         const morex = win.coords.right + approx_scroll_width;
                         const morey = win.coords.bottom;
@@ -2225,6 +2231,26 @@ function send_response(type, win, val, val2) {
 
 /* ---------------------------------------------- */
 
+/* Default localization strings (English).
+   Note that keys are namespaced. A given map may be shared between
+   GlkOte, Dialog, Quixe, etc. */
+const localization_basemap = {
+    glkote_more: 'More',
+    glkote_taphere: 'Tap here to type',
+};
+
+/* Localize a key using the provided localization map or the default
+   value. */
+function localize(key) {
+    let val = localization_map[key];
+    if (val)
+        return val;
+    val = localization_basemap[key];
+    if (val)
+        return val;
+    return key;
+}
+    
 /* Take apart the query string of the current URL, and turn it into
    an object map.
    (Adapted from querystring.js by Adam Vandenberg.)
