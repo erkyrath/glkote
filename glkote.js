@@ -349,10 +349,14 @@ function glkote_init(iface) {
     
     /* If Dialog exists but has not yet been inited, we should init it. */
     if (Dialog && !Dialog.inited()) {
-        /* Default config object for initing the Dialog library. It only cares about two fields: GlkOte and dom_prefix. (We pass along dialog_dom_prefix as dom_prefix, if supplied.) */
+        /* Default config object for initing the Dialog library. It only cares about two fields: GlkOte and dom_prefix.
+           We pass along dialog_dom_prefix (as dom_prefix) and localize, if supplied. */
         const dialogiface = { GlkOte:this };
         if (iface.dialog_dom_prefix) {
             dialogiface.dom_prefix = iface.dialog_dom_prefix;
+        }
+        if (iface.localize) {
+            dialogiface.localize = iface.localize;
         }
 
         /* We might have a sync or async init call! (ElectroFS uses the async style.) */
