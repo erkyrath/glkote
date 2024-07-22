@@ -756,7 +756,7 @@ function glkote_update(arg) {
                     if (!moreel.length) {
                         moreel = $('<div>',
                                    { id: dom_prefix+'win'+win.id+'_moreprompt', 'class': 'MorePrompt' } );
-                        moreel.append(localize('glkote_more'));
+                        moreel.text(localize('glkote_more'));
                         /* 20 pixels is a cheap approximation of a scrollbar-width. */
                         const morex = win.coords.right + approx_scroll_width;
                         const morey = win.coords.bottom;
