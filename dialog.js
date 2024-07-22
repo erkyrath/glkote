@@ -701,7 +701,7 @@ function evhan_storage_changed(ev) {
           var linkel = $('<a>', { 'href': 'data:application/octet-stream;base64,'+b64dat, 'target': '_blank', 'download': 'data' });
           linkel.text(editing_dirent.filename);
           bodyel.append(linkel);
-          set_caption('Use "Save As" option in your browser to download this link.', true);
+          set_caption(localize('dialog_usesaveas'), true);
         }
 
         return false;
@@ -1122,6 +1122,7 @@ const localization_basemap = {
     dialog_cookiewarning: 'Warning: data may be erased by clearing cookies or browser privacy policies.',
     dialog_allvisible: 'All stored files are now visible. You may delete them, and display files containing text. Press Done when finished.',
     dialog_displayingcontents: 'Displaying file contents...',
+    dialog_usesaveas: 'Use "Save As" option in your browser to download this link.',
 
     /* Usages (singular and plural)... */
     dialog_usage_data: 'data file',
