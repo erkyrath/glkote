@@ -206,7 +206,7 @@ function dialog_open(tosave, usage, gameid, callback) {
 
         /* This was spurred by the Safari seven-day expiration policy (March 2020), but the general fragility of local storage has been a bother for years. */
         row = $('<div>', { id: dialog_el_id+'_warning', 'class': 'DiaWarning' });
-        row.text('Warning: data may be erased by clearing cookies or browser privacy policies.');
+        row.text(localize('dialog_cookiewarning'));
         form.append(row);
     }
 
@@ -1124,6 +1124,7 @@ const localization_basemap = {
 
     /* Labels... */
     dialog_namethis: 'Name this %1.',
+    dialog_cookiewarning: 'Warning: data may be erased by clearing cookies or browser privacy policies.',
 };
 
 /* Localize a key using the provided localization map or the default
