@@ -1474,7 +1474,7 @@ function accept_inputset(arg) {
                 if (maxlen < 3)
                     inputel.attr('placeholder', '\u2316');
                 else
-                    inputel.attr('placeholder', 'Tap here to type');
+                    inputel.attr('placeholder', localize('glkote_taphere'));
             }
             inputel.attr({
                 'aria-live': 'off',
