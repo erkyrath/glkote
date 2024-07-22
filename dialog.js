@@ -461,7 +461,7 @@ function evhan_accept_save_button(ev) {
             + dirent.filename + '". Do you want to replace it?', false);
         fel.prop('disabled', true);
         var butel = $('#'+dialog_el_id+'_accept');
-        butel.text('Replace');
+        butel.text(localize('dialog_replace'));
         return false;
     }
 
@@ -495,7 +495,7 @@ function evhan_edit_button(ev) {
             fel.prop('disabled', false);
             var butel = $('#'+dialog_el_id+'_accept');
             butel.prop('disabled', false);
-            butel.text('Save');
+            butel.text(localize('dialog_save'));
         }
 
         var fel = $('#'+dialog_el_id+'_input');
@@ -504,7 +504,7 @@ function evhan_edit_button(ev) {
         }
 
         var butel = $('#'+dialog_el_id+'_edit');
-        butel.text('Done');
+        butel.text(localize('dialog_done'));
 
         butel = $('#'+dialog_el_id+'_delete');
         butel.show();
@@ -526,7 +526,7 @@ function evhan_edit_button(ev) {
         }
 
         var butel = $('#'+dialog_el_id+'_edit');
-        butel.text('Edit');
+        butel.text(localize('dialog_edit'));
 
         butel = $('#'+dialog_el_id+'_delete');
         butel.hide();
@@ -546,7 +546,7 @@ function evhan_edit_button(ev) {
         $('#'+dialog_el_id+'_buttonrow').show();
 
         var butel = $('#'+dialog_el_id+'_edit');
-        butel.text('Done');
+        butel.text(localize('dialog_done'));
 
         evhan_storage_changed();
         return false;
@@ -603,7 +603,7 @@ function evhan_display_button(ev) {
     $('#'+dialog_el_id+'_buttonrow').hide();
 
     var butel = $('#'+dialog_el_id+'_edit');
-    butel.text('Close');
+    butel.text(localize('dialog_close'));
 
     editing_dirent = file.dirent;
     /* Force reload of display */
@@ -629,7 +629,7 @@ function evhan_cancel_button(ev) {
         fel.prop('disabled', false);
         var butel = $('#'+dialog_el_id+'_accept');
         butel.prop('disabled', false);
-        butel.text('Save');
+        butel.text(localize('dialog_save'));
         return false;
     }
 
@@ -675,7 +675,7 @@ function evhan_storage_changed(ev) {
             editing_dirent = null;
             $('#'+dialog_el_id+'_buttonrow').show();
             butel = $('#'+dialog_el_id+'_edit');
-            butel.text('Done');
+            butel.text(localize('dialog_done'));
         }
     }
 
@@ -1111,11 +1111,14 @@ function files_list(usage, gameid) {
    GlkOte, Dialog, Quixe, etc. */
 const localization_basemap = {
     dialog_cancel: 'Cancel',
-    dialog_load: 'Load',
-    dialog_save: 'Save',
+    dialog_close: 'Close',
+    dialog_done: 'Done',
     dialog_edit: 'Edit',
-    dialog_display: 'Display',
     dialog_delete: 'Delete',
+    dialog_display: 'Display',
+    dialog_load: 'Load',
+    dialog_replace: 'Replace',
+    dialog_save: 'Save',
 };
 
 /* Localize a key using the provided localization map or the default
