@@ -731,7 +731,7 @@ function evhan_storage_changed(ev) {
             butel.prop('disabled', true);
             butel = $('#'+dialog_el_id+'_display');
             butel.prop('disabled', true);
-            set_caption('You have no stored files. Press Done to continue.', true);
+            set_caption(localize('dialog_nostoredfiles'), true);
             return false;
         }
 
@@ -1123,6 +1123,7 @@ const localization_basemap = {
     dialog_allvisible: 'All stored files are now visible. You may delete them, and display files containing text. Press Done when finished.',
     dialog_displayingcontents: 'Displaying file contents...',
     dialog_usesaveas: 'Use "Save As" option in your browser to download this link.',
+    dialog_nostoredfiles: 'You have no stored files. Press Done to continue.',
 
     /* Usages (singular and plural)... */
     dialog_usage_data: 'data file',
