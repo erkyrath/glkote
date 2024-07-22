@@ -692,7 +692,7 @@ function evhan_storage_changed(ev) {
           var textel = $('<pre>', { 'class': 'DiaDisplayText' });
           textel.text(dat);
           bodyel.append(textel);
-          set_caption('Displaying file contents...', true);
+          set_caption(localize('dialog_displayingcontents'), true);
         }
         else {
           var b64dat = window.btoa(dat);
@@ -779,7 +779,7 @@ function evhan_storage_changed(ev) {
         selel.on('change', evhan_select_change_editing);
         evhan_select_change_editing();
 
-        set_caption('All stored files are now visible. You may delete them, and display files containing text. Press Done when finished.', true);
+        set_caption(localize('dialog_allvisible'), true);
         return false;
     }
 
@@ -1120,6 +1120,8 @@ const localization_basemap = {
     dialog_namethis: 'Name this %1.',
     dialog_confirmreplace: 'You already have a %1 "%2". Do you want to replace it?',
     dialog_cookiewarning: 'Warning: data may be erased by clearing cookies or browser privacy policies.',
+    dialog_allvisible: 'All stored files are now visible. You may delete them, and display files containing text. Press Done when finished.',
+    dialog_displayingcontents: 'Displaying file contents...',
 
     /* Usages (singular and plural)... */
     dialog_usage_data: 'data file',
