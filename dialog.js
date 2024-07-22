@@ -824,7 +824,8 @@ function evhan_storage_changed(ev) {
     }
 
     if (will_save) {
-        set_caption('Name this ' + cur_usage_name + '.', true);
+        let val = localize('dialog_namethis');
+        set_caption(val.replace('%1', cur_usage_name), true);
         el = $('#'+dialog_el_id+'_accept');
         el.prop('disabled', false);
     }
@@ -1110,6 +1111,7 @@ function files_list(usage, gameid) {
    Note that keys are namespaced. A given map may be shared between
    GlkOte, Dialog, Quixe, etc. */
 const localization_basemap = {
+    /* Buttons... */
     dialog_cancel: 'Cancel',
     dialog_close: 'Close',
     dialog_done: 'Done',
@@ -1119,6 +1121,9 @@ const localization_basemap = {
     dialog_load: 'Load',
     dialog_replace: 'Replace',
     dialog_save: 'Save',
+
+    /* Labels... */
+    dialog_namethis: 'Name this %1.',
 };
 
 /* Localize a key using the provided localization map or the default
