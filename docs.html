@@ -1370,6 +1370,27 @@ See "<a href="#extlinks">External hyperlinks</a>".
 <p>
 
 <pre class="Def">
+Game.localize
+</pre>
+<p>
+
+If <code>localize</code> is set, it will be used to provide values for GlkOte's fixed (English) strings. The default values are:
+<p>
+
+<pre class="Sample">
+{ glkote_more: "More",
+  glkote_taphere: "Tap here to type",
+}
+</pre>
+<p>
+
+You may replace any or all of these.
+<p>
+
+Note that dialog.js has many more localizable strings, which may be provided in the same <code>localize</code> object. See that library's source code for a list.
+<p>
+
+<pre class="Def">
 Game.recording_url, Game.recording_handler,
 Game.recording_format, Game.recording_label
 </pre>
