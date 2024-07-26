@@ -220,11 +220,16 @@ function glkote_init(iface) {
     current_devpixelratio = window.devicePixelRatio || 1;
 
     /* Record the original top and bottom margins (from window-edge) of
-       the gameport. This will be needed for mobile keyboard resizing. */
+       the gameport. Also of the element that gameport is relative to.
+       These will be needed for mobile keyboard resizing. */
     const gameport = $('#'+gameport_id, dom_context);
+    const gameparent = gameport.offsetParent();
     orig_gameport_margins = {
         top: gameport.offset().top,
         bottom: $(window).height() - (gameport.offset().top + gameport.outerHeight()),
+        parenttop: gameparent.offset().top,
+        /* We won't need parentbottom. If we did, we'd have to be careful
+           of the case where gameparent is <html>. */
     };
 
     /* We can get callbacks on any *boolean* change in the resolution level.
@@ -2512,6 +2517,7 @@ function evhan_viewport_resize() {
     let newtop = ($(window).height() - current_viewportheight);
     if (newtop < orig_gameport_margins.top)
         newtop = orig_gameport_margins.top;
+    const newreltop = newtop - orig_gameport_margins.parenttop;
     const newheight = $(window).height() - (newtop + orig_gameport_margins.bottom);
 
     /* Do not react to tiny height changes... */
@@ -2519,7 +2525,7 @@ function evhan_viewport_resize() {
         return;
     }
 
-    gameport.css('top', newtop+'px');
+    gameport.css('top', newreltop+'px');
     gameport.outerHeight(newheight);
 
     /* The gameport size change triggers the resize sensor, which takes
