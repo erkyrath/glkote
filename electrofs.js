@@ -34,6 +34,7 @@ var inited = false;
 var userpath = null;
 var temppath = null;
 var extfilepath = null;
+var localization_map = {};
 var GlkOte = null; /* imported API object -- for GlkOte.log */
 
 /* Constants -- same as in glkapi.js. */
@@ -103,6 +104,21 @@ function dialog_get_library(val) {
     }
     /* Unrecognized library name. */
     return null;
+}
+
+const localization_basemap = {
+};
+    
+/* Localize a key using the provided localization map or the default
+   value. */
+function localize(key) {
+    let val = localization_map[key];
+    if (val)
+        return val;
+    val = localization_basemap[key];
+    if (val)
+        return val;
+    return key;
 }
     
 /* Construct a file-filter list for a given usage type. These lists are
