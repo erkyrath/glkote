@@ -70,6 +70,10 @@ function init_async(iface, callback)
         throw new Error('ElectroFS: no GlkOte interface!');
     }
     
+    if (iface && iface.localize) {
+        localization_map = iface.localize;
+    }
+    
     electron.ipcRenderer.invoke('get_app_paths').then(function(obj) {
         userpath = obj.userData;
         temppath = obj.temp;
@@ -107,6 +111,10 @@ function dialog_get_library(val) {
 }
 
 const localization_basemap = {
+    electrofs_usage_data: 'Glk Data File',
+    electrofs_usage_save: 'Glk Save File',
+    electrofs_usage_transcript: 'Transcript File',
+    electrofs_usage_command: 'Command File',
 };
     
 /* Localize a key using the provided localization map or the default
@@ -128,13 +136,13 @@ function filters_for_usage(val)
 {
     switch (val) {
     case 'data': 
-        return [ { name: 'Glk Data File', extensions: ['glkdata'] } ];
+        return [ { name: localize('electrofs_usage_data'), extensions: ['glkdata'] } ];
     case 'save': 
-        return [ { name: 'Glk Save File', extensions: ['glksave', 'sav'] } ];
+        return [ { name: localize('electrofs_usage_save'), extensions: ['glksave', 'sav'] } ];
     case 'transcript': 
-        return [ { name: 'Transcript File', extensions: ['txt'] } ];
+        return [ { name: localize('electrofs_usage_transcript'), extensions: ['txt'] } ];
     case 'command': 
-        return [ { name: 'Command File', extensions: ['txt'] } ];
+        return [ { name: localize('electrofs_usage_command'), extensions: ['txt'] } ];
     default:
         return [];
     }
