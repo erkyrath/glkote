@@ -1050,19 +1050,19 @@ function accept_one_window(arg) {
         }
     }
 
-    /* The trick is that left/right/top/bottom are measured to the outside
-       of the border, but width/height are measured from the inside of the
-       border. (Measured by the browser's DOM methods, I mean.) */
-    /* This method works in everything but IE. */
+    /* We used to set the "right" and "bottom" CSS values in styledic,
+       but that led to unpleasant (albeit transient) window-squashing
+       during resize. Using outerWidth()/outerHeight() works better. */
     const right = current_metrics.width - (arg.left + arg.width);
     const bottom = current_metrics.height - (arg.top + arg.height);
-    const styledic = { left: arg.left+'px', top: arg.top+'px',
-                       right: right+'px', bottom: bottom+'px' };
+    const styledic = { left: arg.left+'px', top: arg.top+'px' };
     win.coords.left = arg.left;
     win.coords.top = arg.top;
     win.coords.right = right;
     win.coords.bottom = bottom;
     frameel.css(styledic);
+    frameel.outerWidth(arg.width);
+    frameel.outerHeight(arg.height);
 }
 
 /* Handle closing one window. */
