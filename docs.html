@@ -1409,9 +1409,12 @@ By default, the sent object (or <code>recording_handler</code> argument) looks l
   "output": {<em>output update object; <a href="#output">see above</a></em>},
   "sessionId": "<em>string of digits; identifies game session</em>",
   "label": "<em>the recording_label parameter, or the game title or URL</em>",
-  "timestamp": <em>Unix timestamp when input received</em>,
-  "outtimestamp": <em>Unix timestamp when output generated</em> }
+  "timestamp": <em>timestamp when input received</em>,
+  "outtimestamp": <em>timestamp when output generated</em> }
 </pre>
+<p>
+
+Timestamps are always from the Unix epoch in milliseconds. (E.g., the result of Javascript `Date.getTime()`.)
 <p>
 
 (See also "<a href="#glktra">The .glktra File Format</a>", below.)
@@ -1891,8 +1894,8 @@ The obvious way to do this is to leverage the recording format. (Indeed, Lectrot
   "output": {<em>output update object; <a href="#output">see above</a></em>},
   "sessionId": "<em>string of digits; identifies game session</em>",
   "label": "<em>the recording_label parameter, or the game title or URL</em>",
-  "timestamp": <em>Unix timestamp when input received</em>,
-  "outtimestamp": <em>Unix timestamp when output generated</em> }
+  "timestamp": <em>timestamp when input received</em>,
+  "outtimestamp": <em>timestamp when output generated</em> }
 </pre>
 <p>
 
@@ -1906,7 +1909,7 @@ The <em>first</em> stanza of the file may (optionally) be a metadata stanza:
 <p>
 
 <pre class="Sample">
-{ "timestamp": <em>Unix timestamp when transcript began</em>,
+{ "timestamp": <em>timestamp when transcript began</em>,
   "metadata": {
     "title": "Adventure",
     "author": "Crowther and Woods",
