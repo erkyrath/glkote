@@ -179,7 +179,8 @@ Commons Attribution-Noncommercial-ShareAlike 4.0 International License</a>.
   <li><a href="#cssinput">The input field</a>
   <li><a href="#cssspacing">Spacing, borders, and padding</a>
 </ul>
-<li><a href="#multiples">Multiple GlkOte instances</a>
+<li><a href="#multiples">Multiple GlkOte Instances</a>
+<li><a href="#glktra">The .glktra File Format</a>
 <li><a href="#version">GlkOte Version History</a>
 </ul>
 
@@ -374,7 +375,7 @@ Game = {
 </pre>
 <p>
 
-To use the GlkOte library, first you need a library instance. Since you have included the <code>glkote.js</code> script, you have an instance available, called <code>GlkOte</code> (or <code>window.GlkOte</code>). (It is possible to create more instances, but this requires extra effort, so we won't get into it now. See "<a href="#multiples">Multiple GlkOte instances</a>", below.)
+To use the GlkOte library, first you need a library instance. Since you have included the <code>glkote.js</code> script, you have an instance available, called <code>GlkOte</code> (or <code>window.GlkOte</code>). (It is possible to create more instances, but this requires extra effort, so we won't get into it now. See "<a href="#multiples">Multiple GlkOte Instances</a>", below.)
 <p>
 
 Next, you need a function, a global game object, and a global <code>generation</code> variable. The function accepts input from the library (which is to say, from the user) and generates output in return. You pass this function to the GlkOte library by storing it in the global <code>Game</code> object.
@@ -1405,12 +1406,15 @@ By default, the sent object (or <code>recording_handler</code> argument) looks l
 <pre class="Sample">
 { "format": "glkote",
   "input": {<em>input event object; <a href="#input">see above</a></em>},
-  "output": {<em>output update object; <a href="#input">see above</a></em>},
+  "output": {<em>output update object; <a href="#output">see above</a></em>},
   "sessionId": "<em>string of digits; identifies game session</em>",
   "label": "<em>the recording_label parameter, or the game title or URL</em>",
   "timestamp": <em>Unix timestamp when input received</em>,
   "outtimestamp": <em>Unix timestamp when output generated</em> }
 </pre>
+<p>
+
+(See also "<a href="#glktra">The .glktra File Format</a>", below.)
 <p>
 
 If <code>recording_format</code> is set to <code>"simple"</code>, the <code>"input"</code> and <code>"output"</code> fields will be replaced with plain strings (<code>"output"</code> will contain newlines). In this format, style information is lost, as is the distinction between line and character input, etc.
@@ -1810,7 +1814,7 @@ By the way, in a buffer window, paragraphs of text are separated by blank lines 
 (If you think that's ugly, don't ask what I had to do to prevent runs of spaces from collapsing.)
 <p>
 
-<h2><a name="multiples">Multiple GlkOte instances</a></h2>
+<h2><a name="multiples">Multiple GlkOte Instances</a></h2>
 
 As of release 2.3.0, it is possible to host two separate GlkOte contexts in the same DOM (HTML page). It requires a bit of dancing, however. See
 <a href="sample-demo-double.html">this demo</a>.
@@ -1871,6 +1875,51 @@ SampleDemoBeta.game_init(GlkOteB, GameB);
 </pre>
 
 The <code>game_init()</code> function takes care of calling <code>GlkOte.init()</code>. This launches the games, so at this point everything is off and running.
+<p>
+
+<h2><a name="glktra">The .glktra File Format</a></h2>
+
+It is often convenient to serialize a game session in static form. The <a href="https://github.com/erkyrath/lectrote">Lectrote</a> interpreter does this for all game sessions, for example.
+<p>
+
+The obvious way to do this is to leverage the recording format. (Indeed, Lectrote implements this by setting up an internal <code>recording_handler</code> function.) Thus, the serialization format consists of a sequence of JSON stanzas, exactly as described <a href="#gameinterface">above</a>:
+<p>
+
+<pre class="Sample">
+{ "format": "glkote",
+  "input": {<em>input event object; <a href="#input">see above</a></em>},
+  "output": {<em>output update object; <a href="#output">see above</a></em>},
+  "sessionId": "<em>string of digits; identifies game session</em>",
+  "label": "<em>the recording_label parameter, or the game title or URL</em>",
+  "timestamp": <em>Unix timestamp when input received</em>,
+  "outtimestamp": <em>Unix timestamp when output generated</em> }
+</pre>
+<p>
+
+We use <code>.glktra</code> as the conventional filename suffix for this format. Note that a <code>.glktra</code> file is <em>not</em> a valid JSON document; it's concatenated JSON documents.
+<p>
+
+To make parsing easier, we guarantee (and require) that every stanza ends with a newline. Of course JSON permits whitespace, including newlines, within a stanza; that doesn't cause any problems. But there must be at least one newline <em>between</em> stanzas (and at the end of the file).
+<p>
+
+The first stanza of the file may (optionally) be a metadata stanza:
+<p>
+
+<pre class="Sample">
+{ "timestamp": <em>Unix timestamp when transcript began</em>,
+  "metadata": {
+    "title": "Adventure",
+    "author": "Crowther and Woods",
+    ...
+  }
+}
+</pre>
+<p>
+
+The fields of the <code>metadata</code> may include (but are not limited to) the fields in the <code>bibliographic</code> section of an iFiction record. See the <a href="https://babel.ifarchive.org/babel_rev11.html#the-ifiction-format">Babel spec</a> for more info. All fields (and the metadata stanza itself) are optional; this information is provided on a best-effort basis.
+<p>
+
+Note that this metadata stanza is not part of the regular GlkOte spec. The GlkOte library will not send it, and implementations like RemGlk will not accept it. (Probably they should accept and ignore it, for consistency, but this is not yet implemented.)
 <p>
 
 <h2><a name="version">GlkOte Version History</a></h2>
