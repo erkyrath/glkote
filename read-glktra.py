@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+"""read-glktra.py: A simple utility to read a transcript.glktra file
+and write it as plain text to stdout.
+"""
+
 import sys
 import os, os.path
 import optparse
