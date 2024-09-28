@@ -59,7 +59,7 @@ def add_stanza(obj, outfile):
             for dat in obj['output']['content']:
                 if 'text' in dat:
                     if 'clear' in dat:
-                        outfile.write('- '*36 + '-\n')
+                        outfile.write('\n' + '- '*36 + '-\n')
                     if 'text' in dat:
                         add_stanza_linedata(dat['text'], outfile)
 
