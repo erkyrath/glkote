@@ -19,6 +19,18 @@ if not args:
     sys.exit(-1)
 
 def stanza_reader(path):
+    """ Read a file as a sequence of newline-separated JSON stanzas.
+
+    A partial stanza at the end will be silently ignored.
+
+    It's okay if the JSON has more whitespace or newlines. You just need
+    at least one newline between stanzas.
+
+    If non-JSON occurs at the start or between stanzas, this will throw
+    an exception. Bad formatting inside a stanza will silently end the
+    parsing (after reading in the entire rest of the file). No, that's not
+    ideal.
+    """
     with open(path, 'r') as fl:
         buf = ''
         while True:
