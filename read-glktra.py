@@ -103,7 +103,12 @@ def add_stanza_linedata(text, outfile):
             rdesc = content[sx]
             if type(rdesc) is not str:
                 if 'special' in rdesc:
-                    # skip specials for now
+                    if rdesc['special'] == 'image':
+                        if 'alttext' in rdesc:
+                            val = '[image: %s]' % (rdesc.get('alttext'),)
+                        else:
+                            val = '[image %s]' % (rdesc.get('image'),)
+                        outfile.write(val)
                     sx += 1
                     continue
                 rstyle = rdesc.get('style')
