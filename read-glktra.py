@@ -15,6 +15,9 @@ popt = optparse.OptionParser()
 popt.add_option('--timestamps',
                 action='store_true', dest='timestamps',
                 help='Include timestamps in output')
+popt.add_option('--exectime',
+                action='store_true', dest='exectimes',
+                help='Include execution times in output')
 
 (opts, args) = popt.parse_args()
 
@@ -80,6 +83,9 @@ def add_stanza(obj, outfile):
             tup = time.localtime(float(obj['timestamp'])/1000)
             val = time.strftime('%H:%M:%S, %b %d %Y', tup)
             outfile.write('[%s] ' % (val,))
+        if opts.exectimes:
+            val = int(obj['outtimestamp']) - int(obj['timestamp'])
+            outfile.write('[%d ms] ' % (val,))
         if 'content' in obj['output']:
             for dat in obj['output']['content']:
                 if 'text' in dat:
