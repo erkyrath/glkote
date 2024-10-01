@@ -8,8 +8,13 @@ import sys
 import os, os.path
 import optparse
 import json
+import time
 
 popt = optparse.OptionParser()
+
+popt.add_option('--timestamps',
+                action='store_true', dest='timestamps',
+                help='Include timestamps in output')
 
 (opts, args) = popt.parse_args()
 
@@ -71,6 +76,10 @@ def add_stanza(obj, outfile):
         if anylines:
             outfile.write('--'*36 + '-\n')
     if 'output' in obj:
+        if opts.timestamps:
+            tup = time.localtime(float(obj['timestamp'])/1000)
+            val = time.strftime('%H:%M:%S, %b %d %Y', tup)
+            outfile.write('[%s] ' % (val,))
         if 'content' in obj['output']:
             for dat in obj['output']['content']:
                 if 'text' in dat:
