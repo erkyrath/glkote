@@ -2945,7 +2945,7 @@ function evhan_input_char_input(ev) {
    Divert the up and down arrow keys to scroll through the command history
    for this window.
    
-   Also divert the page-up and page-down keys to scroll the pane.
+   Also divert the page-up/page-down/home/end keys to scroll the pane.
    (Chrome/Safari has this behavior as a default, but Firefox doesn't,
    so we don't rely on it.)
 */
@@ -2978,19 +2978,27 @@ function evhan_input_keydown(ev) {
 
         return false;
     }
-    else if (keycode == key_codes.KEY_PAGEDOWN || keycode == key_codes.KEY_PAGEUP) {
+    else if (keycode == key_codes.KEY_PAGEDOWN || keycode == key_codes.KEY_PAGEUP || keycode == key_codes.KEY_HOME || keycode == key_codes.KEY_END) {
         const winid = $(this).data('winid');
         const win = windowdic.get(winid);
         if (win) {
             const frameel = win.frameel;
             const frameheight = frameel.outerHeight();
-            let offset = 0;
-            // Scroll by the window height minus one line.
-            if (keycode == key_codes.KEY_PAGEDOWN)
-                offset = (frameheight - current_metrics.buffercharheight);
-            else
-                offset = -(frameheight - current_metrics.buffercharheight);
-            frameel.scrollTop(frameel.scrollTop()+offset);
+            let newval = 0;
+            if (keycode == key_codes.KEY_PAGEDOWN) {
+                // Scroll by the window height minus one line.
+                newval = frameel.scrollTop() + (frameheight - current_metrics.buffercharheight);
+            }
+            else if (keycode == key_codes.KEY_PAGEUP) {
+                newval = frameel.scrollTop() - (frameheight - current_metrics.buffercharheight);
+            }
+            else if (keycode == key_codes.KEY_HOME) {
+                newval = 0;
+            }
+            else {
+                newval = frameel.get(0).scrollHeight;
+            }
+            frameel.scrollTop(newval);
             return false;
         }
     }
