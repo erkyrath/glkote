@@ -2645,12 +2645,6 @@ function evhan_doc_keypress(ev) {
     if (windows_paging_count) {
         const win = windowdic.get(last_known_paging);
         if (win) {
-            if (!((keycode >= 32 && keycode <= 126) || keycode == 13)) {
-                /* If the keystroke is not a printable character (or Enter),
-                   we return and let the default behavior happen. That lets
-                   pageup/pagedown/home/end work normally. */
-                return;
-            }
             ev.preventDefault();
             const frameel = win.frameel;
             /* Scroll the unseen content to the top. */
