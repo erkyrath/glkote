@@ -2616,7 +2616,7 @@ function evhan_doc_pixelreschange() {
     }
 }
 
-/* Event handler: keypress events on input fields.
+/* Event handler: keypress events on the whole document.
 
    Move the input focus to whichever window most recently had it.
 */
