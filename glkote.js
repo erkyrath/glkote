@@ -444,7 +444,10 @@ function measure_window() {
        We subtract one pixel because the width()/height() methods round
        to the nearest integer (not the floor). If they rounded up, the
        game might overflow the actual gameport by a pixel, which could
-       produce nasty spurious scrollbars. */
+       produce nasty spurious scrollbars.
+       (TODO: in jQuery 3, the width()/height() methods do not round.
+       Could upgrade and use those with Math.floor().)
+    */
     metrics.width  = Math.max(0, gameport.width()-1);
     metrics.height = Math.max(0, gameport.height()-1);
 
