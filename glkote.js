@@ -2943,7 +2943,12 @@ function evhan_input_char_input(ev) {
 /* Event handler: keydown events on input fields (line input)
 
    Divert the up and down arrow keys to scroll through the command history
-   for this window. */
+   for this window.
+   
+   Also divert the page-up and page-down keys to scroll the pane.
+   (Chrome/Safari has this behavior as a default, but Firefox doesn't,
+   so we don't rely on it.)
+*/
 function evhan_input_keydown(ev) {
     let keycode = 0;
     if (ev) keycode = ev.keyCode; //### ev.which?
@@ -2972,6 +2977,22 @@ function evhan_input_keydown(ev) {
         }
 
         return false;
+    }
+    else if (keycode == key_codes.KEY_PAGEDOWN || keycode == key_codes.KEY_PAGEUP) {
+        const winid = $(this).data('winid');
+        const win = windowdic.get(winid);
+        if (win) {
+            const frameel = win.frameel;
+            const frameheight = frameel.outerHeight();
+            let offset = 0;
+            // Scroll by the window height minus one line.
+            if (keycode == key_codes.KEY_PAGEDOWN)
+                offset = (frameheight - current_metrics.buffercharheight);
+            else
+                offset = -(frameheight - current_metrics.buffercharheight);
+            frameel.scrollTop(frameel.scrollTop()+offset);
+            return false;
+        }
     }
     else if (terminator_key_values[keycode]) {
         const winid = $(this).data('winid');
