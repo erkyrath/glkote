@@ -305,8 +305,17 @@ function glkote_init(iface) {
         }
         else {
             /* Set up the recording-state object. */
+            let sessionid = null;
+            try {
+                /* UUID-style */
+                sessionid = crypto.randomUUID();
+            }
+            catch (ex) {
+                /* The old way, all numeric digits */
+                sessionid = (new Date().getTime()) + '' + (Math.ceil( Math.random() * 10000 ));
+            }
             recording_state = {
-                sessionId: (new Date().getTime()) + '' + (Math.ceil( Math.random() * 10000 )),
+                sessionId: sessionid,
                 input: null, output: null,
                 timestamp: 0, outtimestamp: 0
             };
