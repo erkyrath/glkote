@@ -1545,9 +1545,9 @@ If this were a grid window, how many rows and columns would it have? (We need to
 
 <pre class="Sample">
 { &lt;see above&gt;..., 
-  gridwidth:  Math.floor((width-metrics.gridmarginx)
+  gridwidth:  Math.floor((metrics.width-metrics.gridmarginx)
                          / metrics.gridcharwidth),
-  gridheight: Math.floor((height-metrics.gridmarginy)
+  gridheight: Math.floor((metrics.height-metrics.gridmarginy)
                          / metrics.gridcharheight) }
 </pre>
 <p>
@@ -1563,7 +1563,7 @@ To create a window that <em>doesn't</em> stretch the full height of the port, we
   top: metrics.outspacingy,
   width: metrics.width-(2*metrics.outspacingx),
   height: 3*metrics.gridcharheight + metrics.gridmarginy,
-  gridwidth: Math.floor((width-metrics.gridmarginx)
+  gridwidth: Math.floor((metrics.width-metrics.gridmarginx)
                         / metrics.gridcharwidth),
   gridheight: 3 }
 </pre>
@@ -1595,7 +1595,7 @@ With this in hand, we can define the story window:
 </pre>
 <p>
 
-The height value comes straight from the rules mentioned above; the implicit <code>bottom</code> value is <code>metrics.outspacingy</code>
+The height value comes straight from the rules mentioned above; the implicit <code>bottom</code> value is <code>metrics.outspacingy</code>.
 <p>
 
 <h3><a name="layoutwhy">And Why?</a></h3>
