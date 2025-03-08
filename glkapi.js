@@ -463,8 +463,8 @@ function handle_char_input(disprock, input) {
 
     if (input.length == 1) {
         charval = input.charCodeAt(0);
-        if (!win.char_request_uni)
-            charval = charval & 0xFF;
+        if (charval >= 0x100 && !win.char_request_uni)
+            charval = Const.keycode_Unknown;
     }
     else {
         charval = KeystrokeNameMap[input];
