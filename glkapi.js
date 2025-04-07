@@ -5644,19 +5644,19 @@ function glk_image_draw_scaled_ext(win, imgid, val1, val2, width, height, flags)
     var img = { special:'image', image:imgid, 
                 url:info.url, alttext:info.alttext };
 
-    var widthrule = (flags & imagerule_WidthMask);
-    var heightrule = (flags & imagerule_HeightMask);
-    var maxwidth = ((flags & imagerule_WidthWindowMax) != 0);
+    var widthrule = (flags & Const.imagerule_WidthMask);
+    var heightrule = (flags & Const.imagerule_HeightMask);
+    var maxwidth = ((flags & Const.imagerule_WidthWindowMax) != 0);
 
     if (win.type == Const.wintype_Graphics) {
         /* For graphics windows, we can (and should) calculate ratios
            now. */
-        if (widthrule == imagerule_WidthRatio) {
-            widthrule = imagerule_WidthFixed;
+        if (widthrule == Const.imagerule_WidthRatio) {
+            widthrule = Const.imagerule_WidthFixed;
             width = win.graphwidth * (width / 0x10000);
         }
-        if (heightrule == imagerule_AspectRatio) {
-            heightrule = imagerule_WidthFixed;
+        if (heightrule == Const.imagerule_AspectRatio) {
+            heightrule = Const.imagerule_WidthFixed;
             var aspect = (info.height / info.width);
             height = width * aspect * (height / 0x10000);
         }
@@ -5668,13 +5668,13 @@ function glk_image_draw_scaled_ext(win, imgid, val1, val2, width, height, flags)
     }
     
     switch (widthrule) {
-    case imagerule_WidthOrig:
+    case Const.imagerule_WidthOrig:
         img.width = info.width;
         break;
-    case imagerule_WidthFixed:
+    case Const.imagerule_WidthFixed:
         img.width = width; /* passed in */
         break;
-    case imagerule_WidthRatio:
+    case Const.imagerule_WidthRatio:
         img.widthratio = (width / 0x10000); /* passed in, 16.16 */
         break;
     default:
@@ -5682,13 +5682,13 @@ function glk_image_draw_scaled_ext(win, imgid, val1, val2, width, height, flags)
     }
 
     switch (heightrule) {
-    case imagerule_HeightOrig:
+    case Const.imagerule_HeightOrig:
         img.height = info.height;
         break;
-    case imagerule_HeightFixed:
+    case Const.imagerule_HeightFixed:
         img.height = height; /* passed in */
         break;
-    case imagerule_AspectRatio:
+    case Const.imagerule_AspectRatio:
         img.aspectratio = (height / 0x10000); /* passed in, 16.16 */
         break;
     default:
