@@ -1410,14 +1410,14 @@ var Const = {
     imagealign_MarginRight : 5,
     
     imagerule_WidthOrig : 0x01,
-    imagerule_WidthFixed: 0x02,
-    imagerule_WidthRatio: 0x03,
-    imagerule_WidthMask: 0x03,
+    imagerule_WidthFixed : 0x02,
+    imagerule_WidthRatio : 0x03,
+    imagerule_WidthMask : 0x03,
     imagerule_HeightOrig : 0x04,
-    imagerule_HeightFixed: 0x08,
-    imagerule_AspectRatio: 0x0C,
-    imagerule_HeightMask: 0x0C,
-    imagerule_WidthWindowMax: 0x10
+    imagerule_HeightFixed : 0x08,
+    imagerule_AspectRatio : 0x0C,
+    imagerule_HeightMask : 0x0C,
+    imagerule_WidthWindowMax : 0x10
 };
 
 var KeystrokeNameMap = {
