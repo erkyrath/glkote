@@ -1293,6 +1293,7 @@ var Const = {
     gestalt_Sound2 : 21,
     gestalt_ResourceStream : 22,
     gestalt_GraphicsCharInput : 23,
+    gestalt_DrawImageScale : 24,
 
     keycode_Unknown  : 0xffffffff,
     keycode_Left     : 0xfffffffe,
@@ -4274,6 +4275,7 @@ function glk_gestalt_ext(sel, val, arr) {
         return 1;
 
     case 7: // gestalt_DrawImage
+    case 24: // gestalt_DrawImageScale
         if (val == Const.wintype_TextBuffer)
             return 1;
         if (val == Const.wintype_Graphics && has_canvas)
