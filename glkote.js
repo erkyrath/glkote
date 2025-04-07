@@ -142,8 +142,8 @@ let recording_handler = null;
 let recording_handler_url = null;
 const recording_context = {};
 
-/* An image cache. This maps numbers to Image objects. These are used only
-   for painting in graphics (canvas) windows.
+/* An image cache. This maps numbers or url strings to Image objects.
+   These are used only for painting in graphics (canvas) windows.
 */
 const image_cache = {};
 
@@ -2086,8 +2086,9 @@ function perform_graphics_ops(loadedimg, loadedev) {
                loadedimg already contains the desired image. If it doesn't, we
                check the cache. If that doesn't have it, we have to create a new
                Image and set up the loading callbacks. */
+            const cachekey = (op.url || op.image);
             if (!loadedimg) {
-                const oldimg = image_cache[op.image];
+                const oldimg = image_cache[cachekey];
                 if (oldimg && oldimg.width > 0 && oldimg.height > 0) {
                     loadedimg = oldimg;
                     loadedev = true;
@@ -2095,7 +2096,7 @@ function perform_graphics_ops(loadedimg, loadedev) {
                 else {
                     /* This cached image is broken. I don't know if this can happen,
                        but if it does, drop it. */
-                    delete image_cache[op.image];
+                    delete image_cache[cachekey];
                 }
             }
             if (!loadedimg) {
@@ -2116,7 +2117,7 @@ function perform_graphics_ops(loadedimg, loadedev) {
             /* We were called back with an image. Hopefully it loaded ok. Note that
                for the error callback, loadedev is null. */
             if (loadedev) {
-                image_cache[op.image] = loadedimg;
+                image_cache[cachekey] = loadedimg;
                 ctx.drawImage(loadedimg, op.x, op.y, op.width, op.height);
             }
             loadedev = null;
