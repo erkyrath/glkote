@@ -1407,7 +1407,16 @@ var Const = {
     imagealign_InlineCenter : 3,
     imagealign_MarginLeft : 4,
     imagealign_MarginRight : 5
-
+    
+    imagerule_WidthOrig : 0x01,
+    imagerule_WidthFixed: 0x02,
+    imagerule_WidthRatio: 0x03,
+    imagerule_WidthMask: 0x03,
+    imagerule_HeightOrig : 0x04,
+    imagerule_HeightFixed: 0x08,
+    imagerule_AspectRatio: 0x0C,
+    imagerule_HeightMask: 0x0C,
+    imagerule_WidthWindowMax: 0x10,
 };
 
 var KeystrokeNameMap = {
@@ -5618,6 +5627,94 @@ function glk_image_draw_scaled(win, imgid, val1, val2, width, height) {
     return 0;
 }
 
+function glk_image_draw_scaled_ext(win, imgid, val1, val2, width, height, flags) {
+    if (!win)
+        throw('glk_image_draw_scaled_ext: invalid window');
+
+    if (!Blorb || !Blorb.get_image_info)
+        return 0;
+    var info = Blorb.get_image_info(imgid);
+    if (!info)
+        return 0;
+
+    /* Same as above, except we have more ways to calculate the width and
+       height */
+    var img = { special:'image', image:imgid, 
+                url:info.url, alttext:info.alttext };
+
+    var widthrule = (flags & imagerule_WidthMask);
+    var heightrule = (flags & imagerule_HeightMask);
+    var maxwidth = ((flags & imagerule_WidthWindowMax) != 0);
+
+    //### different for graphics wins actually
+    
+    switch (widthrule) {
+    case imagerule_WidthOrig:
+        img.width = info.width;
+        break;
+    case imagerule_WidthFixed:
+        img.width = width; /* passed in */
+        break;
+    case imagerule_WidthRatio:
+        img.widthratio = (width / 0x10000); /* passed in, 16.16 */
+        break;
+    default:
+        throw('glk_image_draw_scaled_ext: invalid widthrule');
+    }
+
+    switch (heightrule) {
+    case imagerule_HeightOrig:
+        img.height = info.height;
+        break;
+    case imagerule_HeightFixed:
+        img.height = height; /* passed in */
+        break;
+    case imagerule_AspectRatio:
+        img.aspectratio = (height / 0x10000); /* passed in, 16.16 */
+        break;
+    default:
+        throw('glk_image_draw_scaled_ext: invalid heightrule');
+    }
+
+    img.maxwidth = maxwidth;
+    
+    switch (win.type) {
+    case Const.wintype_TextBuffer:
+        var alignment = 'inlineup';
+        switch (val1) {
+            case Const.imagealign_InlineUp:
+                alignment = 'inlineup';
+                break;
+            case Const.imagealign_InlineDown:
+                alignment = 'inlinedown';
+                break;
+            case Const.imagealign_InlineCenter:
+                alignment = 'inlinecenter';
+                break;
+            case Const.imagealign_MarginLeft:
+                alignment = 'marginleft';
+                break;
+            case Const.imagealign_MarginRight:
+                alignment = 'marginright';
+                break;
+        }
+        img.alignment = alignment;
+        if (win.hyperlink)
+            img.hyperlink = win.hyperlink;
+        gli_window_buffer_put_special(win, img);
+        return 1;
+
+    case Const.wintype_Graphics:
+        img.x = val1;
+        img.y = val2;
+        /* width, height already set */
+        win.content.push(img);
+        return 1;
+    }
+
+    return 0;
+}
+
 function glk_window_flow_break(win) {
     if (!win)
         throw('glk_window_flow_break: invalid window');
@@ -6461,6 +6558,7 @@ return {
     glk_image_get_info : glk_image_get_info,
     glk_image_draw : glk_image_draw,
     glk_image_draw_scaled : glk_image_draw_scaled,
+    glk_image_draw_scaled_ext : glk_image_draw_scaled_ext,
     glk_window_flow_break : glk_window_flow_break,
     glk_window_erase_rect : glk_window_erase_rect,
     glk_window_fill_rect : glk_window_fill_rect,
