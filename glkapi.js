@@ -1406,7 +1406,7 @@ var Const = {
     imagealign_InlineDown : 2,
     imagealign_InlineCenter : 3,
     imagealign_MarginLeft : 4,
-    imagealign_MarginRight : 5
+    imagealign_MarginRight : 5,
     
     imagerule_WidthOrig : 0x01,
     imagerule_WidthFixed: 0x02,
@@ -1416,7 +1416,7 @@ var Const = {
     imagerule_HeightFixed: 0x08,
     imagerule_AspectRatio: 0x0C,
     imagerule_HeightMask: 0x0C,
-    imagerule_WidthWindowMax: 0x10,
+    imagerule_WidthWindowMax: 0x10
 };
 
 var KeystrokeNameMap = {
