@@ -5646,7 +5646,24 @@ function glk_image_draw_scaled_ext(win, imgid, val1, val2, width, height, flags)
     var heightrule = (flags & imagerule_HeightMask);
     var maxwidth = ((flags & imagerule_WidthWindowMax) != 0);
 
-    //### different for graphics wins actually
+    if (win.type == Const.wintype_Graphics) {
+        /* For graphics windows, we can (and should) calculate ratios
+           now. */
+        if (widthrule == imagerule_WidthRatio) {
+            widthrule = imagerule_WidthFixed;
+            width = win.graphwidth * (width / 0x10000);
+        }
+        if (heightrule == imagerule_AspectRatio) {
+            heightrule = imagerule_WidthFixed;
+            var aspect = (info.height / info.width);
+            height = width * aspect * (height / 0x10000);
+        }
+        if (maxwidth && width > win.graphwidth) {
+            var aspect = (height / width);
+            width = win.graphwidth;
+            height = width * aspect;
+        }
+    }
     
     switch (widthrule) {
     case imagerule_WidthOrig:
