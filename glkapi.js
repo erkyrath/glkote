@@ -5689,7 +5689,9 @@ function glk_image_draw_scaled_ext(win, imgid, val1, val2, width, height, flags)
         img.height = height; /* passed in */
         break;
     case Const.imagerule_AspectRatio:
-        img.aspectratio = (height / 0x10000); /* passed in, 16.16 */
+        var aspectratio = (height / 0x10000); /* passed in, 16.16 */
+        img.aspectwidth = info.width;
+        img.aspectheight = info.height * aspectratio;
         break;
     default:
         throw('glk_image_draw_scaled_ext: invalid heightrule');
