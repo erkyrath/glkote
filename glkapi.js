@@ -5537,7 +5537,7 @@ function glk_image_draw(win, imgid, val1, val2) {
         return 0;
 
     /* info.url and info.alttext may be undefined, but we copy them if
-       available. */
+       provided. */
     var img = { special:'image', image:imgid, 
                 url:info.url, alttext:info.alttext,
                 width:info.width, height:info.height };
@@ -5648,7 +5648,7 @@ function glk_image_draw_scaled_ext(win, imgid, val1, val2, width, height, flags)
 
     var widthrule = (flags & Const.imagerule_WidthMask);
     var heightrule = (flags & Const.imagerule_HeightMask);
-    var maxwidth = ((flags & Const.imagerule_WidthWindowMax) != 0);
+    var maxwidthflag = ((flags & Const.imagerule_WidthWindowMax) != 0);
 
     if (win.type == Const.wintype_Graphics) {
         /* For graphics windows, we can (and should) calculate ratios
@@ -5699,7 +5699,18 @@ function glk_image_draw_scaled_ext(win, imgid, val1, val2, width, height, flags)
         throw('glk_image_draw_scaled_ext: invalid heightrule');
     }
 
-    img.maxwidth = maxwidth;
+    img.winmaxwidth = maxwidthflag;
+    if (maxwidthflag && widthrule == Const.imagerule_WidthRatio) {
+        /* The width is already scaled to the window width, so this flag
+           is irrelevant. Drop it. But our width is *wider* than the window
+           width, scale down proportionally. */
+        img.maxwidthflag = false;
+        if (img.widthratio > 1.0) {
+            if (img.height !== undefined)
+                img.height = img.height / img.widthratio;
+            img.widthratio = 1.0;
+        }
+    }
     
     switch (win.type) {
     case Const.wintype_TextBuffer:
