@@ -1265,6 +1265,12 @@ function accept_one_content(arg) {
                             }
                             let el = $('<img>', 
                                        { src:imgurl } );
+                            let maxwidthflag = rdesc.winmaxwidth;
+                            if (maxwidthflag === undefined)
+                                maxwidthflag = true;
+                            if (maxwidthflag) {
+                                el.css('max-width', '100%'); //###
+                            }
                             if (rdesc.widthratio === undefined) {
                                 el.attr('width', ''+rdesc.width);
                             }
