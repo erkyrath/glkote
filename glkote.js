@@ -1271,11 +1271,11 @@ function accept_one_content(arg) {
                             else {
                                 el.css('width', percentstr(rdesc.widthratio));
                             }
-                            if (rdesc.aspectratio === undefined) {
+                            if (rdesc.aspectwidth === undefined && rdesc.aspectheight === undefined) {
                                 el.attr('height', ''+rdesc.height);
                             }
                             else {
-                                el.css('aspect-ratio', ratiostr(rdesc.aspectratio));
+                                el.css('aspect-ratio', ratiostr(rdesc.aspectwidth, rdesc.aspectheight));
                             }
                 
                             if (rdesc.alttext)
@@ -1924,10 +1924,13 @@ function percentstr(num) {
     return val+'%';
 }
 
-/* Convert a JS number to a CSS-style ratio. */
-function ratiostr(num) {
-    //### cleaner?
-    return ''+num;
+/* Convert a pair of JS numbers to a CSS-style ratio. Both must be nonzero. */
+function ratiostr(wid, hgt) {
+    if (!wid || !hgt) {
+        console.log('bad value in ratiostr', wid, hgt);
+        return '';
+    }
+    return ''+wid+'/'+hgt;
 }
     
 /* Hide the loading pane (the spinny compass), if it hasn't already been
