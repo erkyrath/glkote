@@ -5536,6 +5536,8 @@ function glk_image_draw(win, imgid, val1, val2) {
     if (!info)
         return 0;
 
+    /* info.url and info.alttext may be undefined, but we copy them if
+       available. */
     var img = { special:'image', image:imgid, 
                 url:info.url, alttext:info.alttext,
                 width:info.width, height:info.height };
