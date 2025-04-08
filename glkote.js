@@ -1264,8 +1264,20 @@ function accept_one_content(arg) {
                                     imgurl = newurl;
                             }
                             let el = $('<img>', 
-                                       { src:imgurl,
-                                         width:''+rdesc.width, height:''+rdesc.height } );
+                                       { src:imgurl } );
+                            if (rdesc.widthratio === undefined) {
+                                el.attr('width', ''+rdesc.width);
+                            }
+                            else {
+                                el.css('width', percentstr(rdesc.widthratio));
+                            }
+                            if (rdesc.aspectratio === undefined) {
+                                el.attr('height', ''+rdesc.height);
+                            }
+                            else {
+                                el.css('aspect-ratio', ratiostr(rdesc.aspectratio));
+                            }
+                
                             if (rdesc.alttext)
                                 el.attr('alt', rdesc.alttext);
                             else
@@ -1898,6 +1910,26 @@ function retry_update() {
     send_response('refresh', null, null);
 }
 
+/* Convert a JS number to a CSS-style percentage. */
+function percentstr(num) {
+    /* Return N*100 to two decimal places. But if it came out as an integer, great. */
+    let val = '' + (num * 100);
+    if (val == 'NaN') {
+        console.log('bad value in percentstr', num);
+        return '';
+    }
+    let pos = val.indexOf('.');
+    if (pos >= 0)
+        val = val.slice(0, pos+4);
+    return val+'%';
+}
+
+/* Convert a JS number to a CSS-style ratio. */
+function ratiostr(num) {
+    //### cleaner?
+    return ''+num;
+}
+    
 /* Hide the loading pane (the spinny compass), if it hasn't already been
    hidden.
 
