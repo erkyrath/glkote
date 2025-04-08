@@ -1278,7 +1278,14 @@ function accept_one_content(arg) {
                                 el.css('width', percentstr(rdesc.widthratio));
                             }
                             if (rdesc.aspectwidth === undefined && rdesc.aspectheight === undefined) {
-                                el.attr('height', ''+rdesc.height);
+                                if (maxwidthflag && rdesc.widthratio === undefined) {
+                                    // Special case: we need to define the height as an aspect ratio, because maxwidthflag means proportional scaling.
+                                    // (Note that maxwidthflag and rdesc.widthratio should not be used together, so we don't have to worry about that case.)
+                                    el.css('aspect-ratio', ratiostr(rdesc.width, rdesc.height));
+                                }
+                                else {
+                                    el.attr('height', ''+rdesc.height);
+                                }
                             }
                             else {
                                 el.css('aspect-ratio', ratiostr(rdesc.aspectwidth, rdesc.aspectheight));
