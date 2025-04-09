@@ -5631,7 +5631,7 @@ function glk_image_draw_scaled(win, imgid, val1, val2, width, height) {
     return 0;
 }
 
-function glk_image_draw_scaled_ext(win, imgid, val1, val2, width, height, flags) {
+function glk_image_draw_scaled_ext(win, imgid, val1, val2, width, height, imagerule, maxwidth) {
     if (!win)
         throw('glk_image_draw_scaled_ext: invalid window');
 
@@ -5646,9 +5646,8 @@ function glk_image_draw_scaled_ext(win, imgid, val1, val2, width, height, flags)
     var img = { special:'image', image:imgid, 
                 url:info.url, alttext:info.alttext };
 
-    var widthrule = (flags & Const.imagerule_WidthMask);
-    var heightrule = (flags & Const.imagerule_HeightMask);
-    var maxwidthflag = ((flags & Const.imagerule_WidthWindowMax) != 0);
+    var widthrule = (imagerule & Const.imagerule_WidthMask);
+    var heightrule = (imagerule & Const.imagerule_HeightMask);
 
     if (win.type == Const.wintype_Graphics) {
         /* For graphics windows, we can (and should) calculate ratios
@@ -5662,9 +5661,9 @@ function glk_image_draw_scaled_ext(win, imgid, val1, val2, width, height, flags)
             var aspect = (info.height / info.width);
             height = width * aspect * (height / 0x10000);
         }
-        if (maxwidth && width > win.graphwidth) {
+        if (maxwidth && width > maxwidth*win.graphwidth) {
             var aspect = (height / width);
-            width = win.graphwidth;
+            width = maxwidth*win.graphwidth;
             height = width * aspect;
         }
     }
@@ -5699,17 +5698,17 @@ function glk_image_draw_scaled_ext(win, imgid, val1, val2, width, height, flags)
         throw('glk_image_draw_scaled_ext: invalid heightrule');
     }
 
-    img.winmaxwidth = maxwidthflag;
-    if (maxwidthflag && widthrule == Const.imagerule_WidthRatio) {
-        /* The width is already scaled to the window width, so this flag
-           is irrelevant. Drop it. But our width is *wider* than the window
-           width, scale down proportionally. */
-        img.maxwidthflag = false;
-        if (img.widthratio > 1.0) {
+    img.winmaxwidth = maxwidth;
+    if (maxwidth && widthrule == Const.imagerule_WidthRatio) {
+        /* The width is already scaled to the window width, so maxwidth
+           is irrelevant. Drop it. But if our width is *wider* than the
+           window width, scale down proportionally. */
+        if (img.widthratio > img.winmaxwidth) {
             if (img.height !== undefined)
-                img.height = img.height / img.widthratio;
-            img.widthratio = 1.0;
+                img.height = img.height / img.widthratio; //###?
+            img.widthratio = img.winmaxwidth;
         }
+        img.winmaxwidth = 0;
     }
     
     switch (win.type) {
