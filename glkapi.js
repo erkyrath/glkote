@@ -5698,24 +5698,24 @@ function glk_image_draw_scaled_ext(win, imgid, val1, val2, width, height, imager
         throw('glk_image_draw_scaled_ext: invalid heightrule');
     }
 
-    var maxwidthf = 0;
     if (maxwidth == 0) {
-        img.winmaxwidth = 0;
+        img.winmaxwidth = null;
     }
     else {
-        maxwidthf = (maxwidth / 0x10000);
+        var maxwidthf = (maxwidth / 0x10000);
         img.winmaxwidth = maxwidthf;
-    }
-    if (maxwidth != 0 && widthrule == Const.imagerule_WidthRatio) {
-        /* The width is already scaled to the window width, so maxwidth
-           is irrelevant. Drop it. But if our width is *wider* than the
-           window width, scale down proportionally. */
-        if (img.widthratio > img.winmaxwidth) {
-            if (img.height !== undefined)
-                img.height = img.height / img.widthratio; //###?
-            img.widthratio = img.winmaxwidth;
+        
+        if (widthrule == Const.imagerule_WidthRatio) {
+            /* The width is already scaled to the window width, so maxwidth
+               is irrelevant. Drop it. But if our width is *wider* than the
+               window width, scale down proportionally. */
+            if (img.widthratio > img.winmaxwidth) {
+                if (img.height !== undefined)
+                    img.height = img.height / img.widthratio; //###?
+                img.widthratio = img.winmaxwidth;
+            }
+            img.winmaxwidth = null;
         }
-        img.winmaxwidth = 0;
     }
     
     switch (win.type) {
