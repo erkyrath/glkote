@@ -5711,7 +5711,7 @@ function glk_image_draw_scaled_ext(win, imgid, val1, val2, width, height, imager
                window width, scale down proportionally. */
             if (img.widthratio > img.winmaxwidth) {
                 if (img.height !== undefined)
-                    img.height = img.height / img.widthratio; //###?
+                    img.height = img.height * (img.winmaxwidth / img.widthratio);
                 img.widthratio = img.winmaxwidth;
             }
             img.winmaxwidth = null;
