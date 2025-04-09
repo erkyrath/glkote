@@ -1265,11 +1265,12 @@ function accept_one_content(arg) {
                             }
                             let el = $('<img>', 
                                        { src:imgurl } );
-                            let maxwidthflag = rdesc.winmaxwidth;
-                            if (maxwidthflag === undefined)
-                                maxwidthflag = true;
-                            if (maxwidthflag) {
-                                el.css('max-width', '100%'); //###
+                            let winmaxwidth = rdesc.winmaxwidth;
+                            // null means no limit, undefined means 1.0
+                            if (winmaxwidth === undefined)
+                                winmaxwidth = 1.0;
+                            if (winmaxwidth) {
+                                el.css('max-width', percentstr(winmaxwidth));
                             }
                             if (rdesc.widthratio === undefined) {
                                 el.attr('width', ''+rdesc.width);
@@ -1278,9 +1279,9 @@ function accept_one_content(arg) {
                                 el.css('width', percentstr(rdesc.widthratio));
                             }
                             if (rdesc.aspectwidth === undefined && rdesc.aspectheight === undefined) {
-                                if (maxwidthflag && rdesc.widthratio === undefined) {
-                                    // Special case: we need to define the height as an aspect ratio, because maxwidthflag means proportional scaling.
-                                    // (Note that maxwidthflag and rdesc.widthratio should not be used together, so we don't have to worry about that case.)
+                                if (winmaxwidth && rdesc.widthratio === undefined) {
+                                    // Special case: we need to define the height as an aspect ratio, because winmaxwidth means proportional scaling.
+                                    // (Note that winmaxwidth and rdesc.widthratio should not be used together, so we don't have to worry about that case.)
                                     el.css('aspect-ratio', ratiostr(rdesc.width, rdesc.height));
                                 }
                                 else {
