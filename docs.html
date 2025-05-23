@@ -1094,7 +1094,10 @@ The <code>clear</code>, <code>append</code>, and <code>flowbreak</code> values m
   { special: 'fill', color: COLOR,
     x: NUMBER, y: NUMBER, width: NUMBER, height: NUMBER },
   { special: 'image', image: NUMBER, x: NUMBER, y: NUMBER,
-    width: NUMBER, height: NUMBER, url: STRING, alttext: STRING },
+    width: NUMBER, height: NUMBER,
+    widthratio: NUMBER, aspectwidth:NUMBER, aspectheight:NUMBER,
+    winmaxwidth:NUMBER|null,
+    url: STRING, alttext: STRING },
   ... ] }
 </pre>
 <p>
@@ -1108,7 +1111,7 @@ Each element in the <code>draw</code> array represents a drawing operation, spec
 <code>fill</code> fills a rectangle of the graphics window with a color. If the <code>color</code> field is given, it should be a valid CSS color; if omitted, the default fill color will be used. If the <code>x, y, width, height</code> fields are given, they define the fill rectangle; if omitted, the entire graphics window is filled. (All four of these fields must be specified if any is.)
 <p>
 
-<code>image</code> draws an image into the window. See <a href="#imagedata">below</a> for the description of the image object.
+<code>image</code> draws an image into the window. Not all of the fields are required; there are several ways to specify an image size. See <a href="#imagedata">below</a> for the description of the image object.
 <p>
 
 (For efficiency, minimize overdraw where possible. It's a waste of time to have multiple window-filling operations in the same <code>draw</code> array, or to draw content that is then erased by filling the window with a solid color.)
@@ -1153,7 +1156,10 @@ An image entry in the line data array has the <code>special</code> value <code>"
 <pre class="Sample">
 { special: 'image', image: NUMBER, hyperlink: VALUE,
   alignment: ALIGNMENT,
-  width: NUMBER, height: NUMBER, url: STRING, alttext: STRING }
+  width: NUMBER, height: NUMBER,
+  widthratio: NUMBER, aspectwidth:NUMBER, aspectheight:NUMBER,
+  winmaxwidth:NUMBER|null,
+  url: STRING, alttext: STRING }
 </pre>
 <p>
 
