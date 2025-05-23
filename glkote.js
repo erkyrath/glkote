@@ -1278,7 +1278,7 @@ function accept_one_content(arg) {
                             else {
                                 el.css('width', percentstr(rdesc.widthratio));
                             }
-                            if (rdesc.aspectwidth === undefined && rdesc.aspectheight === undefined) {
+                            if (rdesc.aspectwidth === undefined || rdesc.aspectheight === undefined) {
                                 if (winmaxwidth && rdesc.widthratio === undefined) {
                                     // Special case: we need to define the height as an aspect ratio, because winmaxwidth means proportional scaling.
                                     // (Note that winmaxwidth and rdesc.widthratio should not be used together, so we don't have to worry about that case.)
