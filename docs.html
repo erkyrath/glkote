@@ -1166,7 +1166,20 @@ An image entry in the line data array has the <code>special</code> value <code>"
 In the simplest case, the <code>url</code> field is a URL which refers to the image resource. (The URL can be absolute or relative to the document. However, absolute is preferred, in case the update stream is recorded and stored on a different server.) If the application uses GiLoad to locate image data, you may supply an <code>image</code> number instead of a <code>url</code>.
 <p>
 
-The <code>width</code> and <code>height</code> fields are <em>required</em>. If they do not match the image's native size, it will be resized to the given values.
+There are several ways to specify the image size. The logic proceeds in several steps:
+<p>
+
+<ol>
+<li>If <code>widthratio</code> is provided, the image width will be scaled to the buffer window width. <code>widthratio=1</code> means the image will use the full window width; 0.5 would mean half the window width, and so on. If <code>widthratio</code> is not provided, <code>width</code> is required, and gives the image width.
+<li>Next, if both <code>aspectwidth</code> and <code>aspectheight</code> are provided, the image height is the width (as determined above) multiplied by <code>aspectheight/aspectwidth</code>. Otherwise, <code>height</code> is required, and gives the image height.
+<li>Finally, if <code>winmaxwidth</code> is <em>not</em> provided, the image is clamped to the window width; a wider image will be scaled down (proportionally) to fit the window width. A <code>winmaxwidth</code> of 1.0 means the same. A different <code>winmaxwidth</code> value clamps the image to a <em>multiple</em> of the window width; that is, <code>winmaxwidth=0.5</code> would limit it to half the window width.
+<li>If <code>winmaxwidth</code> is provided as null, there is no clamping step; the image may be wider than the window. (If that happens, it will be clipped rather than overflowing the horizontal window bounds.)
+</ol>
+
+(To keep the image's original aspect ratio, you can pass its original width and height as <code>aspectwidth</code> and <code>aspectheight</code>. This is the common case, so we make it easy.)
+<p>
+
+(The somewhat complicated handling of <code>winmaxwidth</code> reflects a recent change in the Glk spec: window width clamping is now the default behavior. Note that it is pointless to specify <code>widthratio</code> greater than <code>winmaxwidth</code>; the smaller constraint will apply.)
 <p>
 
 The alignments are <code>"inlineup"</code>, <code>"inlinedown"</code>, <code>"inlinecenter"</code>, <code>"marginleft"</code>, <code>"marginright"</code>. The margin alignments float left and right (in the HTML sense). The others are <em>vertical</em> alignments; the image hangs above, below, or centered relative to its line of text. If the <code>alignment</code> is missing or unrecognized, the default is <code>"inlineup"</code>.
