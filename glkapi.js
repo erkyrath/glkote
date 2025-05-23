@@ -5589,7 +5589,8 @@ function glk_image_draw_scaled(win, imgid, val1, val2, width, height) {
         return 0;
 
     /* Same as above, except we use the passed-in width and height
-       values */
+       values. Note that by omitting winmaxwidth, we will implicitly
+       limit maxwidth to the window width. */
     var img = { special:'image', image:imgid, 
                 url:info.url, alttext:info.alttext,
                 width:width, height:height };
