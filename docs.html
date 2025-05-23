@@ -1191,7 +1191,7 @@ The <code>alttext</code> is recommended. If you do not supply this, GlkOte will 
 The <code>hyperlink</code> is optional. If defined, the image is a hyperlink with that target value.
 <p>
 
-An image entry in a graphics content array is similar:
+An image entry in a graphics content array is simpler:
 <p>
 
 <pre class="Sample">
@@ -1200,7 +1200,10 @@ An image entry in a graphics content array is similar:
 </pre>
 <p>
 
-Here the <code>x</code>, <code>y</code>,  <code>width</code>,  <code>height</code> fields are all required. The <code>x</code> and <code>y</code> fields give the position of (the top left corner of) the image. There is no <code>alignment</code>, <code>hyperlink</code>, or <code>alttext</code>.
+Here the <code>x</code>, <code>y</code>, <code>width</code>, <code>height</code> fields are all required. The <code>x</code> and <code>y</code> fields give the position of (the top left corner of) the image. No image size clamping is done; the <code>width</code> and <code>height</code> values are used as-is. If these are larger than the graphics window size, the image is clipped to fit.
+<p>
+
+There is no <code>alignment</code>, <code>widthratio</code>, <code>aspectwidth</code>, <code>aspectheight</code>, <code>winmaxwidth</code>, <code>hyperlink</code>, or <code>alttext</code>.
 <p>
 
 <h3><a name="timerupdate">The Timer Update</a></h3>
