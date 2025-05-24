@@ -5696,6 +5696,7 @@ function glk_image_draw_scaled_ext(win, imgid, val1, val2, width, height, imager
     }
 
     if (maxwidth == 0) {
+        /* We always wind up here for graphics windows. */
         img.winmaxwidth = null;
     }
     else {
