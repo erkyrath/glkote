@@ -5643,7 +5643,7 @@ function glk_image_draw_scaled_ext(win, imgid, val1, val2, width, height, imager
         return 0;
 
     /* Same as above, except we have more ways to calculate the width and
-       height */
+       height. */
     var img = { special:'image', image:imgid, 
                 url:info.url, alttext:info.alttext };
 
