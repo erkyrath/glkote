@@ -908,7 +908,7 @@ A pure Javascript game will not use this. RemGlk uses it if the server is runnin
 <pre class="Def">
 { type: 'update', gen: GENERATION,
   windows: WINDOWS_ARRAY, content: CONTENT_ARRAY, input: INPUT_ARRAY,
-  timer: INTERVAL, disable: BOOLEAN, specialinput: OBJ }
+  timer: INTERVAL, disable: BOOLEAN, exit: BOOLEAN, specialinput: OBJ }
 </pre>
 <p>
 
@@ -928,6 +928,9 @@ The <code>specialinput</code> value (if present and not null) indicates that the
 <p>
 
 The <code>disable</code> flag (if present and true) places the entire game into a disabled state. See "<a href="#disabling">Disabling the UI</a>". If the flag is absent or false, the UI will be enabled (or re-enabled).
+<p>
+
+The <code>exit</code> flag (if present and true) indicates that the game is over. (If there is no active input, active timer, or <code>specialinput</code>, that's also a good sign that the game is over -- it can't accept any more input.)
 <p>
 
 <h3><a name="windowsupdate">The Windows Update Array</a></h3>
