@@ -1264,8 +1264,34 @@ function accept_one_content(arg) {
                                     imgurl = newurl;
                             }
                             let el = $('<img>', 
-                                       { src:imgurl,
-                                         width:''+rdesc.width, height:''+rdesc.height } );
+                                       { src:imgurl } );
+                            let winmaxwidth = rdesc.winmaxwidth;
+                            // null means no limit, undefined means 1.0
+                            if (winmaxwidth === undefined)
+                                winmaxwidth = 1.0;
+                            if (winmaxwidth) {
+                                el.css('max-width', percentstr(winmaxwidth));
+                            }
+                            if (rdesc.widthratio === undefined) {
+                                el.attr('width', ''+rdesc.width);
+                            }
+                            else {
+                                el.css('width', percentstr(rdesc.widthratio));
+                            }
+                            if (rdesc.aspectwidth === undefined || rdesc.aspectheight === undefined) {
+                                if (winmaxwidth && rdesc.widthratio === undefined) {
+                                    // Special case: we need to define the height as an aspect ratio, because winmaxwidth means proportional scaling.
+                                    // (Note that winmaxwidth and rdesc.widthratio should not be used together, so we don't have to worry about that case.)
+                                    el.css('aspect-ratio', ratiostr(rdesc.width, rdesc.height));
+                                }
+                                else {
+                                    el.attr('height', ''+rdesc.height);
+                                }
+                            }
+                            else {
+                                el.css('aspect-ratio', ratiostr(rdesc.aspectwidth, rdesc.aspectheight));
+                            }
+                
                             if (rdesc.alttext)
                                 el.attr('alt', rdesc.alttext);
                             else
@@ -1898,6 +1924,29 @@ function retry_update() {
     send_response('refresh', null, null);
 }
 
+/* Convert a JS number to a CSS-style percentage. */
+function percentstr(num) {
+    /* Return N*100 to two decimal places. But if it came out as an integer, great. */
+    let val = '' + (num * 100);
+    if (val == 'NaN') {
+        console.log('bad value in percentstr', num);
+        return '';
+    }
+    let pos = val.indexOf('.');
+    if (pos >= 0)
+        val = val.slice(0, pos+4);
+    return val+'%';
+}
+
+/* Convert a pair of JS numbers to a CSS-style ratio. Both must be nonzero. */
+function ratiostr(wid, hgt) {
+    if (!wid || !hgt) {
+        console.log('bad value in ratiostr', wid, hgt);
+        return '';
+    }
+    return ''+wid+'/'+hgt;
+}
+    
 /* Hide the loading pane (the spinny compass), if it hasn't already been
    hidden.
 
@@ -2227,7 +2276,7 @@ function send_response(type, win, val, val2) {
     }
     else if (type == 'init') {
         res.metrics = val;
-        res.support = ['timer', 'graphics', 'graphicswin', 'hyperlinks'];
+        res.support = ['timer', 'graphics', 'graphicswin', 'graphicsext', 'hyperlinks'];
     }
     else if (type == 'arrange') {
         res.metrics = val;

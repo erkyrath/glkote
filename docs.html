@@ -908,7 +908,7 @@ A pure Javascript game will not use this. RemGlk uses it if the server is runnin
 <pre class="Def">
 { type: 'update', gen: GENERATION,
   windows: WINDOWS_ARRAY, content: CONTENT_ARRAY, input: INPUT_ARRAY,
-  timer: INTERVAL, disable: BOOLEAN, specialinput: OBJ }
+  timer: INTERVAL, disable: BOOLEAN, exit: BOOLEAN, specialinput: OBJ }
 </pre>
 <p>
 
@@ -928,6 +928,9 @@ The <code>specialinput</code> value (if present and not null) indicates that the
 <p>
 
 The <code>disable</code> flag (if present and true) places the entire game into a disabled state. See "<a href="#disabling">Disabling the UI</a>". If the flag is absent or false, the UI will be enabled (or re-enabled).
+<p>
+
+The <code>exit</code> flag (if present and true) indicates that the game is over. GlkOte doesn't do anything with this flag, but it's useful for other users of the GlkOte protocol. (If there is no active input, active timer, or <code>specialinput</code>, that's also a good sign that the game is over -- it can't accept any more input.)
 <p>
 
 <h3><a name="windowsupdate">The Windows Update Array</a></h3>
@@ -1094,7 +1097,10 @@ The <code>clear</code>, <code>append</code>, and <code>flowbreak</code> values m
   { special: 'fill', color: COLOR,
     x: NUMBER, y: NUMBER, width: NUMBER, height: NUMBER },
   { special: 'image', image: NUMBER, x: NUMBER, y: NUMBER,
-    width: NUMBER, height: NUMBER, url: STRING, alttext: STRING },
+    width: NUMBER, height: NUMBER,
+    widthratio: NUMBER, aspectwidth:NUMBER, aspectheight:NUMBER,
+    winmaxwidth:NUMBER|null,
+    url: STRING, alttext: STRING },
   ... ] }
 </pre>
 <p>
@@ -1108,7 +1114,7 @@ Each element in the <code>draw</code> array represents a drawing operation, spec
 <code>fill</code> fills a rectangle of the graphics window with a color. If the <code>color</code> field is given, it should be a valid CSS color; if omitted, the default fill color will be used. If the <code>x, y, width, height</code> fields are given, they define the fill rectangle; if omitted, the entire graphics window is filled. (All four of these fields must be specified if any is.)
 <p>
 
-<code>image</code> draws an image into the window. See <a href="#imagedata">below</a> for the description of the image object.
+<code>image</code> draws an image into the window. Not all of the fields are required; there are several ways to specify an image size. See <a href="#imagedata">below</a> for the description of the image object.
 <p>
 
 (For efficiency, minimize overdraw where possible. It's a waste of time to have multiple window-filling operations in the same <code>draw</code> array, or to draw content that is then erased by filling the window with a solid color.)
@@ -1153,14 +1159,30 @@ An image entry in the line data array has the <code>special</code> value <code>"
 <pre class="Sample">
 { special: 'image', image: NUMBER, hyperlink: VALUE,
   alignment: ALIGNMENT,
-  width: NUMBER, height: NUMBER, url: STRING, alttext: STRING }
+  width: NUMBER, height: NUMBER,
+  widthratio: NUMBER, aspectwidth:NUMBER, aspectheight:NUMBER,
+  winmaxwidth:NUMBER|null,
+  url: STRING, alttext: STRING }
 </pre>
 <p>
 
 In the simplest case, the <code>url</code> field is a URL which refers to the image resource. (The URL can be absolute or relative to the document. However, absolute is preferred, in case the update stream is recorded and stored on a different server.) If the application uses GiLoad to locate image data, you may supply an <code>image</code> number instead of a <code>url</code>.
 <p>
 
-The <code>width</code> and <code>height</code> fields are <em>required</em>. If they do not match the image's native size, it will be resized to the given values.
+There are several ways to specify the image size. The logic proceeds in several steps:
+<p>
+
+<ol>
+<li>If <code>widthratio</code> is provided, the image width will be scaled to the buffer window width. <code>widthratio=1</code> means the image will use the full window width; 0.5 would mean half the window width, and so on. If <code>widthratio</code> is not provided, <code>width</code> is required, and gives the image width.
+<li>Next, if both <code>aspectwidth</code> and <code>aspectheight</code> are provided, the image height is the width (as determined above) multiplied by <code>aspectheight/aspectwidth</code>. Otherwise, <code>height</code> is required, and gives the image height.
+<li>Finally, if <code>winmaxwidth</code> is <em>not</em> provided, the image is clamped to the window width; a wider image will be scaled down (proportionally) to fit the window width. A <code>winmaxwidth</code> of 1.0 means the same. A different <code>winmaxwidth</code> value clamps the image to a <em>multiple</em> of the window width; that is, <code>winmaxwidth=0.5</code> would limit it to half the window width.
+<li>If <code>winmaxwidth</code> is provided as null, there is no clamping step; the image may be wider than the window. (If that happens, it will be clipped rather than overflowing the horizontal window bounds.)
+</ol>
+
+(To keep the image's original aspect ratio, you can pass its original width and height as <code>aspectwidth</code> and <code>aspectheight</code>. This is the common case, so we make it easy.)
+<p>
+
+(The somewhat complicated handling of <code>winmaxwidth</code> reflects a recent change in the Glk spec: window width clamping is now the default behavior. Note that it is pointless to specify <code>widthratio</code> greater than <code>winmaxwidth</code>; the smaller constraint will apply.)
 <p>
 
 The alignments are <code>"inlineup"</code>, <code>"inlinedown"</code>, <code>"inlinecenter"</code>, <code>"marginleft"</code>, <code>"marginright"</code>. The margin alignments float left and right (in the HTML sense). The others are <em>vertical</em> alignments; the image hangs above, below, or centered relative to its line of text. If the <code>alignment</code> is missing or unrecognized, the default is <code>"inlineup"</code>.
@@ -1172,7 +1194,7 @@ The <code>alttext</code> is recommended. If you do not supply this, GlkOte will 
 The <code>hyperlink</code> is optional. If defined, the image is a hyperlink with that target value.
 <p>
 
-An image entry in a graphics content array is similar:
+An image entry in a graphics content array is simpler:
 <p>
 
 <pre class="Sample">
@@ -1181,7 +1203,10 @@ An image entry in a graphics content array is similar:
 </pre>
 <p>
 
-Here the <code>x</code>, <code>y</code>,  <code>width</code>,  <code>height</code> fields are all required. The <code>x</code> and <code>y</code> fields give the position of (the top left corner of) the image. There is no <code>alignment</code>, <code>hyperlink</code>, or <code>alttext</code>.
+Here the <code>x</code>, <code>y</code>, <code>width</code>, <code>height</code> fields are all required. The <code>x</code> and <code>y</code> fields give the position of (the top left corner of) the image. No image size clamping is done; the <code>width</code> and <code>height</code> values are used as-is. If these are larger than the graphics window size, the image is clipped to fit.
+<p>
+
+There is no <code>alignment</code>, <code>widthratio</code>, <code>aspectwidth</code>, <code>aspectheight</code>, <code>winmaxwidth</code>, <code>hyperlink</code>, or <code>alttext</code>.
 <p>
 
 <h3><a name="timerupdate">The Timer Update</a></h3>
