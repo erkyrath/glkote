@@ -1432,14 +1432,14 @@ By default, the sent object (or <code>recording_handler</code> argument) looks l
 { "format": "glkote",
   "input": {<em>input event object; <a href="#input">see above</a></em>},
   "output": {<em>output update object; <a href="#output">see above</a></em>},
-  "sessionId": "<em>string of digits; identifies game session</em>",
+  "sessionId": "<em>string which identifies game session</em>",
   "label": "<em>the recording_label parameter, or the game title or URL</em>",
   "timestamp": <em>timestamp when input received</em>,
   "outtimestamp": <em>timestamp when output generated</em> }
 </pre>
 <p>
 
-Timestamps are always from the Unix epoch in milliseconds. (E.g., the result of Javascript `Date.getTime()`.)
+Timestamps are always from the Unix epoch in milliseconds. (E.g., the result of Javascript <code>Date.getTime()</code>.) The <code>sessionId</code> used to be a string of digits; it's a GUID (hex digits and dashes) in current implementations.
 <p>
 
 (See also "<a href="#glktra">The .glktra File Format</a>", below.)
@@ -1917,7 +1917,7 @@ The obvious way to do this is to leverage the recording format. (Indeed, Lectrot
 { "format": "glkote",
   "input": {<em>input event object; <a href="#input">see above</a></em>},
   "output": {<em>output update object; <a href="#output">see above</a></em>},
-  "sessionId": "<em>string of digits; identifies game session</em>",
+  "sessionId": "<em>string which identifies game session</em>",
   "label": "<em>the recording_label parameter, or the game title or URL</em>",
   "timestamp": <em>timestamp when input received</em>,
   "outtimestamp": <em>timestamp when output generated</em> }
